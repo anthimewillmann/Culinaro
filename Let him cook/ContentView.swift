@@ -8,17 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-    }
-}
+    @StateObject private var store = RecipeStore()
 
-#Preview {
-    ContentView()
+    var body: some View {
+        TabView {
+            RecipesView()
+                .tabItem {
+                    Label("Rezepte", systemImage: "book")
+                }
+
+            AddRecipeView()
+                .tabItem {
+                    Label("Neu", systemImage: "plus.circle")
+                }
+        }
+        .environmentObject(store)
+    }
 }
