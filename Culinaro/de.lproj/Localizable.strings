@@ -1,0 +1,26 @@
+//
+//  Localizable.strings
+//  Let him cook
+//
+//  Created by Anthime Willmann on 27.12.25.
+//
+
+"recipes" = "Rezepte";
+"recipes_count" = "%d Rezepte";
+"new_recipe" = "Neues Rezept";
+"edit_recipe" = "Bearbeiten";
+"recipe_title" = "Titel";
+"ingredients" = "Zutaten";
+"ingredient" = "Zutat";
+"steps" = "Schritte";
+"step" = "Schritt";
+"steps_count" = "%d Schritte";
+"step_number" = "Schritt %d";
+"ingredients_count" = "%d Zutaten";
+"of_steps" = "von %d";
+"cook_mode_enjoy" = "Genießen!";
+"delete" = "Löschen";
+"pin" = "Fixieren";
+"unpin" = "Lösen";
+"back" = "Zurück";
+"title" = "Titel";

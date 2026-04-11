@@ -6,17 +6,34 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXFileReference section */
-		5DFCE2DF2EF2026D001D9552 /* Let him cook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Let him cook.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
+/* Begin PBXBuildFile section */
+		5DFA88872F7EF27200C04F28 /* CookModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887A2F7EF27200C04F28 /* CookModeView.swift */; };
+		5DFA88882F7EF27200C04F28 /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA88752F7EF27200C04F28 /* Recipe.swift */; };
+		5DFA88892F7EF27200C04F28 /* RecipeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA88772F7EF27200C04F28 /* RecipeStore.swift */; };
+		5DFA888A2F7EF27200C04F28 /* CulinaroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */; };
+		5DFA888B2F7EF27200C04F28 /* AddRecipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA88792F7EF27200C04F28 /* AddRecipeView.swift */; };
+		5DFA888C2F7EF27200C04F28 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887E2F7EF27200C04F28 /* ContentView.swift */; };
+		5DFA888D2F7EF27200C04F28 /* RecipesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887B2F7EF27200C04F28 /* RecipesView.swift */; };
+		5DFA888E2F7EF27200C04F28 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5DFA88822F7EF27200C04F28 /* Localizable.strings */; };
+		5DFA888F2F7EF27200C04F28 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 5DFA88852F7EF27200C04F28 /* Localizable.stringsdict */; };
+		5DFA88902F7EF27200C04F28 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DFA887D2F7EF27200C04F28 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		5DFCE2E12EF2026D001D9552 /* Let him cook */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Let him cook";
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
+/* Begin PBXFileReference section */
+		5DFA88752F7EF27200C04F28 /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
+		5DFA88772F7EF27200C04F28 /* RecipeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeStore.swift; sourceTree = "<group>"; };
+		5DFA88792F7EF27200C04F28 /* AddRecipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRecipeView.swift; sourceTree = "<group>"; };
+		5DFA887A2F7EF27200C04F28 /* CookModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookModeView.swift; sourceTree = "<group>"; };
+		5DFA887B2F7EF27200C04F28 /* RecipesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipesView.swift; sourceTree = "<group>"; };
+		5DFA887D2F7EF27200C04F28 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5DFA887E2F7EF27200C04F28 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CulinaroApp.swift; sourceTree = "<group>"; };
+		5DFA88802F7EF27200C04F28 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		5DFA88812F7EF27200C04F28 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		5DFA88832F7EF27200C04F28 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		5DFA88842F7EF27200C04F28 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		5DFCE2DF2EF2026D001D9552 /* Culinaro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Culinaro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		5DFCE2DC2EF2026C001D9552 /* Frameworks */ = {
@@ -29,10 +46,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5DFA88762F7EF27200C04F28 /* Modeles */ = {
+			isa = PBXGroup;
+			children = (
+				5DFA88752F7EF27200C04F28 /* Recipe.swift */,
+			);
+			path = Modeles;
+			sourceTree = "<group>";
+		};
+		5DFA88782F7EF27200C04F28 /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				5DFA88772F7EF27200C04F28 /* RecipeStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
+		5DFA887C2F7EF27200C04F28 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				5DFA88792F7EF27200C04F28 /* AddRecipeView.swift */,
+				5DFA887A2F7EF27200C04F28 /* CookModeView.swift */,
+				5DFA887B2F7EF27200C04F28 /* RecipesView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		5DFA88862F7EF27200C04F28 /* Culinaro */ = {
+			isa = PBXGroup;
+			children = (
+				5DFA88762F7EF27200C04F28 /* Modeles */,
+				5DFA88782F7EF27200C04F28 /* Stores */,
+				5DFA887C2F7EF27200C04F28 /* Views */,
+				5DFA887D2F7EF27200C04F28 /* Assets.xcassets */,
+				5DFA887E2F7EF27200C04F28 /* ContentView.swift */,
+				5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */,
+				5DFA88822F7EF27200C04F28 /* Localizable.strings */,
+				5DFA88852F7EF27200C04F28 /* Localizable.stringsdict */,
+			);
+			path = Culinaro;
+			sourceTree = "<group>";
+		};
 		5DFCE2D62EF2026C001D9552 = {
 			isa = PBXGroup;
 			children = (
-				5DFCE2E12EF2026D001D9552 /* Let him cook */,
+				5DFA88862F7EF27200C04F28 /* Culinaro */,
 				5DFCE2E02EF2026D001D9552 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +98,7 @@
 		5DFCE2E02EF2026D001D9552 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5DFCE2DF2EF2026D001D9552 /* Let him cook.app */,
+				5DFCE2DF2EF2026D001D9552 /* Culinaro.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +106,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		5DFCE2DE2EF2026C001D9552 /* Let him cook */ = {
+		5DFCE2DE2EF2026C001D9552 /* Culinaro */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5DFCE2EA2EF2026E001D9552 /* Build configuration list for PBXNativeTarget "Let him cook" */;
+			buildConfigurationList = 5DFCE2EA2EF2026E001D9552 /* Build configuration list for PBXNativeTarget "Culinaro" */;
 			buildPhases = (
 				5DFCE2DB2EF2026C001D9552 /* Sources */,
 				5DFCE2DC2EF2026C001D9552 /* Frameworks */,
@@ -60,14 +118,11 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				5DFCE2E12EF2026D001D9552 /* Let him cook */,
-			);
-			name = "Let him cook";
+			name = Culinaro;
 			packageProductDependencies = (
 			);
 			productName = "Let him cook";
-			productReference = 5DFCE2DF2EF2026D001D9552 /* Let him cook.app */;
+			productReference = 5DFCE2DF2EF2026D001D9552 /* Culinaro.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,12 +140,13 @@
 					};
 				};
 			};
-			buildConfigurationList = 5DFCE2DA2EF2026C001D9552 /* Build configuration list for PBXProject "Let him cook" */;
+			buildConfigurationList = 5DFCE2DA2EF2026C001D9552 /* Build configuration list for PBXProject "Culinaro" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				de,
 			);
 			mainGroup = 5DFCE2D62EF2026C001D9552;
 			minimizedProjectReferenceProxies = 1;
@@ -99,7 +155,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5DFCE2DE2EF2026C001D9552 /* Let him cook */,
+				5DFCE2DE2EF2026C001D9552 /* Culinaro */,
 			);
 		};
 /* End PBXProject section */
@@ -109,6 +165,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5DFA888E2F7EF27200C04F28 /* Localizable.strings in Resources */,
+				5DFA888F2F7EF27200C04F28 /* Localizable.stringsdict in Resources */,
+				5DFA88902F7EF27200C04F28 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,10 +178,38 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5DFA88872F7EF27200C04F28 /* CookModeView.swift in Sources */,
+				5DFA88882F7EF27200C04F28 /* Recipe.swift in Sources */,
+				5DFA88892F7EF27200C04F28 /* RecipeStore.swift in Sources */,
+				5DFA888A2F7EF27200C04F28 /* CulinaroApp.swift in Sources */,
+				5DFA888B2F7EF27200C04F28 /* AddRecipeView.swift in Sources */,
+				5DFA888C2F7EF27200C04F28 /* ContentView.swift in Sources */,
+				5DFA888D2F7EF27200C04F28 /* RecipesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		5DFA88822F7EF27200C04F28 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5DFA88802F7EF27200C04F28 /* en */,
+				5DFA88812F7EF27200C04F28 /* de */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		5DFA88852F7EF27200C04F28 /* Localizable.stringsdict */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5DFA88832F7EF27200C04F28 /* en */,
+				5DFA88842F7EF27200C04F28 /* de */,
+			);
+			name = Localizable.stringsdict;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		5DFCE2E82EF2026E001D9552 /* Debug */ = {
@@ -256,6 +343,10 @@
 				DEVELOPMENT_TEAM = PJPDBUX37D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Culinaro-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Culinaro;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -266,7 +357,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.Let-him-cook.Let-him-cook";
+				PRODUCT_BUNDLE_IDENTIFIER = com.anthimewillmann.culinaro.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -288,6 +379,10 @@
 				DEVELOPMENT_TEAM = PJPDBUX37D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Culinaro-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Culinaro;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -298,7 +393,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.Let-him-cook.Let-him-cook";
+				PRODUCT_BUNDLE_IDENTIFIER = com.anthimewillmann.culinaro.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -313,7 +408,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5DFCE2DA2EF2026C001D9552 /* Build configuration list for PBXProject "Let him cook" */ = {
+		5DFCE2DA2EF2026C001D9552 /* Build configuration list for PBXProject "Culinaro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5DFCE2E82EF2026E001D9552 /* Debug */,
@@ -322,7 +417,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5DFCE2EA2EF2026E001D9552 /* Build configuration list for PBXNativeTarget "Let him cook" */ = {
+		5DFCE2EA2EF2026E001D9552 /* Build configuration list for PBXNativeTarget "Culinaro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5DFCE2EB2EF2026E001D9552 /* Debug */,
