@@ -1,10 +1,3 @@
-//
-//  RecipeStore.swift
-//  Let him cook
-//
-//  Created by Anthime Willmann on 17.12.25.
-//
-
 import SwiftUI
 import Combine
 
@@ -23,19 +16,30 @@ class RecipeStore: ObservableObject {
         )
     ]
 
+    func save(_ recipe: Recipe, editing original: Recipe?) {
+        let cleaned = Recipe(
+            id: original?.id ?? UUID(),
+            title: recipe.title,
+            ingredients: recipe.ingredients,
+            steps: recipe.steps,
+            isPinned: original?.isPinned ?? false,
+            tipsEnabled: recipe.tipsEnabled,
+            createdAt: original?.createdAt ?? Date()
+        )
+
+        if let original, let index = recipes.firstIndex(where: { $0.id == original.id }) {
+            recipes[index] = cleaned
+        } else {
+            recipes.append(cleaned)
+        }
+    }
+
     func delete(_ recipe: Recipe) {
         recipes.removeAll { $0.id == recipe.id }
     }
 
     func togglePin(_ recipe: Recipe) {
         guard let index = recipes.firstIndex(where: { $0.id == recipe.id }) else { return }
-        recipes[index] = Recipe(
-            id: recipe.id,
-            title: recipe.title,
-            ingredients: recipe.ingredients,
-            steps: recipe.steps,
-            isPinned: !recipe.isPinned,
-            createdAt: recipe.createdAt
-        )
+        recipes[index].isPinned.toggle()
     }
 }

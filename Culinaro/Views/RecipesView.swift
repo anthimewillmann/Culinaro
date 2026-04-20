@@ -51,7 +51,6 @@ struct RecipesView: View {
             }
             .buttonStyle(.plain)
 
-            // Swipe rechts → Löschen
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) {
                     store.delete(recipe)
@@ -67,7 +66,6 @@ struct RecipesView: View {
                 .tint(.blue)
             }
 
-            // Swipe links → Fixieren / Lösen
             .swipeActions(edge: .leading) {
                 Button {
                     withAnimation {
@@ -82,7 +80,6 @@ struct RecipesView: View {
                 .tint(.orange)
             }
 
-            // Long Press → Kontextmenü
             .contextMenu {
                 Button {
                     editingRecipe = recipe
@@ -127,10 +124,12 @@ struct RecipesView: View {
             }
         }
         .searchable(text: $searchText)
-        .fullScreenCover(isPresented: $showAddRecipe) {
+        // Neues Rezept – sheet mit Drag-Indikator
+        .sheet(isPresented: $showAddRecipe) {
             AddRecipeView()
                 .environmentObject(store)
         }
+        // Rezept bearbeiten – sheet
         .sheet(item: $editingRecipe) { recipe in
             AddRecipeView(editingRecipe: recipe)
                 .environmentObject(store)

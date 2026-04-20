@@ -24,3 +24,26 @@
 "unpin" = "Lösen";
 "back" = "Zurück";
 "title" = "Titel";
+"scan_recipe" = "Rezept scannen mit KI";
+
+"recipe_title_placeholder" = "Titel";
+"section_ingredients" = "Zutaten";
+"section_steps" = "Schritte";
+"section_generate_ai" = "Rezept generieren mit KI";
+"ai_prompt_placeholder" = "Rezeptidee";
+"ai_generating" = "Generiere...";
+"ai_generate_button" = "Generieren";
+"nav_title_new" = "Neues Rezept";
+"nav_title_edit" = "Editieren";
+"scanner_processing" = "Rezept wird erkannt…";
+"scanner_take_photo" = "Foto aufnehmen";
+"scanner_from_gallery" = "Aus Galerie";
+
+"error_invalid_image" = "Das Bild konnte nicht verarbeitet werden.";
+"error_no_text_found" = "Kein Text im Bild gefunden.";
+
+"ingredients_header" = "Zutat";
+"steps_header" = "Schritt";
+"tips_toggle_label" = "Tipps";
+
+"scanner_add_photo" = "Scannen ...";
