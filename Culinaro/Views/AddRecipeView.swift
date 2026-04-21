@@ -44,16 +44,14 @@ struct AddRecipeView: View {
                     Toggle(NSLocalizedString("ai_generate_button", comment: "Generate"), isOn: $generateEnabled)
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || isGenerating)
                         .onChange(of: generateEnabled) { _, enabled in
-                            if enabled { generateRecipeFromTitle() }
+                            if enabled {
+                                generateRecipeFromTitle()
+                            } else {
+                                ingredients = [TextRow(text: "")]
+                                steps = [TextRow(text: "")]
+                                errorMessage = nil
+                            }
                         }
-
-                    if isGenerating {
-                        HStack {
-                            ProgressView().padding(.trailing, 6)
-                            Text(NSLocalizedString("ai_generating", comment: "Generating…"))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
 
                     if let error = errorMessage {
                         Text(error)

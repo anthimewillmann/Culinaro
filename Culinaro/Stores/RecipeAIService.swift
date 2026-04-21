@@ -6,26 +6,32 @@ import UIKit
 @Observable
 final class RecipeAIService {
     private let session = LanguageModelSession()
-    
+
+    private var languageInstruction: String {
+        let lang = Locale.current.language.languageCode?.identifier ?? "en"
+        return "Respond in the language with code '\(lang)'. "
+    }
+
     func generate(from prompt: String) async throws -> ParsedRecipe {
-        let fullPrompt = "Erstelle ein vollständiges Rezept für: \(prompt). Antworte strukturiert mit Titel, Zutaten und Schritten."
+        let fullPrompt = "\(languageInstruction)Create a complete recipe for: \(prompt). Respond structured with title, ingredients and steps."
         let response = try await session.respond(to: fullPrompt, generating: ParsedRecipe.self)
         return response.content
     }
-    
+
     func scan(image: UIImage) async throws -> ParsedRecipe {
         let rawText = try await extractText(from: image)
         guard !rawText.isEmpty else { throw ScanError.noTextFound }
-        let response = try await session.respond(to: "Extrahiere Rezept aus: \(rawText)", generating: ParsedRecipe.self)
+        let fullPrompt = "\(languageInstruction)Extract recipe from: \(rawText)"
+        let response = try await session.respond(to: fullPrompt, generating: ParsedRecipe.self)
         return response.content
     }
-    
+
     func cookingTip(for step: String) async throws -> String {
-        let prompt = "Gib mir einen sehr kurzen, praktischen Kochtipp für diesen Schritt: \(step)"
-        let response = try await session.respond(to: prompt, generating: CookingTip.self)
+        let fullPrompt = "\(languageInstruction)Give me a very short, practical cooking tip for this step: \(step)"
+        let response = try await session.respond(to: fullPrompt, generating: CookingTip.self)
         return response.content.tip
     }
-    
+
     private func extractText(from image: UIImage) async throws -> String {
         guard let cgImage = image.cgImage else { throw ScanError.invalidImage }
         return try await withCheckedThrowingContinuation { continuation in
