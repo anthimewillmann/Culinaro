@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5D8D282D2F8F6769000EC331 /* AIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8D282C2F8F6760000EC331 /* AIModels.swift */; };
+		5D0B3C542F9D598700F5156C /* WaveAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0B3C532F9D597600F5156C /* WaveAnimation.swift */; };
+		5D3A715D2F980478009A4AB9 /* AIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3A715C2F980471009A4AB9 /* AIModels.swift */; };
 		5DD8C0032F8EBE05008D32FB /* RecipeAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD8C0022F8EBE03008D32FB /* RecipeAIService.swift */; };
 		5DE1E7B82F8E3ECD008EADB7 /* RecipeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE1E7B72F8E3EC6008EADB7 /* RecipeScannerView.swift */; };
 		5DE1E7BA2F8E3EEF008EADB7 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE1E7B92F8E3EEB008EADB7 /* CameraPickerView.swift */; };
@@ -24,7 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5D8D282C2F8F6760000EC331 /* AIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIModels.swift; sourceTree = "<group>"; };
+		5D0B3C532F9D597600F5156C /* WaveAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveAnimation.swift; sourceTree = "<group>"; };
+		5D3A715C2F980471009A4AB9 /* AIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIModels.swift; sourceTree = "<group>"; };
 		5DD8C0022F8EBE03008D32FB /* RecipeAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeAIService.swift; sourceTree = "<group>"; };
 		5DE1E7B72F8E3EC6008EADB7 /* RecipeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeScannerView.swift; sourceTree = "<group>"; };
 		5DE1E7B92F8E3EEB008EADB7 /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
@@ -57,7 +59,7 @@
 		5DFA88762F7EF27200C04F28 /* Modeles */ = {
 			isa = PBXGroup;
 			children = (
-				5D8D282C2F8F6760000EC331 /* AIModels.swift */,
+				5D3A715C2F980471009A4AB9 /* AIModels.swift */,
 				5DFA88752F7EF27200C04F28 /* Recipe.swift */,
 			);
 			path = Modeles;
@@ -75,6 +77,7 @@
 		5DFA887C2F7EF27200C04F28 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				5D0B3C532F9D597600F5156C /* WaveAnimation.swift */,
 				5DE1E7B92F8E3EEB008EADB7 /* CameraPickerView.swift */,
 				5DE1E7B72F8E3EC6008EADB7 /* RecipeScannerView.swift */,
 				5DFA88792F7EF27200C04F28 /* AddRecipeView.swift */,
@@ -190,7 +193,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5D8D282D2F8F6769000EC331 /* AIModels.swift in Sources */,
+				5D3A715D2F980478009A4AB9 /* AIModels.swift in Sources */,
+				5D0B3C542F9D598700F5156C /* WaveAnimation.swift in Sources */,
 				5DFA88872F7EF27200C04F28 /* CookModeView.swift in Sources */,
 				5DFA88882F7EF27200C04F28 /* Recipe.swift in Sources */,
 				5DFA88892F7EF27200C04F28 /* RecipeStore.swift in Sources */,

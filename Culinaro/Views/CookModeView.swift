@@ -21,6 +21,7 @@ struct CookModeView: View {
     @State private var tipsCache: [Int: String] = [:]
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     private var totalSteps: Int {
         recipe.steps.count + 1
@@ -39,45 +40,57 @@ struct CookModeView: View {
                 }
 
             case .step(let index):
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        if index < recipe.steps.count {
-                            Text(recipe.steps[index])
-                                .font(.largeTitle)
-                                .fontWeight(.semibold)
-                                .fixedSize(horizontal: false, vertical: true)
-                            
-                            if let tip = currentTip {
-                                Text(tip)
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                                    .padding(.top, 8)
-                                    .transition(.opacity)
-                            } else if isGeneratingTip {
-                                ProgressView()
-                                    .controlSize(.small)
-                                    .padding(.top, 8)
+                ZStack {
+                    // Hintergrund-Animation
+                    WaveAnimationView()
+                        .ignoresSafeArea()
+
+                    // Blur-Overlay für bessere Lesbarkeit
+                    Rectangle()
+                        .fill(colorScheme == .dark ? Color.black.opacity(0.5) : Color.white.opacity(0.5))
+                        .ignoresSafeArea()
+
+                    // Inhalt
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 24) {
+                            if index < recipe.steps.count {
+                                Text(recipe.steps[index])
+                                    .font(.largeTitle)
+                                    .fontWeight(.semibold)
+                                    .fixedSize(horizontal: false, vertical: true)
+
+                                if let tip = currentTip {
+                                    Text(tip)
+                                        .font(.body)
+                                        .foregroundStyle(.secondary)
+                                        .padding(.top, 8)
+                                        .transition(.opacity)
+                                } else if isGeneratingTip {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                        .padding(.top, 8)
+                                }
+
+                            } else {
+                                Text(NSLocalizedString("cook_mode_enjoy", comment: ""))
+                                    .font(.largeTitle)
+                                    .fontWeight(.bold)
                             }
-                            
-                        } else {
-                            Text(NSLocalizedString("cook_mode_enjoy", comment: ""))
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
+                            Spacer(minLength: 40)
                         }
-                        Spacer(minLength: 40)
+                        .padding()
                     }
-                    .padding()
-                }
-                .onChange(of: index) { _, newIndex in
-                    if newIndex < recipe.steps.count {
-                        Task { await loadTip(for: newIndex) }
-                    } else {
-                        currentTip = nil
+                    .onChange(of: index) { _, newIndex in
+                        if newIndex < recipe.steps.count {
+                            Task { await loadTip(for: newIndex) }
+                        } else {
+                            currentTip = nil
+                        }
                     }
-                }
-                .onAppear {
-                    if index < recipe.steps.count {
-                        Task { await loadTip(for: index) }
+                    .onAppear {
+                        if index < recipe.steps.count {
+                            Task { await loadTip(for: index) }
+                        }
                     }
                 }
             }
