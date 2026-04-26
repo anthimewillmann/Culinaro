@@ -5,7 +5,6 @@ import UIKit
 
 @Observable
 final class RecipeAIService {
-    private let session = LanguageModelSession()
 
     private var languageInstruction: String {
         let lang = Locale.current.language.languageCode?.identifier ?? "en"
@@ -13,12 +12,14 @@ final class RecipeAIService {
     }
 
     func generate(from prompt: String) async throws -> ParsedRecipe {
+        let session = LanguageModelSession()
         let fullPrompt = "\(languageInstruction)Create a complete recipe for: \(prompt). Respond structured with title, ingredients and steps."
         let response = try await session.respond(to: fullPrompt, generating: ParsedRecipe.self)
         return response.content
     }
 
     func scan(image: UIImage) async throws -> ParsedRecipe {
+        let session = LanguageModelSession()
         let rawText = try await extractText(from: image)
         guard !rawText.isEmpty else { throw ScanError.noTextFound }
         let fullPrompt = "\(languageInstruction)Extract recipe from: \(rawText)"
@@ -27,6 +28,7 @@ final class RecipeAIService {
     }
 
     func cookingTip(for step: String) async throws -> String {
+        let session = LanguageModelSession()
         let fullPrompt = "\(languageInstruction)Give me a very short, practical cooking tip for this step: \(step)"
         let response = try await session.respond(to: fullPrompt, generating: CookingTip.self)
         return response.content.tip

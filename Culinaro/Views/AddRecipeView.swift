@@ -28,6 +28,7 @@ struct AddRecipeView: View {
             _ingredients = State(initialValue: recipe.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")])
             _steps = State(initialValue: recipe.steps.map { TextRow(text: $0) } + [TextRow(text: "")])
             _tipsEnabled = State(initialValue: recipe.tipsEnabled)
+            _generateEnabled = State(initialValue: recipe.wasGenerated)
         }
     }
 
@@ -47,8 +48,10 @@ struct AddRecipeView: View {
                             if enabled {
                                 generateRecipeFromTitle()
                             } else {
-                                ingredients = [TextRow(text: "")]
-                                steps = [TextRow(text: "")]
+                                if editingRecipe == nil {
+                                    ingredients = [TextRow(text: "")]
+                                    steps = [TextRow(text: "")]
+                                }
                                 errorMessage = nil
                             }
                         }
@@ -84,26 +87,40 @@ struct AddRecipeView: View {
 
                 // MARK: – Ingredients
                 Section {
-                    ForEach(Array(ingredients.enumerated()), id: \.element.id) { index, row in
-                        TextField(
-                            index == 0
-                                ? NSLocalizedString("ingredients_header", comment: "Ingredients")
-                                : NSLocalizedString("ingredient", comment: "Ingredient"),
-                            text: rowBinding(in: $ingredients, id: row.id)
-                        )
+                    if isGenerating {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 4)
+                    } else {
+                        ForEach(Array(ingredients.enumerated()), id: \.element.id) { index, row in
+                            TextField(
+                                index == 0
+                                    ? NSLocalizedString("ingredients_header", comment: "Ingredients")
+                                    : NSLocalizedString("ingredient", comment: "Ingredient"),
+                                text: rowBinding(in: $ingredients, id: row.id)
+                            )
+                        }
                     }
                 }
 
                 // MARK: – Steps
                 Section {
-                    ForEach(Array(steps.enumerated()), id: \.element.id) { index, row in
-                        TextField(
-                            index == 0
-                                ? NSLocalizedString("steps_header", comment: "Steps")
-                                : NSLocalizedString("step", comment: "Step"),
-                            text: rowBinding(in: $steps, id: row.id),
-                            axis: .vertical
-                        )
+                    if isGenerating {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 4)
+                    } else {
+                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, row in
+                            TextField(
+                                index == 0
+                                    ? NSLocalizedString("steps_header", comment: "Steps")
+                                    : NSLocalizedString("step", comment: "Step"),
+                                text: rowBinding(in: $steps, id: row.id),
+                                axis: .vertical
+                            )
+                        }
                     }
                 }
             }
@@ -182,6 +199,8 @@ struct AddRecipeView: View {
         guard !trimmed.isEmpty else { generateEnabled = false; return }
         isGenerating = true
         errorMessage = nil
+        ingredients = [TextRow(text: "")]
+        steps = [TextRow(text: "")]
 
         Task {
             do {
@@ -231,7 +250,7 @@ struct AddRecipeView: View {
             .filter { !$0.isEmpty }
 
         store.save(
-            Recipe(title: title, ingredients: cleanIngredients, steps: cleanSteps, tipsEnabled: tipsEnabled),
+            Recipe(title: title, ingredients: cleanIngredients, steps: cleanSteps, tipsEnabled: tipsEnabled, wasGenerated: generateEnabled),
             editing: editingRecipe
         )
     }

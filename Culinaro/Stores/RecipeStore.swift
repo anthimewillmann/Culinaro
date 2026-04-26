@@ -24,6 +24,7 @@ class RecipeStore: ObservableObject {
             steps: recipe.steps,
             isPinned: original?.isPinned ?? false,
             tipsEnabled: recipe.tipsEnabled,
+            wasGenerated: recipe.wasGenerated, // ← fehlt
             createdAt: original?.createdAt ?? Date()
         )
 

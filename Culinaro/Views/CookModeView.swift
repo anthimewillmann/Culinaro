@@ -1,11 +1,4 @@
 import SwiftUI
-import FoundationModels
-
-@Generable
-struct CookingTip {
-    @Guide(description: "Ein kurzer, hilfreicher Tipp (max. 15 Wörter)")
-    var tip: String
-}
 
 struct CookModeView: View {
     let recipe: Recipe
@@ -19,9 +12,10 @@ struct CookModeView: View {
     @State private var currentTip: String? = nil
     @State private var isGeneratingTip = false
     @State private var tipsCache: [Int: String] = [:]
-    
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(RecipeAIService.self) private var aiService
 
     private var totalSteps: Int {
         recipe.steps.count + 1
@@ -120,7 +114,11 @@ struct CookModeView: View {
         .animation(.easeInOut, value: phase)
     }
 
+    // MARK: – Tip Loading
+
     private func loadTip(for index: Int) async {
+        guard recipe.tipsEnabled else { return }
+
         if let cachedTip = tipsCache[index] {
             withAnimation { self.currentTip = cachedTip }
             return
@@ -128,15 +126,12 @@ struct CookModeView: View {
 
         currentTip = nil
         isGeneratingTip = true
-        
-        let session = LanguageModelSession()
+
         let stepText = recipe.steps[index]
-        let prompt = "Gib mir einen sehr kurzen, praktischen Kochtipp für diesen Schritt: \(stepText)"
 
         do {
-            let response = try await session.respond(to: prompt, generating: CookingTip.self)
-            let generatedTip = response.content.tip
-            
+            let generatedTip = try await aiService.cookingTip(for: stepText)
+
             await MainActor.run {
                 self.tipsCache[index] = generatedTip
                 withAnimation {
@@ -148,6 +143,8 @@ struct CookModeView: View {
             await MainActor.run { self.isGeneratingTip = false }
         }
     }
+
+    // MARK: – Navigation
 
     private func goBack() {
         switch phase {
