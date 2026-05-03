@@ -1,13 +1,9 @@
-//
-//  WaveAnimation.swift
-//  Culinaro
-//
-//  Created by Anthime Willmann on 25.04.26.
-//
-
 import SwiftUI
 
 // MARK: - Bubble
+
+/// Data model representing a single floating bubble in the wave animation.
+/// Position is expressed as fractions of the enclosing view's size (0…1).
 struct Bubble: Identifiable {
     let id = UUID()
     var x: CGFloat
@@ -16,6 +12,9 @@ struct Bubble: Identifiable {
 }
 
 // MARK: - BubbleView
+
+/// Animates a single expanding, fading circle at a fixed position.
+/// Loops indefinitely: grows from 0 to `maxSize`, then fades out, then repeats.
 struct BubbleView: View {
     let x: CGFloat
     let y: CGFloat
@@ -54,6 +53,9 @@ struct BubbleView: View {
 }
 
 // MARK: - WiggleModifier
+
+/// Applies a continuous, randomised positional offset to any view,
+/// creating a gentle floating / wiggling effect.
 struct WiggleModifier: ViewModifier {
     let xAmount: CGFloat
     let yAmount: CGFloat
@@ -78,48 +80,44 @@ struct WiggleModifier: ViewModifier {
 }
 
 extension View {
+    /// Applies a subtle, randomised floating animation to the view.
     func wiggle(x: CGFloat = 6, y: CGFloat = 6, duration: Double = 1.2) -> some View {
         modifier(WiggleModifier(xAmount: x, yAmount: y, duration: duration))
     }
 }
 
 // MARK: - CarrotShape
+
+/// A bezier-curve shape approximating a carrot body (tapered oval with a rounded left end).
 struct CarrotShape: Shape {
     func path(in rect: CGRect) -> Path {
-        let w = rect.width
-        let h = rect.height
-        let mid = h / 2
+        let w = rect.width, h = rect.height, mid = h / 2
         var path = Path()
         path.move(to: CGPoint(x: 0, y: mid - h * 0.25))
-        path.addCurve(
-            to: CGPoint(x: w * 0.82, y: mid - h * 0.18),
-            control1: CGPoint(x: w * 0.3, y: mid - h * 0.35),
-            control2: CGPoint(x: w * 0.65, y: mid - h * 0.25)
-        )
-        path.addCurve(
-            to: CGPoint(x: w * 0.82, y: mid + h * 0.18),
-            control1: CGPoint(x: w * 1.05, y: mid - h * 0.1),
-            control2: CGPoint(x: w * 1.05, y: mid + h * 0.1)
-        )
-        path.addCurve(
-            to: CGPoint(x: 0, y: mid + h * 0.25),
-            control1: CGPoint(x: w * 0.65, y: mid + h * 0.25),
-            control2: CGPoint(x: w * 0.3, y: mid + h * 0.35)
-        )
-        path.addCurve(
-            to: CGPoint(x: 0, y: mid - h * 0.25),
-            control1: CGPoint(x: -w * 0.15, y: mid + h * 0.15),
-            control2: CGPoint(x: -w * 0.15, y: mid - h * 0.15)
-        )
+        path.addCurve(to: CGPoint(x: w * 0.82, y: mid - h * 0.18),
+                      control1: CGPoint(x: w * 0.3,  y: mid - h * 0.35),
+                      control2: CGPoint(x: w * 0.65, y: mid - h * 0.25))
+        path.addCurve(to: CGPoint(x: w * 0.82, y: mid + h * 0.18),
+                      control1: CGPoint(x: w * 1.05, y: mid - h * 0.1),
+                      control2: CGPoint(x: w * 1.05, y: mid + h * 0.1))
+        path.addCurve(to: CGPoint(x: 0, y: mid + h * 0.25),
+                      control1: CGPoint(x: w * 0.65, y: mid + h * 0.25),
+                      control2: CGPoint(x: w * 0.3,  y: mid + h * 0.35))
+        path.addCurve(to: CGPoint(x: 0, y: mid - h * 0.25),
+                      control1: CGPoint(x: -w * 0.15, y: mid + h * 0.15),
+                      control2: CGPoint(x: -w * 0.15, y: mid - h * 0.15))
         path.closeSubpath()
         return path
     }
 }
 
 // MARK: - CarrotView
+
+/// Renders a stylised carrot: an orange body with a green stem circle.
 struct CarrotView: View {
     var scale: CGFloat
     var opacity: CGFloat
+
     var body: some View {
         ZStack {
             CarrotShape()
@@ -128,7 +126,7 @@ struct CarrotView: View {
             Circle()
                 .fill(Color(red: 0.24, green: 0.65, blue: 0.24))
                 .frame(width: 22, height: 22)
-                .offset(x: -86, y: 0)
+                .offset(x: -86)
         }
         .rotationEffect(.degrees(150))
         .scaleEffect(scale)
@@ -137,10 +135,11 @@ struct CarrotView: View {
 }
 
 // MARK: - CucumberShape
+
+/// A bezier-curve shape approximating an elongated cucumber body.
 struct CucumberShape: Shape {
     func path(in rect: CGRect) -> Path {
-        let w = rect.width
-        let h = rect.height
+        let w = rect.width, h = rect.height
         var path = Path()
         path.move(to: CGPoint(x: w * 0.08, y: 0))
         path.addCurve(to: CGPoint(x: w * 0.92, y: 0),
@@ -161,9 +160,12 @@ struct CucumberShape: Shape {
 }
 
 // MARK: - CucumberView
+
+/// Renders a stylised cucumber: a green body with darker end caps.
 struct CucumberView: View {
     var scale: CGFloat
     var opacity: CGFloat
+
     var body: some View {
         ZStack {
             CucumberShape()
@@ -185,40 +187,48 @@ struct CucumberView: View {
 }
 
 // MARK: - StarShape
+
+/// A configurable star shape with rounded corners, used as the tomato leaf silhouette.
+/// - Parameters:
+///   - points: Number of star points.
+///   - innerRadius: Inner radius as a fraction of the outer radius.
+///   - cornerRadius: Corner rounding as a fraction of the local radius.
 struct StarShape: Shape {
     let points: Int
     let innerRadius: CGFloat
     let cornerRadius: CGFloat
 
     func path(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let outerR = min(rect.width, rect.height) / 2
-        let innerR = outerR * innerRadius
-        let total  = points * 2
-        let step   = CGFloat.pi * 2 / CGFloat(total)
-        let offset = -CGFloat.pi / 2
-        var vertices: [CGPoint] = []
+        let center   = CGPoint(x: rect.midX, y: rect.midY)
+        let outerR   = min(rect.width, rect.height) / 2
+        let innerR   = outerR * innerRadius
+        let total    = points * 2
+        let step     = CGFloat.pi * 2 / CGFloat(total)
+        let offset   = -CGFloat.pi / 2
+        var vertices = [CGPoint]()
+
         for i in 0..<total {
             let angle = offset + step * CGFloat(i)
             let r = i.isMultiple(of: 2) ? outerR : innerR
             vertices.append(CGPoint(x: center.x + cos(angle) * r,
                                     y: center.y + sin(angle) * r))
         }
+
         var path = Path()
         for i in 0..<total {
             let prev = vertices[(i - 1 + total) % total]
             let curr = vertices[i]
             let next = vertices[(i + 1) % total]
-            let r = i.isMultiple(of: 2) ? outerR : innerR
-            let cr = r * cornerRadius
-            let d1 = hypot(curr.x - prev.x, curr.y - prev.y)
-            let d2 = hypot(curr.x - next.x, curr.y - next.y)
-            let t1 = min(cr / d1, 0.5)
-            let t2 = min(cr / d2, 0.5)
-            let p1 = CGPoint(x: curr.x + (prev.x - curr.x) * t1,
-                             y: curr.y + (prev.y - curr.y) * t1)
-            let p2 = CGPoint(x: curr.x + (next.x - curr.x) * t2,
-                             y: curr.y + (next.y - curr.y) * t2)
+            let r    = i.isMultiple(of: 2) ? outerR : innerR
+            let cr   = r * cornerRadius
+            let d1   = hypot(curr.x - prev.x, curr.y - prev.y)
+            let d2   = hypot(curr.x - next.x, curr.y - next.y)
+            let t1   = min(cr / d1, 0.5)
+            let t2   = min(cr / d2, 0.5)
+            let p1   = CGPoint(x: curr.x + (prev.x - curr.x) * t1,
+                               y: curr.y + (prev.y - curr.y) * t1)
+            let p2   = CGPoint(x: curr.x + (next.x - curr.x) * t2,
+                               y: curr.y + (next.y - curr.y) * t2)
             if i == 0 { path.move(to: p1) } else { path.addLine(to: p1) }
             path.addQuadCurve(to: p2, control: curr)
         }
@@ -228,9 +238,12 @@ struct StarShape: Shape {
 }
 
 // MARK: - TomatoLeafView
+
+/// A green five-pointed star shape used as the tomato calyx (leaf crown).
 struct TomatoLeafView: View {
     let scale: CGFloat
     let opacity: CGFloat
+
     var body: some View {
         StarShape(points: 5, innerRadius: 0.25, cornerRadius: 0.35)
             .fill(Color(red: 0.25, green: 0.75, blue: 0.25))
@@ -239,9 +252,12 @@ struct TomatoLeafView: View {
     }
 }
 
-// MARK: - Suppen-Scheiben
+// MARK: - Soup Slice Views
+
+/// A stylised cross-section of a cucumber slice (two concentric circles).
 struct CucumberSliceView: View {
     var size: CGFloat = 80
+
     var body: some View {
         ZStack {
             Circle().fill(Color(red: 0.85, green: 0.96, blue: 0.78))
@@ -252,8 +268,10 @@ struct CucumberSliceView: View {
     }
 }
 
+/// A stylised cross-section of a tomato slice (two concentric circles).
 struct TomatoSliceView: View {
     var size: CGFloat = 90
+
     var body: some View {
         ZStack {
             Circle().fill(Color(red: 0.96, green: 0.63, blue: 0.63))
@@ -264,10 +282,12 @@ struct TomatoSliceView: View {
     }
 }
 
+/// A stylised mushroom slice (semicircle cap on a rectangular stem).
 struct MushroomSliceView: View {
     var capSize: CGFloat = 60
     var stemWidth: CGFloat = 34
     var stemHeight: CGFloat = 34
+
     var body: some View {
         let capColor = Color(red: 0.88, green: 0.82, blue: 0.67)
         VStack(spacing: -8) {
@@ -278,9 +298,13 @@ struct MushroomSliceView: View {
     }
 }
 
-// MARK: - Kräuter
+// MARK: - Herb Views
+
+/// Shared colour used for all herb illustrations.
 let herbColor = Color(red: 0.72, green: 0.91, blue: 0.60)
 
+/// Defines a rectangular zone within the canvas where herbs are placed,
+/// along with their count and size range.
 struct HerbZone {
     var xRange: ClosedRange<CGFloat>
     var yRange: ClosedRange<CGFloat>
@@ -288,6 +312,7 @@ struct HerbZone {
     var sizeRange: ClosedRange<CGFloat>
 }
 
+/// A single placed herb instance with position, rotation, and size.
 struct PlacedHerb: Identifiable {
     let id = UUID()
     let position: CGPoint
@@ -295,12 +320,14 @@ struct PlacedHerb: Identifiable {
     let size: CGFloat
 }
 
+/// Distributes herbs evenly in a grid within the given zone, with small random offsets.
 func placeHerbs(zone: HerbZone, in canvasSize: CGSize) -> [PlacedHerb] {
-    let cols = Int(ceil(sqrt(Double(zone.count))))
-    let rows = Int(ceil(Double(zone.count) / Double(cols)))
+    let cols  = Int(ceil(sqrt(Double(zone.count))))
+    let rows  = Int(ceil(Double(zone.count) / Double(cols)))
     let xStep = (zone.xRange.upperBound - zone.xRange.lowerBound) / CGFloat(max(cols - 1, 1))
     let yStep = (zone.yRange.upperBound - zone.yRange.lowerBound) / CGFloat(max(rows - 1, 1))
-    var result: [PlacedHerb] = []
+    var result = [PlacedHerb]()
+
     for row in 0..<rows {
         for col in 0..<cols {
             guard result.count < zone.count else { break }
@@ -317,6 +344,7 @@ func placeHerbs(zone: HerbZone, in canvasSize: CGSize) -> [PlacedHerb] {
     return result
 }
 
+/// A garlic illustration: a small stroked circle.
 struct GarlicView: View {
     var size: CGFloat = 48
     var body: some View {
@@ -325,11 +353,12 @@ struct GarlicView: View {
     }
 }
 
+/// A basil leaf illustration: a filled double-curved oval.
 struct BasilView: View {
     var size: CGFloat = 48
     var body: some View {
-        let w = size * 0.6; let h = size * 0.95
-        let cx = size / 2; let top = (size - h) / 2; let bottom = (size + h) / 2
+        let w = size * 0.6, h = size * 0.95
+        let cx = size / 2, top = (size - h) / 2, bottom = (size + h) / 2
         return Path { p in
             p.move(to: CGPoint(x: cx, y: top))
             p.addQuadCurve(to: CGPoint(x: cx, y: bottom), control: CGPoint(x: cx + w, y: size / 2))
@@ -339,6 +368,7 @@ struct BasilView: View {
     }
 }
 
+/// A chive illustration: a single vertical stroke.
 struct ChivesView: View {
     var size: CGFloat = 48
     var body: some View {
@@ -351,6 +381,7 @@ struct ChivesView: View {
     }
 }
 
+/// A rosemary sprig illustration: a central stem with symmetrical lateral needles.
 struct RosemaryView: View {
     var size: CGFloat = 48
     var body: some View {
@@ -361,6 +392,7 @@ struct RosemaryView: View {
                 p.addLine(to: CGPoint(x: size / 2, y: size * -0.2))
             }
             .stroke(herbColor, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+
             ForEach(positions, id: \.self) { t in
                 let y = size * t
                 Path { p in
@@ -376,7 +408,10 @@ struct RosemaryView: View {
     }
 }
 
-// MARK: - SoupLayoutPreview (Kräuter-Endszene)
+// MARK: - SoupLayoutPreview
+
+/// The final herb-scene overlay: distributes garlic, chives, rosemary, and basil
+/// across predefined zones using `placeHerbs(_:in:)`.
 struct SoupLayoutPreview: View {
     let zones: [(zone: HerbZone, type: String)] = [
         (HerbZone(xRange: 0.15...0.35, yRange: 0.15...0.35, count: 15, sizeRange: 38...46), "garlic"),
@@ -384,7 +419,9 @@ struct SoupLayoutPreview: View {
         (HerbZone(xRange: 0.2...0.3,   yRange: 0.7...0.8,   count: 5,  sizeRange: 55...70), "rosemary"),
         (HerbZone(xRange: 0.65...0.85, yRange: 0.65...0.85, count: 10, sizeRange: 55...70), "basil"),
     ]
+
     @State private var placed: [(herb: PlacedHerb, type: String)] = []
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -401,6 +438,7 @@ struct SoupLayoutPreview: View {
             }
         }
     }
+
     @ViewBuilder
     func herbView(type: String, size: CGFloat) -> some View {
         switch type {
@@ -414,14 +452,22 @@ struct SoupLayoutPreview: View {
 }
 
 // MARK: - WaveShape
+
+/// An animatable wave / liquid shape whose curvature, width, and height
+/// are all driven by animated state variables in `WaveAnimationView`.
+///
+/// - `t`: Controls the lateral oscillation of the wave's bezier control points (0…1).
+/// - `expand`: Expands the shape horizontally to fill the full screen width (0…1).
+/// - `waveRise`: Lifts the top edge of the shape upward (0 = bottom, 1 = resting position).
 struct WaveShape: Shape {
     var t: CGFloat
     var expand: CGFloat
     var waveRise: CGFloat
-    private let baseYScale: CGFloat = 0.63
+
+    private let baseYScale: CGFloat       = 0.63
     private let expandYScaleBonus: CGFloat = 0.54
-    private let pathHeight: CGFloat = 180
-    private let pathWidth: CGFloat = 100
+    private let pathHeight: CGFloat       = 180
+    private let pathWidth: CGFloat        = 100
 
     var animatableData: AnimatablePair<AnimatablePair<CGFloat, CGFloat>, CGFloat> {
         get { AnimatablePair(AnimatablePair(t, expand), waveRise) }
@@ -430,12 +476,15 @@ struct WaveShape: Shape {
 
     func path(in rect: CGRect) -> Path {
         func lerp(_ a: CGFloat, _ b: CGFloat, _ v: CGFloat = -1) -> CGFloat {
-            let factor = v < 0 ? t : v; return a + (b - a) * factor
+            let factor = v < 0 ? t : v
+            return a + (b - a) * factor
         }
-        let leftX = 20 * (1 - expand)
-        let rightX = 80 + 20 * expand
+
+        let leftX       = 20 * (1 - expand)
+        let rightX      = 80 + 20 * expand
         let scaleYFactor = baseYScale + expandYScaleBonus * expand
-        let riseOffset = (1 - waveRise) * rect.height * 0.55
+        let riseOffset  = (1 - waveRise) * rect.height * 0.55
+
         var path = Path()
         path.move(to: CGPoint(x: leftX, y: 0 + riseOffset / (rect.height / pathHeight)))
         path.addCurve(to: CGPoint(x: leftX, y: pathHeight),
@@ -446,20 +495,42 @@ struct WaveShape: Shape {
                       control1: CGPoint(x: lerp(50, 110) * (1 - expand) + 110 * expand, y: 120),
                       control2: CGPoint(x: lerp(110, 50) * (1 - expand) + 110 * expand, y: 60))
         path.closeSubpath()
-        let scaleX = rect.width / pathWidth
-        let scaleY = rect.height * scaleYFactor / pathHeight
-        let transform = CGAffineTransform(scaleX: scaleX, y: scaleY).translatedBy(x: 0, y: riseOffset / scaleY)
+
+        let scaleX    = rect.width / pathWidth
+        let scaleY    = rect.height * scaleYFactor / pathHeight
+        let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
+            .translatedBy(x: 0, y: riseOffset / scaleY)
         return path.applying(transform)
     }
 }
 
 // MARK: - AnimationPhase
+
+/// Logical phases of the full wave animation loop (used for documentation only;
+/// the actual sequencing is driven by the `Task` in `startAnimationSequence`).
 enum AnimationPhase {
     case intro, waveRising, wave, expanding, bubbles, finale, blackHole
 }
 
 // MARK: - WaveAnimationView
+
+/// A looping, multi-phase full-screen animation used as the cook-mode background.
+///
+/// **Animation sequence (one full loop ~60 s):**
+/// 1. Grey panel rises from the bottom.
+/// 2. Blue wave appears and oscillates.
+/// 3. Wave expands to fill the screen.
+/// 4. Small bubbles appear, then fade.
+/// 5. A large red tomato bubble grows from the centre.
+/// 6. Black-hole transition reveals a beige background.
+/// 7. Tomato shrinks; carrots, a second cucumber, and small tomatoes fly in.
+/// 8. Camera zooms into the carrot, then the soup-ingredients scene fades in.
+/// 9. Camera zooms into a cucumber slice; herb overlay fades in.
+/// 10. Beige transition panel slides up; herb scene drops away.
+/// 11. Second grey panel rises; everything resets for the next loop.
 struct WaveAnimationView: View {
+
+    // MARK: State
 
     @State private var grayRise: CGFloat = 0
     @State private var waveRise: CGFloat = 0
@@ -512,16 +583,21 @@ struct WaveAnimationView: View {
     @State private var grayRise2: CGFloat = 0
     @State private var herbsDropOpacity2: CGFloat = 1
 
+    // MARK: Constants
+
     let finalBubbleSize: CGFloat = 160
     let grayColor = Color(red: 0.9, green: 0.9, blue: 0.9)
     private let smallTomatoRatio: CGFloat = 0.5
     private var smallLeafScale: CGFloat { smallTomatoRatio * 0.75 }
 
+    /// Nine randomly positioned bubbles with staggered delays.
     let bubbles: [Bubble] = (0..<9).map { i in
         Bubble(x: CGFloat.random(in: 0.15...0.85),
                y: CGFloat.random(in: 0.15...0.85),
                delay: Double(i) * 0.5)
     }
+
+    // MARK: Body
 
     var body: some View {
         ZStack {
@@ -529,17 +605,18 @@ struct WaveAnimationView: View {
             GeometryReader { geo in
                 ZStack {
 
-                    // ── Layer 1: Beiger Vollflächenhintergrund ─────────────
+                    // ── Layer 1: Beige full-screen background ──────────────
                     if backgroundIsBeige {
                         Color(red: 0.96, green: 0.91, blue: 0.80).ignoresSafeArea()
                     }
 
-                    // ── Layer 2: Gesamte Animations-Szene ─────────────────
+                    // ── Layer 2: Main animation scene ──────────────────────
                     if !showOnlyHerbs {
                         ZStack {
                             ZStack {
                                 ZStack(alignment: .bottom) {
                                     if !hideWaveAndGray {
+                                        // Blue wave
                                         WaveShape(t: t, expand: expand, waveRise: waveRise)
                                             .fill(Color(red: 0.85, green: 0.95, blue: 1.0))
                                             .frame(width: geo.size.width, height: geo.size.height)
@@ -547,6 +624,7 @@ struct WaveAnimationView: View {
                                             .opacity(waveRise > 0 ? 1 : 0)
                                             .onAppear { startAnimationSequence(geo: geo) }
 
+                                        // Grey base panel
                                         let restY = geo.size.height * 0.52
                                         let introOffset = (1 - grayRise) * geo.size.height
                                         let expandOffset = geo.size.height * 0.55 * expand
@@ -560,13 +638,16 @@ struct WaveAnimationView: View {
                                     }
                                 }
 
+                                // Small floating bubbles
                                 if showBubbles {
                                     ForEach(bubbles) { bubble in
-                                        BubbleView(x: bubble.x, y: bubble.y, delay: bubble.delay,
-                                                   geo: geo, hide: hideBubbles)
+                                        BubbleView(x: bubble.x, y: bubble.y,
+                                                   delay: bubble.delay, geo: geo,
+                                                   hide: hideBubbles)
                                     }
                                 }
 
+                                // White fill behind the final tomato bubble
                                 if finalBubbleWhiteOpacity > 0 && finalBubbleOpacity > 0 {
                                     Circle()
                                         .fill(Color(UIColor.systemBackground))
@@ -575,15 +656,18 @@ struct WaveAnimationView: View {
                                         .position(x: geo.size.width / 2, y: geo.size.height / 2)
                                 }
 
+                                // Black-hole mask overlay
                                 if blackOverlayOpacity > 0 {
-                                    GeometryReader { innerGeo in
+                                    GeometryReader { inner in
                                         Rectangle().fill(Color.black).ignoresSafeArea()
                                             .mask(
                                                 ZStack {
                                                     Rectangle().fill(Color.black)
                                                     Circle()
-                                                        .frame(width: blackHoleScale + 10, height: blackHoleScale + 10)
-                                                        .position(x: innerGeo.size.width / 2, y: innerGeo.size.height * 0.5)
+                                                        .frame(width: blackHoleScale + 10,
+                                                               height: blackHoleScale + 10)
+                                                        .position(x: inner.size.width / 2,
+                                                                  y: inner.size.height * 0.5)
                                                         .blendMode(.destinationOut)
                                                 }
                                                 .compositingGroup()
@@ -593,8 +677,9 @@ struct WaveAnimationView: View {
                                     .ignoresSafeArea()
                                 }
 
+                                // Beige-hole mask overlay
                                 if beigeOverlayOpacity > 0 {
-                                    GeometryReader { innerGeo in
+                                    GeometryReader { inner in
                                         Rectangle()
                                             .fill(Color(red: 0.96, green: 0.91, blue: 0.80))
                                             .ignoresSafeArea()
@@ -602,8 +687,10 @@ struct WaveAnimationView: View {
                                                 ZStack {
                                                     Rectangle().fill(Color.black)
                                                     Circle()
-                                                        .frame(width: beigeHoleScale + 10, height: beigeHoleScale + 10)
-                                                        .position(x: innerGeo.size.width / 2, y: innerGeo.size.height * 0.5)
+                                                        .frame(width: beigeHoleScale + 10,
+                                                               height: beigeHoleScale + 10)
+                                                        .position(x: inner.size.width / 2,
+                                                                  y: inner.size.height * 0.5)
                                                         .blendMode(.destinationOut)
                                                 }
                                                 .compositingGroup()
@@ -613,7 +700,7 @@ struct WaveAnimationView: View {
                                     .ignoresSafeArea()
                                 }
 
-                                // ── Haupt-Tomate ───────────────────────────
+                                // ── Main tomato ────────────────────────────
                                 ZStack {
                                     Circle().fill(Color.red)
                                         .frame(width: finalBubbleScale, height: finalBubbleScale)
@@ -627,7 +714,7 @@ struct WaveAnimationView: View {
                                 .scaleEffect(tomatoZoomScale)
                                 .offset(tomatoOffset)
 
-                                // ── Kleine Tomate 2 ────────────────────────
+                                // ── Small tomato 2 ─────────────────────────
                                 ZStack {
                                     Circle().fill(Color.red)
                                         .frame(width: finalBubbleSize * smallTomatoRatio,
@@ -637,7 +724,7 @@ struct WaveAnimationView: View {
                                 .scaleEffect(tomato2Scale).opacity(tomato2Opacity).offset(tomato2Offset)
                                 .position(x: geo.size.width * 0.18, y: geo.size.height * 0.78)
 
-                                // ── Kleine Tomate 3 ────────────────────────
+                                // ── Small tomato 3 ─────────────────────────
                                 ZStack {
                                     Circle().fill(Color.red)
                                         .frame(width: finalBubbleSize * smallTomatoRatio,
@@ -662,7 +749,7 @@ struct WaveAnimationView: View {
                             .scaleEffect(sceneZoom)
                             .offset(sceneOffset)
 
-                            // ── Suppen-Zutaten-Szene ───────────────────────
+                            // ── Soup ingredients scene ─────────────────────
                             if backgroundIsBeige {
                                 ZStack {
                                     BubbleView(x: 0.25, y: 0.25, delay: 0.0, geo: geo, hide: false)
@@ -691,9 +778,11 @@ struct WaveAnimationView: View {
                                     GarlicView(size: 40).wiggle().opacity(soupIngredientsOpacity)
                                         .position(x: geo.size.width * 0.30, y: geo.size.height * 0.65)
 
-                                    MushroomSliceView(capSize: 75, stemWidth: 34, stemHeight: 28).wiggle().opacity(soupIngredientsOpacity)
+                                    MushroomSliceView(capSize: 75, stemWidth: 34, stemHeight: 28)
+                                        .wiggle().opacity(soupIngredientsOpacity)
                                         .position(x: geo.size.width * 0.20, y: geo.size.height * 0.10)
-                                    MushroomSliceView(capSize: 75, stemWidth: 34, stemHeight: 28).wiggle().opacity(soupIngredientsOpacity)
+                                    MushroomSliceView(capSize: 75, stemWidth: 34, stemHeight: 28)
+                                        .wiggle().opacity(soupIngredientsOpacity)
                                         .position(x: geo.size.width * 0.85, y: geo.size.height * 0.85)
                                 }
                                 .scaleEffect(soupSceneZoom)
@@ -703,7 +792,7 @@ struct WaveAnimationView: View {
                         .offset(y: slideUpOffset)
                     }
 
-                    // ── Layer 3: Beiges Übergangs-Overlay ─────────────────
+                    // ── Layer 3: Beige transition overlay ──────────────────
                     if beigeTransitionOpacity > 0 {
                         Color(red: 0.96, green: 0.91, blue: 0.80).ignoresSafeArea()
                             .opacity(beigeTransitionOpacity)
@@ -711,18 +800,18 @@ struct WaveAnimationView: View {
                             .allowsHitTesting(false)
                     }
 
-                    // ── Layer 4: Kräuter-Szene ─────────────────────────────
+                    // ── Layer 4: Herb scene ────────────────────────────────
                     if showHerbsScene {
                         SoupLayoutPreview()
                             .opacity(herbsOpacity)
                             .offset(y: herbsDropOffset)
                     }
 
-                    // ── Layer 5: Zweite graue Fläche ───────────────────────
+                    // ── Layer 5: Second grey panel ─────────────────────────
                     VStack {
                         Spacer()
-                        let restY = geo.size.height * 0.52
-                        let introOffset = (1 - grayRise2) * geo.size.height
+                        let restY        = geo.size.height * 0.52
+                        let introOffset  = (1 - grayRise2) * geo.size.height
                         Rectangle().fill(grayColor)
                             .frame(height: restY).frame(maxWidth: .infinity)
                             .padding(.bottom, -50)
@@ -734,34 +823,36 @@ struct WaveAnimationView: View {
         }
     }
 
-    // MARK: - Animationssequenz
+    // MARK: - Animation Sequence
+
+    /// Starts the full animation loop. Called once via `.onAppear` on the wave shape.
+    /// The sequence runs in an infinite `while true` Task, resetting all state at the end of each loop.
     private func startAnimationSequence(geo: GeometryProxy) {
 
-        // ── Schritt 1: Graue Fläche fährt von unten hoch ──────────────────
-        // Startet sofort beim Erscheinen der View – nur einmal, nicht im Loop
+        // Step 1: Grey panel rises immediately on appear
         withAnimation(.easeOut(duration: 2.5)) { grayRise = 1 }
 
         Task { @MainActor in
             while true {
 
-                // ── Schritt 2: Blaue Welle erscheint & beginnt zu oszillieren ─
+                // Step 2: Blue wave appears and begins oscillating
                 try? await Task.sleep(for: .seconds(2.0))
                 withAnimation(.easeOut(duration: 4.0)) { waveRise = 1 }
                 withAnimation(.easeInOut(duration: 3.25).repeatForever(autoreverses: true)) { t = 1 }
 
-                // ── Schritt 3: Welle weitet sich aus (Expansion) ──────────────
+                // Step 3: Wave expands horizontally
                 try? await Task.sleep(for: .seconds(7.5))
                 withAnimation(.easeInOut(duration: 2.5)) { expand = 1 }
 
-                // ── Schritt 4: Kleine Blasen erscheinen ───────────────────────
+                // Step 4: Small bubbles appear
                 try? await Task.sleep(for: .seconds(2.0))
                 showBubbles = true
 
-                // ── Schritt 5: Kleine Blasen verschwinden ─────────────────────
+                // Step 5: Small bubbles fade out
                 try? await Task.sleep(for: .seconds(8.0))
                 withAnimation(.easeOut(duration: 1.0)) { hideBubbles = true }
 
-                // ── Schritt 6: Große Tomate-Blase wächst auf ──────────────────
+                // Step 6: Large tomato bubble grows from centre
                 try? await Task.sleep(for: .seconds(2.5))
                 withAnimation(.easeIn(duration: 3.7)) { finalBubbleOpacity = 1 }
                 withAnimation(.easeInOut(duration: 1.5)) { finalBubbleScale = finalBubbleSize }
@@ -769,33 +860,34 @@ struct WaveAnimationView: View {
                     finalBubbleWhiteFill = max(geo.size.width, geo.size.height) * 2.5
                 }
 
-                // ── Schritt 7: Black-Hole-Effekt ──────────────────────────────
+                // Step 7: Black-hole mask contracts to tomato size
                 try? await Task.sleep(for: .seconds(4.0))
                 blackHoleScale = max(geo.size.width, geo.size.height) * 2.5
                 withAnimation(.easeIn(duration: 0.2)) { blackOverlayOpacity = 1 }
                 withAnimation(.easeInOut(duration: 3.5)) { blackHoleScale = finalBubbleSize - 10 }
 
-                // ── Schritt 8: Tomate wird größer → Übergang zum Beige ────────
+                // Step 8: Tomato grows → beige transition begins
                 try? await Task.sleep(for: .seconds(4.0))
                 withAnimation(.easeInOut(duration: 2.5)) { blackHoleScale = finalBubbleSize * 1.5 - 20 }
                 withAnimation(.easeInOut(duration: 2.5)) { finalBubbleScale = finalBubbleSize * 1.5 }
 
-                // ── Schritt 9: Beiger Hintergrund & beiges Overlay mit Loch ───
+                // Step 9: Beige background revealed via hole-mask
                 try? await Task.sleep(for: .seconds(2.5))
                 backgroundIsBeige = true
-                hideWaveAndGray = true
+                hideWaveAndGray   = true
                 withAnimation(.easeIn(duration: 0.3).delay(3.5)) { finalBubbleWhiteOpacity = 0 }
                 beigeHoleScale = max(geo.size.width, geo.size.height) * 2.5
                 withAnimation(.easeIn(duration: 0.3)) { beigeOverlayOpacity = 1 }
                 withAnimation(.easeInOut(duration: 3.5)) { beigeHoleScale = finalBubbleSize * 1.5 - 20 }
                 withAnimation(.easeOut(duration: 1.8).delay(1.5)) { leafOpacity = 1; leafScale = 1 }
 
-                // ── Schritt 10: Tomate schrumpft → Gemüse-Phase beginnt ───────
+                // Step 10: Tomato shrinks; vegetables fly in
                 try? await Task.sleep(for: .seconds(4.0))
                 blackOverlayOpacity = 0
                 withAnimation(.easeInOut(duration: 2.0)) {
                     tomatoZoomScale = 0.38
-                    tomatoOffset = CGSize(width: -geo.size.width * 0.15, height: geo.size.height * 0.17)
+                    tomatoOffset    = CGSize(width: -geo.size.width * 0.15,
+                                            height:  geo.size.height * 0.17)
                     beigeOverlayOpacity = 0
                 }
                 withAnimation(.easeOut(duration: 1.5).delay(0.4)) {
@@ -807,65 +899,69 @@ struct WaveAnimationView: View {
                 withAnimation(.easeOut(duration: 1.5).delay(0.8)) {
                     cucumberScale = 1; cucumberOpacity = 1; cucumberOffset = .zero
                 }
-                withAnimation(.easeOut(duration: 1.2).delay(0.5)) { tomato2Opacity = 1; tomato2Offset = .zero }
-                withAnimation(.easeOut(duration: 1.2).delay(0.9)) { tomato3Opacity = 1; tomato3Offset = .zero }
+                withAnimation(.easeOut(duration: 1.2).delay(0.5)) {
+                    tomato2Opacity = 1; tomato2Offset = .zero
+                }
+                withAnimation(.easeOut(duration: 1.2).delay(0.9)) {
+                    tomato3Opacity = 1; tomato3Offset = .zero
+                }
 
-                // ── Schritt 11: Zoom in Karotte 1 ────────────────────────────
+                // Step 11: Zoom into carrot 1
                 try? await Task.sleep(for: .seconds(4.0))
-                let targetX = geo.size.width * 0.32
-                let targetY = geo.size.height * 0.22
-                let centerX = geo.size.width / 2
-                let centerY = geo.size.height / 2
+                let targetX     = geo.size.width * 0.32
+                let targetY     = geo.size.height * 0.22
+                let centerX     = geo.size.width / 2
+                let centerY     = geo.size.height / 2
                 let zoomFactor: CGFloat = 50.0
                 withAnimation(.easeIn(duration: 5.0)) {
-                    sceneZoom = zoomFactor
-                    sceneOffset = CGSize(width: (centerX - targetX) * zoomFactor,
+                    sceneZoom   = zoomFactor
+                    sceneOffset = CGSize(width:  (centerX - targetX) * zoomFactor,
                                         height: (centerY - targetY) * zoomFactor)
                 }
 
-                // ── Schritt 12: Suppen-Zutaten einblenden ────────────────────
+                // Step 12: Soup ingredients scene fades in
                 try? await Task.sleep(for: .seconds(2.5))
                 withAnimation(.easeIn(duration: 2.0)) { soupIngredientsOpacity = 1 }
 
-                // ── Schritt 13: Zoom in Gurkenscheibe ────────────────────────
+                // Step 13: Zoom into cucumber slice
                 try? await Task.sleep(for: .seconds(8.0))
-                let gurkeX = geo.size.width * 0.80
-                let gurkeY = geo.size.height * 0.60
+                let gurkeX    = geo.size.width * 0.80
+                let gurkeY    = geo.size.height * 0.60
                 let gurkeZoom: CGFloat = 50.0
                 withAnimation(.easeInOut(duration: 5.0)) {
-                    soupSceneZoom = gurkeZoom
-                    soupSceneOffset = CGSize(width: (geo.size.width / 2 - gurkeX) * gurkeZoom,
+                    soupSceneZoom   = gurkeZoom
+                    soupSceneOffset = CGSize(width:  (geo.size.width  / 2 - gurkeX) * gurkeZoom,
                                             height: (geo.size.height / 2 - gurkeY) * gurkeZoom)
                 }
 
-                // ── Schritt 14: Beiges Overlay + Kräuter einblenden ──────────
+                // Step 14: Beige overlay + herb scene fade in
                 try? await Task.sleep(for: .seconds(0.3))
                 withAnimation(.easeInOut(duration: 3.5)) { beigeTransitionOpacity = 1.0 }
                 showHerbsScene = true
                 withAnimation(.easeIn(duration: 3.0).delay(0.5)) { herbsOpacity = 1.0 }
 
-                // ── Schritt 15: Aufräumen hinter dem Overlay ─────────────────
+                // Step 15: Clean up behind the overlay; show only herbs
                 try? await Task.sleep(for: .seconds(3.7))
                 slideUpOffset = -geo.size.height
                 showOnlyHerbs = true
                 backgroundIsBeige = false
 
-                // ── Schritt 16: Beige-Overlay nach oben rausschieben ─────────
+                // Step 16: Slide beige overlay upward and off screen
                 try? await Task.sleep(for: .seconds(1.5))
                 withAnimation(.easeInOut(duration: 2.5)) { beigeTransitionOffset = -geo.size.height }
                 try? await Task.sleep(for: .seconds(2.5))
                 beigeTransitionOpacity = 0
-                beigeTransitionOffset = 0
+                beigeTransitionOffset  = 0
 
-                // ── Schritt 17: Zweite graue Fläche fährt von unten hoch ──────
+                // Step 17: Second grey panel rises from the bottom
                 try? await Task.sleep(for: .seconds(1.5))
                 withAnimation(.easeOut(duration: 2.5)) { grayRise2 = 1 }
 
-                // ── Schritt 18: Kräuter fallen nach unten raus ────────────────
+                // Step 18: Herb scene drops off screen
                 try? await Task.sleep(for: .seconds(4.0))
                 withAnimation(.easeIn(duration: 1.8)) { herbsDropOffset = geo.size.height * 0.6 }
 
-                // ── Loop-Reset ────────────────────────────────────────────────
+                // ── Loop reset ─────────────────────────────────────────────
                 try? await Task.sleep(for: .seconds(1.8))
                 waveRise = 0; t = 0; expand = 0
                 showBubbles = false; hideBubbles = false
@@ -889,7 +985,7 @@ struct WaveAnimationView: View {
                 herbsDropOpacity2 = 1; grayRise2 = 0
 
                 try? await Task.sleep(for: .seconds(0.1))
-                // → while true springt zurück zu Schritt 2
+                // → Loop restarts from Step 2
             }
         }
     }
