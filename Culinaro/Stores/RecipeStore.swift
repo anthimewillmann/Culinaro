@@ -2,20 +2,8 @@ import SwiftUI
 import Combine
 
 class RecipeStore: ObservableObject {
-    @Published var recipes: [Recipe] = [
-        Recipe(
-            title: "Pasta Aglio e Olio",
-            ingredients: ["Pasta", "Knoblauch", "Olivenöl", "Chili", "Petersilie"],
-            steps: [
-                "Wasser aufsetzen und salzen",
-                "Knoblauch schneiden",
-                "Pasta kochen",
-                "Knoblauch in Öl anbraten",
-                "Alles vermengen und servieren"
-            ]
-        )
-    ]
-
+    @Published var recipes: [Recipe] = []
+    
     func save(_ recipe: Recipe, editing original: Recipe?) {
         let cleaned = Recipe(
             id: original?.id ?? UUID(),
