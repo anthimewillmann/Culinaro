@@ -186,7 +186,7 @@ struct CookModeAnimationView: View {
                 // White fill behind the final tomato bubble
                 if finalBubbleWhiteOpacity > 0 && finalBubbleOpacity > 0 {
                     Circle()
-                        .fill(Color(UIColor.systemBackground))
+                        .fill(Color.white)
                         .frame(width: finalBubbleWhiteFill, height: finalBubbleWhiteFill)
                         .opacity(finalBubbleOpacity * finalBubbleWhiteOpacity)
                         .position(x: geo.size.width / 2, y: geo.size.height / 2)
