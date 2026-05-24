@@ -32,7 +32,6 @@ struct RecipesView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(recipe.title)
                             .fontWeight(.semibold)
-
                         Text(
                             String.localizedStringWithFormat(
                                 NSLocalizedString("steps_count", comment: ""),
@@ -58,7 +57,6 @@ struct RecipesView: View {
                 } label: {
                     Label("delete", systemImage: "trash")
                 }
-
                 Button {
                     editingRecipe = recipe
                 } label: {
@@ -87,7 +85,6 @@ struct RecipesView: View {
                 } label: {
                     Label("edit_recipe", systemImage: "pencil")
                 }
-
                 Button {
                     store.togglePin(recipe)
                 } label: {
@@ -96,7 +93,6 @@ struct RecipesView: View {
                         systemImage: "pin"
                     )
                 }
-
                 Button(role: .destructive) {
                     store.delete(recipe)
                 } label: {

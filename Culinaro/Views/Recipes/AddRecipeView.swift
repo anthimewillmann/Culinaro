@@ -4,9 +4,9 @@ import PhotosUI
 /// Sheet view for creating or editing a recipe.
 ///
 /// Supports three input methods:
-/// - Manual entry via dynamic text field rows
-/// - AI generation from a title string
-/// - Image scanning via camera or photo library
+/// - Manual entry via dynamic text field rows.
+/// - AI generation from a title string.
+/// - Image scanning via camera or photo library.
 ///
 /// Text field rows auto-expand: typing in the last row adds a new empty row automatically.
 struct AddRecipeView: View {
@@ -30,12 +30,15 @@ struct AddRecipeView: View {
     @State private var showGallery: Bool = false
     @State private var selectedPhoto: PhotosPickerItem? = nil
 
+    /// Tracks which text field currently holds focus (by TextRow UUID).
+    @FocusState private var focusedField: UUID?
+
     init(editingRecipe: Recipe? = nil) {
         self.editingRecipe = editingRecipe
         if let recipe = editingRecipe {
-            _title = State(initialValue: recipe.title)
+            _title       = State(initialValue: recipe.title)
             _ingredients = State(initialValue: recipe.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")])
-            _steps = State(initialValue: recipe.steps.map { TextRow(text: $0) } + [TextRow(text: "")])
+            _steps       = State(initialValue: recipe.steps.map { TextRow(text: $0) } + [TextRow(text: "")])
             _tipsEnabled = State(initialValue: recipe.tipsEnabled)
             _generateEnabled = State(initialValue: recipe.wasGenerated)
         }
@@ -81,7 +84,6 @@ struct AddRecipeView: View {
                         } label: {
                             Label(NSLocalizedString("scanner_take_photo", comment: ""), systemImage: "camera")
                         }
-
                         Button {
                             showGallery = true
                         } label: {
@@ -109,8 +111,15 @@ struct AddRecipeView: View {
                                 index == 0
                                     ? NSLocalizedString("ingredients_header", comment: "")
                                     : NSLocalizedString("ingredient", comment: ""),
-                                text: rowBinding(in: $ingredients, id: row.id)
+                                text: Binding(
+                                    get: { row.text },
+                                    set: { ingredients[index].text = $0 }
+                                )
                             )
+                            .focused($focusedField, equals: row.id)
+                            .onChange(of: ingredients[index].text) { _, newValue in
+                                handleRowChange(in: &ingredients, index: index, newValue: newValue, id: row.id)
+                            }
                         }
                     }
                 }
@@ -128,9 +137,16 @@ struct AddRecipeView: View {
                                 index == 0
                                     ? NSLocalizedString("steps_header", comment: "")
                                     : NSLocalizedString("step", comment: ""),
-                                text: rowBinding(in: $steps, id: row.id),
+                                text: Binding(
+                                    get: { row.text },
+                                    set: { steps[index].text = $0 }
+                                ),
                                 axis: .vertical
                             )
+                            .focused($focusedField, equals: row.id)
+                            .onChange(of: steps[index].text) { _, newValue in
+                                handleRowChange(in: &steps, index: index, newValue: newValue, id: row.id)
+                            }
                         }
                     }
                 }
@@ -185,9 +201,9 @@ struct AddRecipeView: View {
         do {
             let parsed = try await aiService.scan(image: image)
             await MainActor.run {
-                title = parsed.title
+                title       = parsed.title
                 ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
-                steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
+                steps       = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
             }
         } catch {
             await MainActor.run { errorMessage = error.localizedDescription }
@@ -201,51 +217,59 @@ struct AddRecipeView: View {
     private func generateRecipeFromTitle() {
         let trimmed = title.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { generateEnabled = false; return }
-        isGenerating = true
         errorMessage = nil
-        ingredients = [TextRow(text: "")]
-        steps = [TextRow(text: "")]
+        ingredients  = [TextRow(text: "")]
+        steps        = [TextRow(text: "")]
+        isGenerating = true
 
         Task {
+            // Yield once so SwiftUI renders the ProgressView before the
+            // network call blocks the cooperative thread pool.
+            await Task.yield()
             do {
                 let parsed = try await aiService.generate(from: trimmed)
                 await MainActor.run {
-                    ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
-                    steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
+                    ingredients  = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
+                    steps        = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
                     isGenerating = false
                 }
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
-                    isGenerating = false
+                    errorMessage    = error.localizedDescription
+                    isGenerating    = false
                     generateEnabled = false
                 }
             }
         }
     }
 
-    // MARK: – Row Binding
+    // MARK: – Row Handling
 
-    /// Creates a two-way binding for a specific `TextRow` identified by its UUID.
-    /// Automatically appends a new empty row when the user starts typing in the last row,
-    /// and removes fully empty rows (except the trailing placeholder).
-    private func rowBinding(in array: Binding<[TextRow]>, id: UUID) -> Binding<String> {
-        Binding<String>(
-            get: { array.wrappedValue.first(where: { $0.id == id })?.text ?? "" },
-            set: { newValue in
-                guard let index = array.wrappedValue.firstIndex(where: { $0.id == id }) else { return }
-                array.wrappedValue[index].text = newValue
+    /// Handles text changes in a dynamic row list.
+    /// Appends a new empty row when the user types in the last row.
+    /// Cleans up fully empty intermediate rows without touching the focused field,
+    /// preserving focus across array mutations.
+    private func handleRowChange(in array: inout [TextRow], index: Int, newValue: String, id: UUID) {
+        // Append a new row when the user starts typing in the last row
+        if index == array.count - 1 && !newValue.isEmpty {
+            array.append(TextRow(text: ""))
+        }
 
-                if index == array.wrappedValue.count - 1 && !newValue.isEmpty {
-                    array.wrappedValue.append(TextRow(text: ""))
-                }
+        // Remove empty rows that are not the currently focused field and not the trailing placeholder
+        let lastIndex = array.count - 1
+        array = array.enumerated().filter { i, row in
+            i == lastIndex                                              // always keep trailing placeholder
+            || row.id == id                                            // always keep the focused row
+            || !row.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty  // keep non-empty rows
+        }.map(\.element)
 
-                let nonEmpty = array.wrappedValue.filter {
-                    !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                }
-                array.wrappedValue = nonEmpty + [TextRow(text: "")]
-            }
-        )
+        // Ensure there is always a trailing empty placeholder
+        if array.last?.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
+            array.append(TextRow(text: ""))
+        }
+
+        // Restore focus explicitly — SwiftUI may lose it during array mutation
+        focusedField = id
     }
 
     // MARK: – Save
@@ -261,10 +285,10 @@ struct AddRecipeView: View {
 
         store.save(
             Recipe(
-                title: title,
-                ingredients: cleanIngredients,
-                steps: cleanSteps,
-                tipsEnabled: tipsEnabled,
+                title:        title,
+                ingredients:  cleanIngredients,
+                steps:        cleanSteps,
+                tipsEnabled:  tipsEnabled,
                 wasGenerated: generateEnabled
             ),
             editing: editingRecipe

@@ -5,6 +5,7 @@ import UIKit
 /// Presents the device camera and returns the captured image via a callback closure.
 /// Dismisses the picker automatically after capture or cancellation.
 struct CameraPickerView: UIViewControllerRepresentable {
+
     /// Called with the captured image when the user takes a photo.
     var onImage: (UIImage) -> Void
 
@@ -21,7 +22,7 @@ struct CameraPickerView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 
-    // MARK: – Coordinator
+    // MARK: - Coordinator
 
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onImage: (UIImage) -> Void

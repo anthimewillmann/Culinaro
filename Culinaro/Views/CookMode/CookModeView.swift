@@ -7,7 +7,7 @@ import SwiftUI
 /// - `.step(n)` – Shows step `n` with an optional AI-generated tip.
 ///
 /// Tips are loaded asynchronously and cached per session to avoid redundant API calls.
-/// `WaveAnimationView` runs as an animated background during cooking steps.
+/// `CookModeAnimationView` runs as an animated background during cooking steps.
 struct CookModeView: View {
     let recipe: Recipe
 
@@ -23,6 +23,9 @@ struct CookModeView: View {
 
     /// In-session cache mapping step index → generated tip string.
     @State private var tipsCache: [Int: String] = [:]
+
+    /// Tracks the current tip-loading task so it can be cancelled on navigation.
+    @State private var tipTask: Task<Void, Never>? = nil
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -68,17 +71,25 @@ struct CookModeView: View {
                                     .fontWeight(.semibold)
                                     .fixedSize(horizontal: false, vertical: true)
 
-                                if let tip = currentTip {
-                                    Text(tip)
-                                        .font(.body)
-                                        .foregroundStyle(.secondary)
-                                        .padding(.top, 8)
-                                        .transition(.opacity)
-                                } else if isGeneratingTip {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                        .padding(.top, 8)
+                                // Tip and loading indicator animate independently
+                                // of the phase transition to prevent flying/disappearing.
+                                Group {
+                                    if let tip = currentTip {
+                                        Text(tip)
+                                            .font(.body)
+                                            .foregroundStyle(.secondary)
+                                            .padding(.top, 8)
+                                            .transition(.opacity)
+                                    } else if isGeneratingTip {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                            .padding(.top, 8)
+                                            .transition(.opacity)
+                                    }
                                 }
+                                .animation(.easeInOut(duration: 0.3), value: currentTip)
+                                .animation(.easeInOut(duration: 0.3), value: isGeneratingTip)
+
                             } else {
                                 // Final "enjoy" screen
                                 Text(NSLocalizedString("cook_mode_enjoy", comment: ""))
@@ -88,18 +99,6 @@ struct CookModeView: View {
                             Spacer(minLength: 40)
                         }
                         .padding()
-                    }
-                    .onChange(of: index) { _, newIndex in
-                        if newIndex < recipe.steps.count {
-                            Task { await loadTip(for: newIndex) }
-                        } else {
-                            currentTip = nil
-                        }
-                    }
-                    .onAppear {
-                        if index < recipe.steps.count {
-                            Task { await loadTip(for: index) }
-                        }
                     }
                 }
             }
@@ -126,26 +125,45 @@ struct CookModeView: View {
                 }
             }
         }
-        .animation(.easeInOut, value: phase)
+        // MARK: – Tip loading on phase change
+        .onChange(of: phase) { _, newPhase in
+            // Cancel any in-flight tip request before starting a new one
+            tipTask?.cancel()
+            tipTask = nil
+            currentTip = nil
+            isGeneratingTip = false
+
+            if case .step(let index) = newPhase, index < recipe.steps.count {
+                tipTask = Task { await loadTip(for: index) }
+            }
+        }
+        .onAppear {
+            // Load tip if the view appears directly on a step (edge case)
+            if case .step(let index) = phase, index < recipe.steps.count {
+                tipTask = Task { await loadTip(for: index) }
+            }
+        }
     }
 
-    // MARK: – Tip Loading
+    // MARK: - Tip Loading
 
     /// Loads the AI-generated tip for the given step index.
     /// Returns immediately if tips are disabled or a cached tip exists.
+    /// Checks for task cancellation before writing back to state.
     private func loadTip(for index: Int) async {
         guard recipe.tipsEnabled else { return }
 
         if let cached = tipsCache[index] {
+            guard !Task.isCancelled else { return }
             withAnimation { currentTip = cached }
             return
         }
 
-        currentTip = nil
         isGeneratingTip = true
 
         do {
             let tip = try await aiService.cookingTip(for: recipe.steps[index])
+            guard !Task.isCancelled else { return }
             await MainActor.run {
                 tipsCache[index] = tip
                 withAnimation {
@@ -154,11 +172,12 @@ struct CookModeView: View {
                 }
             }
         } catch {
+            guard !Task.isCancelled else { return }
             await MainActor.run { isGeneratingTip = false }
         }
     }
 
-    // MARK: – Navigation
+    // MARK: - Navigation
 
     /// Navigates backwards: step → previous step → ingredient list → dismiss.
     private func goBack() {

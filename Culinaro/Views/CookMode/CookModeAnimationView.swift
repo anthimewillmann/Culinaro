@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - CookModeAnimationView
-
 /// A looping, multi-phase full-screen animation used as the cook-mode background.
 ///
 /// **Animation sequence (one full loop ~60 s):**
@@ -18,7 +16,7 @@ import SwiftUI
 /// 11. Second grey panel rises; everything resets for the next loop.
 struct CookModeAnimationView: View {
 
-    // MARK: State
+    // MARK: - State
 
     @State private var grayRise: CGFloat = 0
     @State private var waveRise: CGFloat = 0
@@ -71,7 +69,7 @@ struct CookModeAnimationView: View {
     @State private var grayRise2: CGFloat = 0
     @State private var herbsDropOpacity2: CGFloat = 1
 
-    // MARK: Constants
+    // MARK: - Constants
 
     let finalBubbleSize: CGFloat = 160
     let grayColor = Color(red: 0.9, green: 0.9, blue: 0.9)
@@ -87,7 +85,7 @@ struct CookModeAnimationView: View {
         )
     }
 
-    // MARK: Body
+    // MARK: - Body
 
     var body: some View {
         ZStack {
@@ -204,7 +202,7 @@ struct CookModeAnimationView: View {
                     beigeHoleMask(geo: geo)
                 }
 
-                // ── Main tomato ────────────────────────────────────────
+                // ── Main tomato ────────────────────────────────────────────
                 ZStack {
                     Circle().fill(Color.red)
                         .frame(width: finalBubbleScale, height: finalBubbleScale)
@@ -218,7 +216,7 @@ struct CookModeAnimationView: View {
                 .scaleEffect(tomatoZoomScale)
                 .offset(tomatoOffset)
 
-                // ── Small tomato 2 ─────────────────────────────────────
+                // ── Small tomato 2 ─────────────────────────────────────────
                 ZStack {
                     Circle().fill(Color.red)
                         .frame(width: finalBubbleSize * smallTomatoRatio,
@@ -230,7 +228,7 @@ struct CookModeAnimationView: View {
                 .offset(tomato2Offset)
                 .position(x: geo.size.width * 0.18, y: geo.size.height * 0.78)
 
-                // ── Small tomato 3 ─────────────────────────────────────
+                // ── Small tomato 3 ─────────────────────────────────────────
                 ZStack {
                     Circle().fill(Color.red)
                         .frame(width: finalBubbleSize * smallTomatoRatio,
@@ -260,7 +258,7 @@ struct CookModeAnimationView: View {
             .scaleEffect(sceneZoom)
             .offset(sceneOffset)
 
-            // ── Soup ingredients scene ─────────────────────────────────
+            // ── Soup ingredients scene ─────────────────────────────────────
             if backgroundIsBeige {
                 soupScene(geo: geo)
                     .scaleEffect(soupSceneZoom)
@@ -390,7 +388,7 @@ struct CookModeAnimationView: View {
                 }
 
                 // Step 7: Black-hole mask contracts to tomato size
-                try? await Task.sleep(for: .seconds(4.0))
+                try? await Task.sleep(for: .seconds(3.5))
                 blackHoleScale = max(geo.size.width, geo.size.height) * 2.5
                 withAnimation(.easeIn(duration: 0.2)) { blackOverlayOpacity = 1 }
                 withAnimation(.easeInOut(duration: 3.5)) { blackHoleScale = finalBubbleSize - 10 }
@@ -401,7 +399,7 @@ struct CookModeAnimationView: View {
                 withAnimation(.easeInOut(duration: 2.5)) { finalBubbleScale = finalBubbleSize * 1.5 }
 
                 // Step 9: Beige background revealed via hole-mask
-                try? await Task.sleep(for: .seconds(2.5))
+                try? await Task.sleep(for: .seconds(2.0))
                 backgroundIsBeige = true
                 hideWaveAndGray   = true
                 withAnimation(.easeIn(duration: 0.3).delay(3.5)) { finalBubbleWhiteOpacity = 0 }
@@ -449,7 +447,7 @@ struct CookModeAnimationView: View {
                 }
 
                 // Step 12: Soup ingredients scene fades in
-                try? await Task.sleep(for: .seconds(2.5))
+                try? await Task.sleep(for: .seconds(3.0))
                 withAnimation(.easeIn(duration: 2.0)) { soupIngredientsOpacity = 1 }
 
                 // Step 13: Zoom into cucumber slice
@@ -490,7 +488,7 @@ struct CookModeAnimationView: View {
                 try? await Task.sleep(for: .seconds(4.0))
                 withAnimation(.easeIn(duration: 1.8)) { herbsDropOffset = geo.size.height * 0.6 }
 
-                // ── Loop reset ─────────────────────────────────────────
+                // ── Loop reset ─────────────────────────────────────────────
                 try? await Task.sleep(for: .seconds(1.8))
                 resetState()
 

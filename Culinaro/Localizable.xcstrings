@@ -1,0 +1,1799 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "ai_generate_button" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إنشاء" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Genera" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Generovat" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Generer" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Generieren" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Δημιουργία" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Generate" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Generar" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Generar" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Luo" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Générer" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "צור" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "बनाएं" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Generiraj" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Generálás" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Buat" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Genera" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "生成" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "생성" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Jana" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Generer" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Genereren" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Generuj" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Gerar" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Gerar" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Generează" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Создать" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Generovať" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Generera" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "สร้าง" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Oluştur" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Створити" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tạo" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "生成" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "生成" } }
+      }
+    },
+    "back" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "رجوع" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Enrere" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Zpět" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Tilbage" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zurück" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Πίσω" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Back" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atrás" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Atrás" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Takaisin" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Retour" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "חזור" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "वापस" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Natrag" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Vissza" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Kembali" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Indietro" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "戻る" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "뒤로" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Kembali" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Tilbake" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Terug" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wstecz" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Voltar" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Voltar" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Înapoi" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Назад" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Späť" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Tillbaka" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "กลับ" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Geri" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Назад" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Quay lại" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "返回" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "返回" } }
+      }
+    },
+    "cook_mode_enjoy" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "بالهناء والشفاء!" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Bon profit!" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Dobrou chuť!" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Velbekomme!" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Genießen!" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Καλή όρεξη!" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enjoy!" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "¡Buen provecho!" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "¡Buen provecho!" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Hyvää ruokahalua!" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Bon appétit !" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "!בתיאבון" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "आनंद लें!" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Dobar tek!" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Jó étvágyat!" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Selamat menikmati!" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Buon appetito!" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "召し上がれ！" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "맛있게 드세요!" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Selamat menjamu selera!" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Smakelig måltid!" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Smakelijk!" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Smacznego!" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Bom apetite!" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Bom apetite!" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Poftă bună!" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Приятного аппетита!" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Dobrú chuť!" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Smaklig måltid!" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "อร่อยนะ!" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Afiyet olsun!" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Смачного!" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chúc ngon miệng!" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请享用！" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請享用！" } }
+      }
+    },
+    "delete" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "حذف" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Elimina" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Smazat" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Slet" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Löschen" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Διαγραφή" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Poista" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Supprimer" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מחק" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "हटाएं" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Izbriši" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Törlés" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Hapus" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Elimina" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "削除" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "삭제" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Padam" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Slett" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Verwijderen" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usuń" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Excluir" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Șterge" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Vymazať" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Radera" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ลบ" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Sil" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Видалити" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Xóa" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "刪除" } }
+      }
+    },
+    "edit_recipe" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعديل" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Edita" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Upravit" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Rediger" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Bearbeiten" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Επεξεργασία" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Muokkaa" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Modifier" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "ערוך" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "संपादित करें" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Uredi" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Szerkesztés" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Modifica" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "編集" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "편집" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Rediger" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Bewerken" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Edytuj" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Editează" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Редактировать" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Upraviť" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Redigera" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "แก้ไข" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Düzenle" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Редагувати" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chỉnh sửa" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "编辑" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯" } }
+      }
+    },
+    "error_invalid_image" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذّر معالجة الصورة." } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "No s'ha pogut processar la imatge." } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Obrázek nelze zpracovat." } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Billedet kunne ikke behandles." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Das Bild konnte nicht verarbeitet werden." } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Δεν ήταν δυνατή η επεξεργασία της εικόνας." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The image could not be processed." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "La imagen no se pudo procesar." } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "La imagen no se pudo procesar." } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Kuvaa ei voitu käsitellä." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Impossible de traiter l'image." } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "לא ניתן היה לעבד את התמונה." } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "छवि संसाधित नहीं की जा सकी।" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Slika nije mogla biti obrađena." } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "A kép nem dolgozható fel." } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Gambar tidak dapat diproses." } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Impossibile elaborare l'immagine." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "画像を処理できませんでした。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이미지를 처리할 수 없습니다." } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Imej tidak dapat diproses." } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Bildet kunne ikke behandles." } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "De afbeelding kon niet worden verwerkt." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie można przetworzyć obrazu." } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "A imagem não pôde ser processada." } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível processar a imagem." } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Imaginea nu a putut fi procesată." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось обработать изображение." } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Obrázok sa nepodarilo spracovať." } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Bilden kunde inte bearbetas." } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ไม่สามารถประมวลผลรูปภาพได้" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Görsel işlenemedi." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Зображення не вдалося обробити." } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Không thể xử lý hình ảnh." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法处理图像。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法處理圖像。" } }
+      }
+    },
+    "error_no_text_found" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لم يتم العثور على نص في الصورة." } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "No s'ha trobat cap text a la imatge." } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "V obrázku nebyl nalezen žádný text." } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Ingen tekst fundet i billedet." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Kein Text im Bild gefunden." } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Δεν βρέθηκε κείμενο στην εικόνα." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No text found in image." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se encontró texto en la imagen." } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "No se encontró texto en la imagen." } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Kuvasta ei löytynyt tekstiä." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Aucun texte trouvé dans l'image." } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "לא נמצא טקסט בתמונה." } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "छवि में कोई पाठ नहीं मिला।" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "U slici nije pronađen tekst." } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Nem található szöveg a képen." } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Tidak ada teks ditemukan dalam gambar." } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Nessun testo trovato nell'immagine." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "画像にテキストが見つかりませんでした。" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이미지에서 텍스트를 찾을 수 없습니다." } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Tiada teks ditemui dalam imej." } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Ingen tekst funnet i bildet." } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Geen tekst gevonden in afbeelding." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie znaleziono tekstu na obrazie." } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Nenhum texto encontrado na imagem." } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Nenhum texto encontrado na imagem." } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Nu s-a găsit text în imagine." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Текст в изображении не найден." } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "V obrázku nebol nájdený žiadny text." } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Ingen text hittades i bilden." } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ไม่พบข้อความในรูปภาพ" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Görselde metin bulunamadı." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "У зображенні не знайдено тексту." } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Không tìm thấy văn bản trong hình ảnh." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "图像中未找到文本。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "圖像中未找到文字。" } }
+      }
+    },
+    "ingredient" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مكوّن" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Přísada" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediens" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zutat" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Υλικό" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Ainesosa" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ingrédient" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מרכיב" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "सामग्री" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Sastojak" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Hozzávaló" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Bahan" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "材料" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "재료" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Bahan" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediens" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Składnik" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ингредиент" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediencia" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediens" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ส่วนผสม" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Malzeme" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Інгредієнт" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Nguyên liệu" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "食材" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "食材" } }
+      }
+    },
+    "ingredients" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المكوّنات" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Ingredients" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Přísady" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Ingredienser" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zutaten" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Υλικά" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ingredients" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingredientes" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Ingredientes" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Ainesosat" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ingrédients" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מרכיבים" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "सामग्री" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Sastojci" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Hozzávalók" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Bahan-bahan" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ingredienti" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "材料一覧" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "재료 목록" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Bahan-bahan" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Ingredienser" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediënten" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Składniki" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Ingredientes" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ingredientes" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ингредиенты" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediencie" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Ingredienser" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ส่วนผสมทั้งหมด" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Malzemeler" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Інгредієнти" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Nguyên liệu" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "食材列表" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "食材列表" } }
+      }
+    },
+    "ingredients_count" : {
+      "localizations" : {
+        "ar" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "مكوّن واحد" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d مكوّنات" } },
+              "zero" : { "stringUnit" : { "state" : "translated", "value" : "لا مكوّنات" } }
+            }
+          }
+        },
+        "ca" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredient" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredients" } }
+            }
+          }
+        },
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d přísada" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d přísady" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d přísad" } }
+            }
+          }
+        },
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediens" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredienser" } }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d Zutat" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d Zutaten" } }
+            }
+          }
+        },
+        "el" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d υλικό" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d υλικά" } }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d Ingredient" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d Ingredients" } }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediente" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredientes" } }
+            }
+          }
+        },
+        "es-MX" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediente" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredientes" } }
+            }
+          }
+        },
+        "fi" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ainesosa" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ainesosaa" } }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrédient" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrédients" } }
+            }
+          }
+        },
+        "he" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "מרכיב אחד" } },
+              "two" : { "stringUnit" : { "state" : "translated", "value" : "שני מרכיבים" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d מרכיבים" } }
+            }
+          }
+        },
+        "hi" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d सामग्री" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d सामग्रियाँ" } }
+            }
+          }
+        },
+        "hr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d sastojak" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d sastojka" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d sastojaka" } }
+            }
+          }
+        },
+        "hu" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d hozzávaló" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d hozzávaló" } }
+            }
+          }
+        },
+        "id" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d bahan" } }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediente" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredienti" } }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 種類の材料" } }
+            }
+          }
+        },
+        "ko" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "재료 %d개" } }
+            }
+          }
+        },
+        "ms" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d bahan" } }
+            }
+          }
+        },
+        "nb" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediens" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredienser" } }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredient" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediënten" } }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d składnik" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d składniki" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d składników" } }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediente" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredientes" } }
+            }
+          }
+        },
+        "pt-PT" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediente" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredientes" } }
+            }
+          }
+        },
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredient" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediente" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d de ingrediente" } }
+            }
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ингредиент" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d ингредиента" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ингредиентов" } }
+            }
+          }
+        },
+        "sk" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediencia" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediencie" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediencií" } }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ingrediens" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ingredienser" } }
+            }
+          }
+        },
+        "th" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ส่วนผสม" } }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d malzeme" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d malzeme" } }
+            }
+          }
+        },
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d інгредієнт" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d інгредієнти" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d інгредієнтів" } }
+            }
+          }
+        },
+        "vi" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d nguyên liệu" } }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 种食材" } }
+            }
+          }
+        },
+        "zh-Hant" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 種食材" } }
+            }
+          }
+        }
+      }
+    },
+    "ingredients_header" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مكوّن" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Přísada" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediens" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Zutat" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Υλικό" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Ainesosa" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Ingrédient" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מרכיב" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "सामग्री" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Sastojak" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Hozzávaló" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Bahan" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "材料" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "재료" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Bahan" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediens" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Składnik" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediente" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Ingredient" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ингредиент" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediencia" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Ingrediens" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ส่วนผสม" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Malzeme" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Інгредієнт" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Nguyên liệu" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "食材" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "食材" } }
+      }
+    },
+    "nav_title_edit" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعديل" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Edita" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Upravit" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Rediger" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Editieren" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Επεξεργασία" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Muokkaa" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Modifier" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "ערוך" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "संपादित करें" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Uredi" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Szerkesztés" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Modifica" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "編集" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "편집" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Edit" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Rediger" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Bewerken" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Edytuj" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Editar" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Editează" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Редактировать" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Upraviť" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Redigera" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "แก้ไข" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Düzenle" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Редагувати" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chỉnh sửa" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "编辑" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "編輯" } }
+      }
+    },
+    "nav_title_new" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "وصفة جديدة" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Nova recepta" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Nový recept" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Ny opskrift" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Neues Rezept" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Νέα συνταγή" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New Recipe" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nueva receta" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Nueva receta" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Uusi resepti" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Nouvelle recette" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מתכון חדש" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "नई रेसिपी" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Novi recept" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Új recept" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Resep Baru" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Nuova ricetta" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "新しいレシピ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "새 레시피" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Resipi Baru" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Ny oppskrift" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Nieuw recept" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nowy przepis" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Nova receita" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Nova receita" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Rețetă nouă" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Новый рецепт" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Nový recept" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Nytt recept" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "สูตรอาหารใหม่" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Yeni Tarif" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Новий рецепт" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Công thức mới" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "新食谱" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "新食譜" } }
+      }
+    },
+    "of_steps" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "من %d" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "de %d" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "z %d" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "af %d" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "von %d" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "από %d" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "of %d" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "de %d" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "de %d" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "/ %d" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "sur %d" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מתוך %d" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "/ %d" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "od %d" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "/ %d" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "dari %d" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "di %d" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "/ %d" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "/ %d" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "daripada %d" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "av %d" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "van %d" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "z %d" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "de %d" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "de %d" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "din %d" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "из %d" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "z %d" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "av %d" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "จาก %d" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "/ %d" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "з %d" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "/ %d" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "共 %d" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "共 %d" } }
+      }
+    },
+    "pin" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تثبيت" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Fixa" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Připnout" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Fastgør" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Fixieren" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Καρφίτσωμα" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pin" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Fijar" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Fijar" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Kiinnitä" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Épingler" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "נעץ" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "पिन करें" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Prikvači" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Rögzítés" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Sematkan" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Fissa" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "固定" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "고정" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Semat" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Fest" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Vastmaken" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Przypnij" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Fixar" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Fixar" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Fixează" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Закрепить" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Pripnúť" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Fäst" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ปักหมุด" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Sabitle" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Закріпити" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Ghim" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "置顶" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "置頂" } }
+      }
+    },
+    "recipe_title_placeholder" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "العنوان" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Títol" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Název" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Titel" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Titel" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Τίτλος" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Title" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Título" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Título" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Otsikko" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Titre" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "כותרת" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "शीर्षक" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Naslov" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Cím" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Judul" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Titolo" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "タイトル" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "제목" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Tajuk" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Tittel" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Titel" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Tytuł" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Título" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Título" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Titlu" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Название" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Názov" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Titel" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ชื่อ" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Başlık" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Назва" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Tiêu đề" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "标题" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "標題" } }
+      }
+    },
+    "recipes" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الوصفات" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Receptes" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Recepty" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Opskrifter" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Rezepte" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Συνταγές" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recipes" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Recetas" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Recetas" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Reseptit" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Recettes" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מתכונים" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "रेसिपी" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Recepti" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Receptek" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Resep" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Ricette" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "レシピ" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "레시피" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Resipi" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Oppskrifter" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Recepten" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Przepisy" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Receitas" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Receitas" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Rețete" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Рецепты" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Recepty" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Recept" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "สูตรอาหาร" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Tarifler" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Рецепти" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Công thức" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "食谱" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "食譜" } }
+      }
+    },
+    "recipes_count" : {
+      "localizations" : {
+        "ar" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "وصفة واحدة" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d وصفات" } },
+              "zero" : { "stringUnit" : { "state" : "translated", "value" : "لا وصفات" } }
+            }
+          }
+        },
+        "ca" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recepta" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d receptes" } }
+            }
+          }
+        },
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d recepty" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d receptů" } }
+            }
+          }
+        },
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d opskrift" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d opskrifter" } }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d Rezept" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d Rezepte" } }
+            }
+          }
+        },
+        "el" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d συνταγή" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d συνταγές" } }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d Recipe" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d Recipes" } }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d receta" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d recetas" } }
+            }
+          }
+        },
+        "es-MX" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d receta" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d recetas" } }
+            }
+          }
+        },
+        "fi" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d resepti" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d reseptiä" } }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recette" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d recettes" } }
+            }
+          }
+        },
+        "he" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "מתכון אחד" } },
+              "two" : { "stringUnit" : { "state" : "translated", "value" : "שני מתכונים" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d מתכונים" } }
+            }
+          }
+        },
+        "hi" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d रेसिपी" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d रेसिपी" } }
+            }
+          }
+        },
+        "hr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d recepta" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d recepata" } }
+            }
+          }
+        },
+        "hu" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } }
+            }
+          }
+        },
+        "id" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d resep" } }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d ricetta" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ricette" } }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d レシピ" } }
+            }
+          }
+        },
+        "ko" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "레시피 %d개" } }
+            }
+          }
+        },
+        "ms" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d resipi" } }
+            }
+          }
+        },
+        "nb" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d oppskrift" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d oppskrifter" } }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d recepten" } }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d przepis" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d przepisy" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d przepisów" } }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d receita" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d receitas" } }
+            }
+          }
+        },
+        "pt-PT" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d receita" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d receitas" } }
+            }
+          }
+        },
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d rețetă" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d rețete" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d de rețete" } }
+            }
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d рецепт" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d рецепта" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d рецептов" } }
+            }
+          }
+        },
+        "sk" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d recepty" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d receptov" } }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d recept" } }
+            }
+          }
+        },
+        "th" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d สูตร" } }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d tarif" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d tarif" } }
+            }
+          }
+        },
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d рецепт" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d рецепти" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d рецептів" } }
+            }
+          }
+        },
+        "vi" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d công thức" } }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 个食谱" } }
+            }
+          }
+        },
+        "zh-Hant" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 個食譜" } }
+            }
+          }
+        }
+      }
+    },
+    "scanner_add_photo" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مسح ضوئي ..." } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Escaneja ..." } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Skenovat ..." } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Scan ..." } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Scannen ..." } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Σάρωση ..." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scan ..." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Escanear ..." } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Escanear ..." } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Skannaa ..." } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Scanner ..." } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "סרוק ..." } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "स्कैन करें ..." } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Skeniraj ..." } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Szkennelés ..." } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Pindai ..." } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Scansiona ..." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "スキャン ..." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "스캔 ..." } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Imbas ..." } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Skann ..." } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Scannen ..." } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Skanuj ..." } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Digitalizar ..." } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Digitalizar ..." } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Scanează ..." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сканировать ..." } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Skenovať ..." } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Skanna ..." } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "สแกน ..." } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Tara ..." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Сканувати ..." } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Quét ..." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "扫描 ..." } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "掃描 ..." } }
+      }
+    },
+    "scanner_from_gallery" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "من المعرض" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Des de la galeria" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Z galerie" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Fra galleri" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Aus Galerie" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Από τη συλλογή" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "From Gallery" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Desde la galería" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Desde la galería" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Galleriasta" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Depuis la galerie" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "מהגלריה" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "गैलरी से" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Iz galerije" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Galériából" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Dari Galeri" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Dalla galleria" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ギャラリーから" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "갤러리에서" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Dari Galeri" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Fra galleri" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Uit galerij" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Z galerii" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Da galeria" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Da galeria" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Din galerie" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Из галереи" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Z galérie" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Från galleri" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "จากแกลเลอรี่" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Galeriden" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "З галереї" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Từ thư viện" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "从相册选择" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "從相簿選取" } }
+      }
+    },
+    "scanner_take_photo" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التقاط صورة" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Fes una foto" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Vyfotit" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Tag foto" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Foto aufnehmen" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Λήψη φωτογραφίας" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Take Photo" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tomar foto" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Tomar foto" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Ota kuva" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Prendre une photo" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "צלם תמונה" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "फ़ोटो लें" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Fotografiraj" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Fénykép készítése" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Ambil Foto" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Scatta foto" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "写真を撮る" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사진 찍기" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Ambil Foto" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Ta bilde" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Foto nemen" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Zrób zdjęcie" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Tirar foto" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Tirar foto" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Fă o poză" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сделать фото" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Odfotiť" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Ta foto" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ถ่ายรูป" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Fotoğraf Çek" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Зробити фото" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Chụp ảnh" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "拍照" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "拍照" } }
+      }
+    },
+    "step" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "خطوة" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Pas" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Krok" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Trin" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schritt" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Βήμα" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Step" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Paso" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Paso" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Vaihe" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Étape" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "שלב" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "चरण" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Korak" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Lépés" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Langkah" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Passaggio" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "手順" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "단계" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Langkah" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Trinn" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Stap" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Krok" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Passo" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Passo" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Pas" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Шаг" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Krok" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Steg" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ขั้นตอน" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Adım" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Крок" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Bước" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "步骤" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "步驟" } }
+      }
+    },
+    "step_number" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "خطوة %d" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Pas %d" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Krok %d" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Trin %d" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schritt %d" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Βήμα %d" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Step %d" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Paso %d" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Paso %d" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Vaihe %d" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Étape %d" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "שלב %d" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "चरण %d" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Korak %d" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "%d. lépés" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Langkah %d" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Passaggio %d" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "手順 %d" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%d단계" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Langkah %d" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Trinn %d" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Stap %d" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Krok %d" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Passo %d" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Passo %d" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Pasul %d" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Шаг %d" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Krok %d" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Steg %d" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ขั้นตอนที่ %d" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "%d. Adım" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Крок %d" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Bước %d" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "第 %d 步" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "第 %d 步" } }
+      }
+    },
+    "steps_count" : {
+      "localizations" : {
+        "ar" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "خطوة واحدة" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d خطوات" } },
+              "zero" : { "stringUnit" : { "state" : "translated", "value" : "لا خطوات" } }
+            }
+          }
+        },
+        "ca" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d pas" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d passos" } }
+            }
+          }
+        },
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d krok" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d kroky" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d kroků" } }
+            }
+          }
+        },
+        "da" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d trin" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d trin" } }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d Schritt" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d Schritte" } }
+            }
+          }
+        },
+        "el" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d βήμα" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d βήματα" } }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d Step" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d Steps" } }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d paso" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d pasos" } }
+            }
+          }
+        },
+        "es-MX" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d paso" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d pasos" } }
+            }
+          }
+        },
+        "fi" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d vaihe" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d vaihetta" } }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d étape" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d étapes" } }
+            }
+          }
+        },
+        "he" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "שלב אחד" } },
+              "two" : { "stringUnit" : { "state" : "translated", "value" : "שני שלבים" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d שלבים" } }
+            }
+          }
+        },
+        "hi" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d चरण" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d चरण" } }
+            }
+          }
+        },
+        "hr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d korak" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d koraka" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d koraka" } }
+            }
+          }
+        },
+        "hu" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d lépés" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d lépés" } }
+            }
+          }
+        },
+        "id" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d langkah" } }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d passaggio" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d passaggi" } }
+            }
+          }
+        },
+        "ja" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 手順" } }
+            }
+          }
+        },
+        "ko" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d단계" } }
+            }
+          }
+        },
+        "ms" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d langkah" } }
+            }
+          }
+        },
+        "nb" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d trinn" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d trinn" } }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d stap" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d stappen" } }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d krok" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d kroki" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d kroków" } }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d passo" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d passos" } }
+            }
+          }
+        },
+        "pt-PT" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d passo" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d passos" } }
+            }
+          }
+        },
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d pas" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d pași" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d de pași" } }
+            }
+          }
+        },
+        "ru" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d шаг" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d шага" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d шагов" } }
+            }
+          }
+        },
+        "sk" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d krok" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d kroky" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d krokov" } }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d steg" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d steg" } }
+            }
+          }
+        },
+        "th" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d ขั้นตอน" } }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d adım" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d adım" } }
+            }
+          }
+        },
+        "uk" : {
+          "variations" : {
+            "plural" : {
+              "one" : { "stringUnit" : { "state" : "translated", "value" : "%d крок" } },
+              "few" : { "stringUnit" : { "state" : "translated", "value" : "%d кроки" } },
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d кроків" } }
+            }
+          }
+        },
+        "vi" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d bước" } }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 个步骤" } }
+            }
+          }
+        },
+        "zh-Hant" : {
+          "variations" : {
+            "plural" : {
+              "other" : { "stringUnit" : { "state" : "translated", "value" : "%d 個步驟" } }
+            }
+          }
+        }
+      }
+    },
+    "steps_header" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "خطوة" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Pas" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Krok" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Trin" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Schritt" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Βήμα" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Step" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Paso" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Paso" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Vaihe" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Étape" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "שלב" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "चरण" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Korak" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Lépés" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Langkah" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Passaggio" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "手順" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "단계" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Langkah" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Trinn" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Stap" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Krok" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Passo" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Passo" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Pas" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Шаг" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Krok" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Steg" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "ขั้นตอน" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Adım" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Крок" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Bước" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "步骤" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "步驟" } }
+      }
+    },
+    "tips_toggle_label" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "نصائح" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Consells" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Tipy" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Tips" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Tipps" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Συμβουλές" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tips" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Consejos" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Consejos" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Vinkit" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Astuces" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "טיפים" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "सुझाव" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Savjeti" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Tippek" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Tips" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Consigli" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ヒント" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "팁" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Tips" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Tips" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Tips" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wskazówki" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Dicas" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Dicas" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Sfaturi" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Советы" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Tipy" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Tips" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "เคล็ดลับ" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "İpuçları" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Поради" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Mẹo" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "技巧" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "技巧" } }
+      }
+    },
+    "unpin" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إلغاء التثبيت" } },
+        "ca" : { "stringUnit" : { "state" : "translated", "value" : "Desfixa" } },
+        "cs" : { "stringUnit" : { "state" : "translated", "value" : "Odepnout" } },
+        "da" : { "stringUnit" : { "state" : "translated", "value" : "Frigør" } },
+        "de" : { "stringUnit" : { "state" : "translated", "value" : "Lösen" } },
+        "el" : { "stringUnit" : { "state" : "translated", "value" : "Ξεκαρφίτσωμα" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unpin" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Desfijar" } },
+        "es-MX" : { "stringUnit" : { "state" : "translated", "value" : "Desfijar" } },
+        "fi" : { "stringUnit" : { "state" : "translated", "value" : "Irrota" } },
+        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Désépingler" } },
+        "he" : { "stringUnit" : { "state" : "translated", "value" : "שחרר" } },
+        "hi" : { "stringUnit" : { "state" : "translated", "value" : "अनपिन करें" } },
+        "hr" : { "stringUnit" : { "state" : "translated", "value" : "Odkvači" } },
+        "hu" : { "stringUnit" : { "state" : "translated", "value" : "Rögzítés megszüntetése" } },
+        "id" : { "stringUnit" : { "state" : "translated", "value" : "Lepas sematan" } },
+        "it" : { "stringUnit" : { "state" : "translated", "value" : "Rimuovi" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "固定解除" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "고정 해제" } },
+        "ms" : { "stringUnit" : { "state" : "translated", "value" : "Nyahsemat" } },
+        "nb" : { "stringUnit" : { "state" : "translated", "value" : "Løsne" } },
+        "nl" : { "stringUnit" : { "state" : "translated", "value" : "Losmaken" } },
+        "pl" : { "stringUnit" : { "state" : "translated", "value" : "Odepnij" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Desafixar" } },
+        "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Desafixar" } },
+        "ro" : { "stringUnit" : { "state" : "translated", "value" : "Dezfixează" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открепить" } },
+        "sk" : { "stringUnit" : { "state" : "translated", "value" : "Odopnúť" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Lossa" } },
+        "th" : { "stringUnit" : { "state" : "translated", "value" : "เลิกปักหมุด" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Sabitlemeyi kaldır" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Відкріпити" } },
+        "vi" : { "stringUnit" : { "state" : "translated", "value" : "Bỏ ghim" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "取消置顶" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "取消置頂" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

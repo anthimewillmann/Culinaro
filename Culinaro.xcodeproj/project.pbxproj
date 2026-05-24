@@ -7,43 +7,51 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5D0B3C542F9D598700F5156C /* WaveAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0B3C532F9D597600F5156C /* WaveAnimation.swift */; };
-		5D0B3C6A2F9E088900F5156C /* CookingTip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D0B3C692F9E088700F5156C /* CookingTip.swift */; };
-		5D3A715D2F980478009A4AB9 /* AIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D3A715C2F980471009A4AB9 /* AIModels.swift */; };
+		5D5661912FA8CDEE006385AE /* App Icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 5D5661902FA8CDEE006385AE /* App Icon.icon */; };
+		5D854B082FA76F29003D5815 /* ParsedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D854B072FA76F27003D5815 /* ParsedModels.swift */; };
+		5D854B0A2FA76F38003D5815 /* TextRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D854B092FA76F37003D5815 /* TextRow.swift */; };
+		5D854B0C2FA76F41003D5815 /* ScanError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D854B0B2FA76F3F003D5815 /* ScanError.swift */; };
+		5D854B132FA7725D003D5815 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5D854B122FA77258003D5815 /* Localizable.xcstrings */; };
 		5DD8C0032F8EBE05008D32FB /* RecipeAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD8C0022F8EBE03008D32FB /* RecipeAIService.swift */; };
-		5DE1E7BA2F8E3EEF008EADB7 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE1E7B92F8E3EEB008EADB7 /* CameraPickerView.swift */; };
-		5DFA88872F7EF27200C04F28 /* CookModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887A2F7EF27200C04F28 /* CookModeView.swift */; };
 		5DFA88882F7EF27200C04F28 /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA88752F7EF27200C04F28 /* Recipe.swift */; };
 		5DFA88892F7EF27200C04F28 /* RecipeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA88772F7EF27200C04F28 /* RecipeStore.swift */; };
 		5DFA888A2F7EF27200C04F28 /* CulinaroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */; };
-		5DFA888B2F7EF27200C04F28 /* AddRecipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA88792F7EF27200C04F28 /* AddRecipeView.swift */; };
 		5DFA888C2F7EF27200C04F28 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887E2F7EF27200C04F28 /* ContentView.swift */; };
-		5DFA888D2F7EF27200C04F28 /* RecipesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887B2F7EF27200C04F28 /* RecipesView.swift */; };
-		5DFA888E2F7EF27200C04F28 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5DFA88822F7EF27200C04F28 /* Localizable.strings */; };
-		5DFA888F2F7EF27200C04F28 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 5DFA88852F7EF27200C04F28 /* Localizable.stringsdict */; };
 		5DFA88902F7EF27200C04F28 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DFA887D2F7EF27200C04F28 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5D0B3C532F9D597600F5156C /* WaveAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveAnimation.swift; sourceTree = "<group>"; };
-		5D0B3C692F9E088700F5156C /* CookingTip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingTip.swift; sourceTree = "<group>"; };
-		5D3A715C2F980471009A4AB9 /* AIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIModels.swift; sourceTree = "<group>"; };
+		5D5661902FA8CDEE006385AE /* App Icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "App Icon.icon"; sourceTree = "<group>"; };
+		5D5661932FA8DF85006385AE /* Culinaro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Culinaro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D854B072FA76F27003D5815 /* ParsedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsedModels.swift; sourceTree = "<group>"; };
+		5D854B092FA76F37003D5815 /* TextRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRow.swift; sourceTree = "<group>"; };
+		5D854B0B2FA76F3F003D5815 /* ScanError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanError.swift; sourceTree = "<group>"; };
+		5D854B122FA77258003D5815 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5DD8C0022F8EBE03008D32FB /* RecipeAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeAIService.swift; sourceTree = "<group>"; };
-		5DE1E7B92F8E3EEB008EADB7 /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
 		5DFA88752F7EF27200C04F28 /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
 		5DFA88772F7EF27200C04F28 /* RecipeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeStore.swift; sourceTree = "<group>"; };
-		5DFA88792F7EF27200C04F28 /* AddRecipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRecipeView.swift; sourceTree = "<group>"; };
-		5DFA887A2F7EF27200C04F28 /* CookModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookModeView.swift; sourceTree = "<group>"; };
-		5DFA887B2F7EF27200C04F28 /* RecipesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipesView.swift; sourceTree = "<group>"; };
 		5DFA887D2F7EF27200C04F28 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5DFA887E2F7EF27200C04F28 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CulinaroApp.swift; sourceTree = "<group>"; };
-		5DFA88802F7EF27200C04F28 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		5DFA88812F7EF27200C04F28 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		5DFA88832F7EF27200C04F28 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		5DFA88842F7EF27200C04F28 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
-		5DFCE2DF2EF2026D001D9552 /* Culinaro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Culinaro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5D3A5C362FA7DFD1009D7112 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		5D3A5C372FA7DFDC009D7112 /* CookMode */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CookMode;
+			sourceTree = "<group>";
+		};
+		5D3A5C382FA7DFFB009D7112 /* Recipes */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Recipes;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		5DFCE2DC2EF2026C001D9552 /* Frameworks */ = {
@@ -56,20 +64,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5DFA88762F7EF27200C04F28 /* Modeles */ = {
+		5DFA88762F7EF27200C04F28 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				5D0B3C692F9E088700F5156C /* CookingTip.swift */,
-				5D3A715C2F980471009A4AB9 /* AIModels.swift */,
 				5DFA88752F7EF27200C04F28 /* Recipe.swift */,
+				5D854B092FA76F37003D5815 /* TextRow.swift */,
+				5D854B072FA76F27003D5815 /* ParsedModels.swift */,
+				5DD8C0022F8EBE03008D32FB /* RecipeAIService.swift */,
+				5D854B0B2FA76F3F003D5815 /* ScanError.swift */,
 			);
-			path = Modeles;
+			path = Models;
 			sourceTree = "<group>";
 		};
 		5DFA88782F7EF27200C04F28 /* Stores */ = {
 			isa = PBXGroup;
 			children = (
-				5DD8C0022F8EBE03008D32FB /* RecipeAIService.swift */,
 				5DFA88772F7EF27200C04F28 /* RecipeStore.swift */,
 			);
 			path = Stores;
@@ -78,11 +87,9 @@
 		5DFA887C2F7EF27200C04F28 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				5D0B3C532F9D597600F5156C /* WaveAnimation.swift */,
-				5DE1E7B92F8E3EEB008EADB7 /* CameraPickerView.swift */,
-				5DFA88792F7EF27200C04F28 /* AddRecipeView.swift */,
-				5DFA887A2F7EF27200C04F28 /* CookModeView.swift */,
-				5DFA887B2F7EF27200C04F28 /* RecipesView.swift */,
+				5D3A5C382FA7DFFB009D7112 /* Recipes */,
+				5D3A5C372FA7DFDC009D7112 /* CookMode */,
+				5D3A5C362FA7DFD1009D7112 /* Shared */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -90,14 +97,13 @@
 		5DFA88862F7EF27200C04F28 /* Culinaro */ = {
 			isa = PBXGroup;
 			children = (
-				5DFA88762F7EF27200C04F28 /* Modeles */,
+				5DFA88762F7EF27200C04F28 /* Models */,
 				5DFA88782F7EF27200C04F28 /* Stores */,
 				5DFA887C2F7EF27200C04F28 /* Views */,
 				5DFA887D2F7EF27200C04F28 /* Assets.xcassets */,
-				5DFA887E2F7EF27200C04F28 /* ContentView.swift */,
 				5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */,
-				5DFA88822F7EF27200C04F28 /* Localizable.strings */,
-				5DFA88852F7EF27200C04F28 /* Localizable.stringsdict */,
+				5DFA887E2F7EF27200C04F28 /* ContentView.swift */,
+				5D854B122FA77258003D5815 /* Localizable.xcstrings */,
 			);
 			path = Culinaro;
 			sourceTree = "<group>";
@@ -106,16 +112,9 @@
 			isa = PBXGroup;
 			children = (
 				5DFA88862F7EF27200C04F28 /* Culinaro */,
-				5DFCE2E02EF2026D001D9552 /* Products */,
+				5D5661902FA8CDEE006385AE /* App Icon.icon */,
+				5D5661932FA8DF85006385AE /* Culinaro.app */,
 			);
-			sourceTree = "<group>";
-		};
-		5DFCE2E02EF2026D001D9552 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				5DFCE2DF2EF2026D001D9552 /* Culinaro.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -133,11 +132,16 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				5D3A5C362FA7DFD1009D7112 /* Shared */,
+				5D3A5C372FA7DFDC009D7112 /* CookMode */,
+				5D3A5C382FA7DFFB009D7112 /* Recipes */,
+			);
 			name = Culinaro;
 			packageProductDependencies = (
 			);
 			productName = "Let him cook";
-			productReference = 5DFCE2DF2EF2026D001D9552 /* Culinaro.app */;
+			productReference = 5D5661932FA8DF85006385AE /* Culinaro.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -166,7 +170,7 @@
 			mainGroup = 5DFCE2D62EF2026C001D9552;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 5DFCE2E02EF2026D001D9552 /* Products */;
+			productRefGroup = 5DFCE2D62EF2026C001D9552;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -180,8 +184,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5DFA888E2F7EF27200C04F28 /* Localizable.strings in Resources */,
-				5DFA888F2F7EF27200C04F28 /* Localizable.stringsdict in Resources */,
+				5D854B132FA7725D003D5815 /* Localizable.xcstrings in Resources */,
+				5D5661912FA8CDEE006385AE /* App Icon.icon in Resources */,
 				5DFA88902F7EF27200C04F28 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -193,43 +197,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5D3A715D2F980478009A4AB9 /* AIModels.swift in Sources */,
-				5D0B3C542F9D598700F5156C /* WaveAnimation.swift in Sources */,
-				5DFA88872F7EF27200C04F28 /* CookModeView.swift in Sources */,
+				5D854B082FA76F29003D5815 /* ParsedModels.swift in Sources */,
 				5DFA88882F7EF27200C04F28 /* Recipe.swift in Sources */,
+				5D854B0A2FA76F38003D5815 /* TextRow.swift in Sources */,
 				5DFA88892F7EF27200C04F28 /* RecipeStore.swift in Sources */,
 				5DFA888A2F7EF27200C04F28 /* CulinaroApp.swift in Sources */,
-				5DFA888B2F7EF27200C04F28 /* AddRecipeView.swift in Sources */,
-				5D0B3C6A2F9E088900F5156C /* CookingTip.swift in Sources */,
 				5DD8C0032F8EBE05008D32FB /* RecipeAIService.swift in Sources */,
 				5DFA888C2F7EF27200C04F28 /* ContentView.swift in Sources */,
-				5DFA888D2F7EF27200C04F28 /* RecipesView.swift in Sources */,
-				5DE1E7BA2F8E3EEF008EADB7 /* CameraPickerView.swift in Sources */,
+				5D854B0C2FA76F41003D5815 /* ScanError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		5DFA88822F7EF27200C04F28 /* Localizable.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				5DFA88802F7EF27200C04F28 /* en */,
-				5DFA88812F7EF27200C04F28 /* de */,
-			);
-			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-		5DFA88852F7EF27200C04F28 /* Localizable.stringsdict */ = {
-			isa = PBXVariantGroup;
-			children = (
-				5DFA88832F7EF27200C04F28 /* en */,
-				5DFA88842F7EF27200C04F28 /* de */,
-			);
-			name = Localizable.stringsdict;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		5DFCE2E82EF2026E001D9552 /* Debug */ = {
@@ -356,10 +335,10 @@
 		5DFCE2EB2EF2026E001D9552 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = PJPDBUX37D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -378,7 +357,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anthimewillmann.culinaro.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -394,10 +373,10 @@
 		5DFCE2EC2EF2026E001D9552 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = PJPDBUX37D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -416,7 +395,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anthimewillmann.culinaro.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

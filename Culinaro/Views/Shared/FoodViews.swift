@@ -1,5 +1,60 @@
 import SwiftUI
 
+// MARK: - CucumberSliceView
+
+/// A stylised cross-section of a cucumber slice rendered as two concentric circles.
+struct CucumberSliceView: View {
+    var size: CGFloat = 80
+
+    var body: some View {
+        ZStack {
+            Circle().fill(Color(red: 0.85, green: 0.96, blue: 0.78))
+            Circle()
+                .fill(Color(red: 0.72, green: 0.91, blue: 0.60))
+                .frame(width: size * 0.62, height: size * 0.62)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+// MARK: - TomatoSliceView
+
+/// A stylised cross-section of a tomato slice rendered as two concentric circles.
+struct TomatoSliceView: View {
+    var size: CGFloat = 90
+
+    var body: some View {
+        ZStack {
+            Circle().fill(Color(red: 0.96, green: 0.63, blue: 0.63))
+            Circle()
+                .fill(Color(red: 0.98, green: 0.82, blue: 0.82))
+                .frame(width: size * 0.58, height: size * 0.58)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+// MARK: - MushroomSliceView
+
+/// A stylised mushroom slice composed of a semicircle cap on a rectangular stem.
+struct MushroomSliceView: View {
+    var capSize: CGFloat    = 60
+    var stemWidth: CGFloat  = 34
+    var stemHeight: CGFloat = 34
+
+    var body: some View {
+        let capColor = Color(red: 0.88, green: 0.82, blue: 0.67)
+        VStack(spacing: -8) {
+            Circle()
+                .fill(capColor)
+                .frame(width: capSize, height: capSize)
+            RoundedRectangle(cornerRadius: 5)
+                .fill(capColor)
+                .frame(width: stemWidth, height: stemHeight)
+        }
+    }
+}
+
 // MARK: - CarrotShape
 
 /// A bezier-curve shape approximating a carrot body (tapered oval with a rounded left end).
@@ -57,14 +112,14 @@ struct CucumberShape: Shape {
         var path = Path()
         path.move(to: CGPoint(x: w * 0.08, y: 0))
         path.addCurve(to: CGPoint(x: w * 0.92, y: 0),
-                      control1: CGPoint(x: w * 0.3, y: -h * 0.15),
-                      control2: CGPoint(x: w * 0.7, y: -h * 0.15))
+                      control1: CGPoint(x: w * 0.3,  y: -h * 0.15),
+                      control2: CGPoint(x: w * 0.7,  y: -h * 0.15))
         path.addCurve(to: CGPoint(x: w * 0.92, y: h),
-                      control1: CGPoint(x: w * 1.1, y: 0),
-                      control2: CGPoint(x: w * 1.1, y: h))
+                      control1: CGPoint(x: w * 1.1,  y: 0),
+                      control2: CGPoint(x: w * 1.1,  y: h))
         path.addCurve(to: CGPoint(x: w * 0.08, y: h),
-                      control1: CGPoint(x: w * 0.7, y: h * 1.15),
-                      control2: CGPoint(x: w * 0.3, y: h * 1.15))
+                      control1: CGPoint(x: w * 0.7,  y: h * 1.15),
+                      control2: CGPoint(x: w * 0.3,  y: h * 1.15))
         path.addCurve(to: CGPoint(x: w * 0.08, y: 0),
                       control1: CGPoint(x: -w * 0.1, y: h),
                       control2: CGPoint(x: -w * 0.1, y: 0))
