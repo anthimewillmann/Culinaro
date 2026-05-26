@@ -1,7 +1,5 @@
 <p align="center">
-
-  <img src="App Icon without background 1.png" width="120"/>
-
+  <img src="Original App Icon 1.png" width="120"/>
 </p>
 
 <h1 align="center">Culinaro</h1>
