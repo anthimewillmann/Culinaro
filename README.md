@@ -1,3 +1,17 @@
+<p align="center">
+
+  <img src="App Icon without background 1.png" width="120"/>
+
+</p>
+
+<h1 align="center">Culinaro</h1>
+
+<p align="center">
+
+  Modern SwiftUI recipe and cooking app for iOS.
+
+</p>
+
 # Culinaro
 
 Culinaro is an iOS recipe and cooking app built with Swift.
