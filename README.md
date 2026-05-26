@@ -37,7 +37,7 @@ The app focuses on a clean and intuitive cooking experience, allowing users to d
 <p align="center">
   <img src="Screenshots/Bild 7.jpg" width="30%"/>
   <img src="Screenshots/Bild 8.jpg" width="30%"/>
-  <img src="Screenshots/Bild 10.jpg" width="30%"/>
+  <img src="Screenshots/Bild 9.jpg" width="30%"/>
 </p>
 
 ## Installation
