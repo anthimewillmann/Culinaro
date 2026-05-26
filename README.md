@@ -4,6 +4,16 @@ Culinaro is an iOS recipe and cooking app built with Swift.
 
 The app focuses on a clean and intuitive cooking experience, allowing users to discover, organize, and manage recipes in a modern mobile interface.
 
+<p align="center">
+
+  <a href="https://apps.apple.com/us/app/culinaro/id6764299394">
+
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="60">
+
+  </a>
+
+</p>
+
 ## Features
 
 - Browse and manage recipes
