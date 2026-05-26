@@ -22,26 +22,16 @@ The app focuses on a clean and intuitive cooking experience, allowing users to d
 
 ## Screenshots
 
-## Screenshots
-
-<p float="left">
-
-  <img src="Bild 4.jpg" width="250"/>
-
-  <img src="Bild 5.jpg" width="250"/>
-
-  <img src="Bild 6.jpg" width="250"/>
-
+<p align="center">
+  <img src="Bild 4.jpg" width="30%"/>
+  <img src="Bild 5.jpg" width="30%"/>
+  <img src="Bild 6.jpg" width="30%"/>
 </p>
 
-<p float="left">
-
-  <img src="Bild 7.jpg" width="250"/>
-
-  <img src="Bild 8.jpg" width="250"/>
-
-  <img src="Bild 10.jpg" width="250"/>
-
+<p align="center">
+  <img src="Bild 7.jpg" width="30%"/>
+  <img src="Bild 8.jpg" width="30%"/>
+  <img src="Bild 10.jpg" width="30%"/>
 </p>
 
 ## Installation
