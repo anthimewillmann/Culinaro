@@ -32,19 +32,16 @@ Culinaro helps you collect, create, scan, and cook recipes on iPhone and iPad. R
 ## Screenshots
 
 <p align="center">
-  <img src="Screenshots/recipe-list.jpg" width="30%"/>
-  <img src="Screenshots/ai-generator.jpg" width="30%"/>
-  <img src="Screenshots/ingredients.jpg" width="30%"/>
+  <img src="Screenshots/Bild 4.jpg" width="30%"/>
+  <img src="Screenshots/Bild 5.jpg" width="30%"/>
+  <img src="Screenshots/Bild 6.jpg" width="30%"/>
 </p>
 
 <p align="center">
-  <img src="Screenshots/cooking-steps.jpg" width="30%"/>
-  <img src="Screenshots/cooking-progress.jpg" width="30%"/>
-  <img src="Screenshots/recipe-summary.jpg" width="30%"/>
-</p>
-
-<p align="center">
-  <img src="Screenshots/enjoy-screen.jpg" width="30%"/>
+  <img src="Screenshots/Bild 7.jpg" width="30%"/>
+  <img src="Screenshots/Bild 8.jpg" width="30%"/>
+  <img src="Screenshots/Bild 10.jpg" width="30%"/>
+  <img src="Screenshots/Bild 9.jpg" width="30%"/>
 </p>
 
 ## How It Works
