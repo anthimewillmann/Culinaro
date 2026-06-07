@@ -3,17 +3,11 @@
 **A native SwiftUI recipe app with on-device AI, photo scanning, and a guided cooking mode.**
 
 <p align="left">
-
   <a href="https://apps.apple.com/us/app/culinaro/id6764299394">
-
     <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-
          alt="Download on the App Store"
-
          height="60">
-
   </a>
-
 </p>
 
 Culinaro helps you collect, create, scan, and cook recipes on iPhone and iPad. Recipes are stored locally, can be generated from a simple dish idea, extracted from photos using OCR, and followed step by step in a focused cooking interface.
