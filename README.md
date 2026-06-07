@@ -2,7 +2,7 @@
 
 **A native SwiftUI recipe app with on-device AI, photo scanning, and a guided cooking mode.**
 
-<p align="left">
+<p align="center">
   <a href="https://apps.apple.com/us/app/culinaro/id6764299394">
     <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
          alt="Download on the App Store"
@@ -31,23 +31,21 @@ Culinaro helps you collect, create, scan, and cook recipes on iPhone and iPad. R
 
 ## Screenshots
 
-Add screenshots from the `Screenshots/` folder here:
-
-```markdown
 <p align="center">
-  <img src="Screenshots/4.jpg" width="220" />
-  <img src="Screenshots/5.jpg" width="220" />
-  <img src="Screenshots/7.jpg" width="220" />
+  <img src="Screenshots/recipe-list.jpg" width="30%"/>
+  <img src="Screenshots/ai-generator.jpg" width="30%"/>
+  <img src="Screenshots/ingredients.jpg" width="30%"/>
 </p>
-```
 
-Recommended screenshot flow:
+<p align="center">
+  <img src="Screenshots/cooking-steps.jpg" width="30%"/>
+  <img src="Screenshots/cooking-progress.jpg" width="30%"/>
+  <img src="Screenshots/recipe-summary.jpg" width="30%"/>
+</p>
 
-1. Recipe list with search and pinned recipes
-2. AI-generated recipe form
-3. Ingredients overview
-4. Cooking step view
-5. Final “Enjoy!” screen
+<p align="center">
+  <img src="Screenshots/enjoy-screen.jpg" width="30%"/>
+</p>
 
 ## How It Works
 
