@@ -447,7 +447,8 @@ struct CookModeAnimationView: View {
                 }
 
                 // Step 12: Soup ingredients scene fades in
-                try? await Task.sleep(for: .seconds(3.0))
+                let soupDelay: Double = UIDevice.current.userInterfaceIdiom == .pad ? 4.0 : 3.0
+                try? await Task.sleep(for: .seconds(soupDelay))
                 withAnimation(.easeIn(duration: 2.0)) { soupIngredientsOpacity = 1 }
 
                 // Step 13: Zoom into cucumber slice
@@ -462,7 +463,8 @@ struct CookModeAnimationView: View {
                 }
 
                 // Step 14: Beige overlay + herb scene fade in
-                try? await Task.sleep(for: .seconds(0.3))
+                let herbDelay: Double = UIDevice.current.userInterfaceIdiom == .pad ? 1.3 : 0.3
+                try? await Task.sleep(for: .seconds(herbDelay))
                 withAnimation(.easeInOut(duration: 3.5)) { beigeTransitionOpacity = 1.0 }
                 showHerbsScene = true
                 withAnimation(.easeIn(duration: 3.0).delay(0.5)) { herbsOpacity = 1.0 }

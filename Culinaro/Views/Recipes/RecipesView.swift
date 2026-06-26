@@ -108,11 +108,19 @@ struct RecipesView: View {
             )
         )
         .toolbar {
-            DefaultToolbarItem(kind: .search, placement: .bottomBar)
-            ToolbarSpacer(.fixed, placement: .bottomBar)
-            ToolbarItem(placement: .bottomBar) {
-                Button { showAddRecipe = true } label: {
-                    Image(systemName: "square.and.pencil")
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showAddRecipe = true } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                }
+            } else {
+                DefaultToolbarItem(kind: .search, placement: .bottomBar)
+                ToolbarSpacer(.fixed, placement: .bottomBar)
+                ToolbarItem(placement: .bottomBar) {
+                    Button { showAddRecipe = true } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
                 }
             }
         }
