@@ -9,7 +9,7 @@ import SwiftUI
 /// Tips are loaded asynchronously and cached per session to avoid redundant API calls.
 /// `CookModeAnimationView` runs as an animated background during cooking steps.
 struct CookModeView: View {
-    let recipe: Recipe
+    let item: any Cookable
 
     /// Represents the current navigation phase within the cook mode.
     enum Phase: Equatable {
@@ -30,9 +30,10 @@ struct CookModeView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @Environment(RecipeAIService.self) private var aiService
+    @EnvironmentObject private var statsStore: StatsStore
 
     /// Total number of phases: ingredients screen + all steps.
-    private var totalSteps: Int { recipe.steps.count + 1 }
+    private var totalSteps: Int { item.steps.count + 1 }
 
     var body: some View {
         ZStack {
@@ -42,8 +43,11 @@ struct CookModeView: View {
             case .start:
                 List {
                     Section {
-                        ForEach(recipe.ingredients, id: \.self) { ingredient in
-                            Text(ingredient)
+                        if item.ingredients.isEmpty {
+                            Text("Bereit für die Lektion „\(item.title)“?")
+                                .font(.title2).fontWeight(.semibold)
+                        } else {
+                            ForEach(item.ingredients, id: \.self) { ingredient in Text(ingredient) }
                         }
                     }
                 }
@@ -65,8 +69,8 @@ struct CookModeView: View {
                     // Step content
                     ScrollView {
                         VStack(alignment: .leading, spacing: 24) {
-                            if index < recipe.steps.count {
-                                Text(recipe.steps[index])
+                            if index < item.steps.count {
+                                Text(item.steps[index])
                                     .font(.largeTitle)
                                     .fontWeight(.semibold)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -133,13 +137,13 @@ struct CookModeView: View {
             currentTip = nil
             isGeneratingTip = false
 
-            if case .step(let index) = newPhase, index < recipe.steps.count {
+            if case .step(let index) = newPhase, index < item.steps.count {
                 tipTask = Task { await loadTip(for: index) }
             }
         }
         .onAppear {
             // Load tip if the view appears directly on a step (edge case)
-            if case .step(let index) = phase, index < recipe.steps.count {
+            if case .step(let index) = phase, index < item.steps.count {
                 tipTask = Task { await loadTip(for: index) }
             }
         }
@@ -151,7 +155,7 @@ struct CookModeView: View {
     /// Returns immediately if tips are disabled or a cached tip exists.
     /// Checks for task cancellation before writing back to state.
     private func loadTip(for index: Int) async {
-        guard recipe.tipsEnabled else { return }
+        guard item.tipsEnabled else { return }
 
         if let cached = tipsCache[index] {
             guard !Task.isCancelled else { return }
@@ -162,7 +166,7 @@ struct CookModeView: View {
         isGeneratingTip = true
 
         do {
-            let tip = try await aiService.cookingTip(for: recipe.steps[index])
+            let tip = try await aiService.cookingTip(for: item.steps[index])
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 tipsCache[index] = tip
@@ -192,7 +196,12 @@ struct CookModeView: View {
         switch phase {
         case .start: phase = .step(0)
         case .step(let index):
-            if index < totalSteps - 1 { phase = .step(index + 1) } else { dismiss() }
+            if index < totalSteps - 1 {
+                phase = .step(index + 1)
+            } else {
+                statsStore.recordCompletion(item.completionKind)
+                dismiss()
+            }
         }
     }
 
@@ -205,7 +214,7 @@ struct CookModeView: View {
     /// Navigation bar title for the current phase.
     private var title: String {
         switch phase {
-        case .start: return NSLocalizedString("ingredients", comment: "")
+        case .start: return item.ingredients.isEmpty ? "Übersicht" : NSLocalizedString("ingredients", comment: "")
         case .step(let index):
             return String.localizedStringWithFormat(
                 NSLocalizedString("step_number", comment: ""), index + 1
@@ -218,7 +227,7 @@ struct CookModeView: View {
         switch phase {
         case .start:
             return String.localizedStringWithFormat(
-                NSLocalizedString("ingredients_count", comment: ""), recipe.ingredients.count
+                NSLocalizedString("ingredients_count", comment: ""), item.ingredients.count
             )
         case .step:
             return String.localizedStringWithFormat(

@@ -21,11 +21,27 @@ final class RecipeAIService {
     /// Generates a complete recipe from a plain-text title prompt.
     /// - Parameter prompt: The recipe idea or dish name.
     /// - Returns: A `ParsedRecipe` with title, ingredients, and steps.
-    func generate(from prompt: String) async throws -> ParsedRecipe {
+    func generate(from prompt: String, allergies: String = "") async throws -> ParsedRecipe {
         let session = LanguageModelSession()
-        let fullPrompt = "\(languageInstruction)Create a complete recipe for: \(prompt). Respond structured with title, ingredients and steps."
+        let restriction = allergies.trimmingCharacters(in: .whitespacesAndNewlines)
+        let allergyInstruction = restriction.isEmpty ? "" : " Strictly avoid these allergies or intolerances: \(restriction)."
+        let fullPrompt = "\(languageInstruction)Create a complete recipe for: \(prompt).\(allergyInstruction) Respond structured with title, ingredients and steps."
         let response = try await session.respond(to: fullPrompt, generating: ParsedRecipe.self)
         return response.content
+    }
+
+    func generateLesson(from prompt: String) async throws -> ParsedLesson {
+        let session = LanguageModelSession()
+        let fullPrompt = "\(languageInstruction)Create a practical cooking lesson about: \(prompt). Respond structured with a title and ordered learning steps."
+        return try await session.respond(to: fullPrompt, generating: ParsedLesson.self).content
+    }
+
+    func scanLesson(image: UIImage) async throws -> ParsedLesson {
+        let session = LanguageModelSession()
+        let rawText = try await extractText(from: image)
+        guard !rawText.isEmpty else { throw ScanError.noTextFound }
+        let fullPrompt = "\(languageInstruction)Extract a cooking lesson with a title and ordered steps from: \(rawText)"
+        return try await session.respond(to: fullPrompt, generating: ParsedLesson.self).content
     }
 
     /// Scans an image and extracts a recipe using OCR and the language model.

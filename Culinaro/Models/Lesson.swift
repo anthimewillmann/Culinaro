@@ -1,26 +1,24 @@
 import Foundation
 
-/// Represents a single recipe with a title, ingredients, steps,
-/// and metadata such as pin state, tip preference, and creation date.
-struct Recipe: Cookable, Codable, Equatable {
+struct Lesson: Cookable, Codable, Equatable {
     let id: UUID
     let title: String
     let ingredients: [String]
     let steps: [String]
     var isPinned: Bool
-    var tipsEnabled: Bool
     var wasGenerated: Bool
+    var tipsEnabled: Bool
     let createdAt: Date
-    var completionKind: CompletionKind { .recipe }
- 
+    var completionKind: CompletionKind { .lesson }
+
     init(
         id: UUID = UUID(),
         title: String,
         ingredients: [String] = [],
         steps: [String],
         isPinned: Bool = false,
-        tipsEnabled: Bool = true,
         wasGenerated: Bool = false,
+        tipsEnabled: Bool = true,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -28,8 +26,8 @@ struct Recipe: Cookable, Codable, Equatable {
         self.ingredients = ingredients
         self.steps = steps
         self.isPinned = isPinned
-        self.tipsEnabled = tipsEnabled
         self.wasGenerated = wasGenerated
+        self.tipsEnabled = tipsEnabled
         self.createdAt = createdAt
     }
 }
