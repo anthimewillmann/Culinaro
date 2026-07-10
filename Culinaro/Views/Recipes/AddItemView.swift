@@ -82,15 +82,8 @@ struct AddItemView: View {
                     }
                 }
 
-                // Fix: Lektionen bekommen jetzt auch eine Zutaten-Section (als
-                // "Material" gedacht) — nur in umgekehrter Reihenfolge zum Rezept.
-                if kind == .recipe {
-                    dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients, multiline: false)
-                    dynamicSection(title: "Schritte", placeholderTitle: "Schritt", rows: $steps, multiline: true)
-                } else {
-                    dynamicSection(title: "Schritte", placeholderTitle: "Schritt", rows: $steps, multiline: true)
-                    dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients, multiline: false)
-                }
+                dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients, multiline: false)
+                dynamicSection(title: "Schritte", placeholderTitle: "Schritt", rows: $steps, multiline: true)
             }
             .disabled(isGenerating)
             .overlay { if isGenerating { ProgressView("Wird erstellt …").padding().background(.regularMaterial, in: .rect(cornerRadius: 12)) } }

@@ -3,6 +3,10 @@ import SwiftUI
 struct ContentView: View {
     private enum AppTab: Hashable { case recipes, lessons, stats }
 
+    @EnvironmentObject private var recipes: RecipeStore
+    @EnvironmentObject private var lessons: LessonStore
+    @EnvironmentObject private var stats: StatsStore
+    @State private var gameCenter = GameCenterManager.shared
     @State private var selection: AppTab = .recipes
     @State private var showAddItem = false
     @State private var recipeSearchText = ""
@@ -39,6 +43,18 @@ struct ContentView: View {
                 }
             }
         }
+        .onAppear {
+            gameCenter.authenticate()
+            submitTotalScore()
+        }
+        .onChange(of: gameCenter.isAuthenticated) { _, isAuthenticated in
+            guard isAuthenticated else { return }
+            submitTotalScore()
+        }
+        .onChange(of: recipes.totalCreatedRecipes) { _, _ in submitTotalScore() }
+        .onChange(of: lessons.totalCreatedLessons) { _, _ in submitTotalScore() }
+        .onChange(of: stats.completedCookModes) { _, _ in submitTotalScore() }
+        .onChange(of: stats.completedLessons) { _, _ in submitTotalScore() }
         .onChange(of: selection) { oldValue, newValue in
             switch oldValue {
             case .recipes:
@@ -55,6 +71,16 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showAddItem) {
             AddItemView(initialKind: selection == .lessons ? .lesson : .recipe)
+        }
+    }
+
+    private var totalScore: Int {
+        recipes.totalCreatedRecipes + lessons.totalCreatedLessons + stats.completedCookModes + stats.completedLessons
+    }
+
+    private func submitTotalScore() {
+        Task {
+            await gameCenter.submitTotalScore(totalScore)
         }
     }
 

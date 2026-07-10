@@ -55,11 +55,11 @@ final class GameCenterManager {
             range: NSRange(location: 1, length: 50)
         )
 
-        var scores = result.entries.map(FriendScore.init(entry:))
+        var scores = result.1.map(FriendScore.init(entry:))
         let localPlayerID = GKLocalPlayer.local.gamePlayerID
 
         if !scores.contains(where: { $0.id == localPlayerID }) {
-            if let localPlayerEntry = result.localPlayerEntry {
+            if let localPlayerEntry = result.0 {
                 scores.append(FriendScore(entry: localPlayerEntry))
             } else {
                 scores.append(

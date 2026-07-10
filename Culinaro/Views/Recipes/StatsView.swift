@@ -4,21 +4,72 @@ struct StatsView: View {
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
     @EnvironmentObject private var stats: StatsStore
+    @State private var gameCenter = GameCenterManager.shared
+    @State private var friendScores: [FriendScore] = []
+    @State private var friendsErrorMessage: String?
     @State private var notes: [TextRow] = [TextRow(text: "")]
     @FocusState private var focusedNote: UUID?
 
     var body: some View {
         Form {
+            streakSection
+
             Section("Statistik") {
                 stat("Erstellte Rezepte", recipes.totalCreatedRecipes)
                 stat("Erstellte Lektionen", lessons.totalCreatedLessons)
                 stat("Abgeschlossene Kochmodi", stats.completedCookModes)
                 stat("Abgeschlossene Lektionen", stats.completedLessons)
+
             }
+
+            friendsSection
             notesSection
         }
         .navigationTitle("Übersicht")
         .onAppear(perform: loadNotes)
+        .task {
+            await loadFriendScores()
+        }
+        .refreshable {
+            await loadFriendScores()
+        }
+    }
+
+    private var streakSection: some View {
+        Section("Streak") {
+            stat("Tage", stats.currentStreak)
+        }
+    }
+
+    private var friendsSection: some View {
+        Section("Freunde") {
+            if !gameCenter.isAuthenticated {
+                Button("Anmelden") {
+                    gameCenter.authenticate()
+                }
+            } else if let friendsErrorMessage {
+                LabeledContent("Fehler", value: friendsErrorMessage)
+                Button("Erneut laden") {
+                    Task { await loadFriendScores() }
+                }
+            } else if friendScores.isEmpty {
+                Text("Keine Einträge")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(friendScores) { score in
+                    LabeledContent {
+                        Text(score.score, format: .number)
+                            .fontWeight(.semibold)
+                    } label: {
+                        Text(score.displayName)
+                    }
+                }
+            }
+
+            NavigationLink("Alle anzeigen") {
+                FriendsLeaderboardView()
+            }
+        }
     }
 
     private var notesSection: some View {
@@ -60,6 +111,19 @@ struct StatsView: View {
         notes = compacted
         focusedNote = compacted.contains { $0.id == id } ? id : nil
         saveNotes()
+    }
+
+    private func loadFriendScores() async {
+        guard gameCenter.isAuthenticated else { return }
+
+        friendsErrorMessage = nil
+
+        do {
+            friendScores = try await gameCenter.loadFriendsLeaderboard()
+        } catch {
+            friendScores = []
+            friendsErrorMessage = error.localizedDescription
+        }
     }
 
     private func loadNotes() {

@@ -38,8 +38,8 @@ struct FriendsLeaderboardView: View {
             } else {
                 Form {
                     Section("Freunde") {
-                        ForEach(Array(scores.enumerated()), id: \.element.id) { index, score in
-                            scoreRow(score, rank: index + 1)
+                        ForEach(scores) { score in
+                            scoreRow(score)
                         }
                     }
                 }
@@ -54,20 +54,15 @@ struct FriendsLeaderboardView: View {
         }
     }
 
-    private func scoreRow(_ score: FriendScore, rank: Int) -> some View {
+    private func scoreRow(_ score: FriendScore) -> some View {
         LabeledContent {
             Text(score.score, format: .number)
                 .fontWeight(isLocalPlayer(score) ? .bold : .semibold)
-                .foregroundStyle(isLocalPlayer(score) ? .accent : .primary)
+                .foregroundStyle(isLocalPlayer(score) ? Color.accentColor : Color.primary)
         } label: {
-            HStack(spacing: 8) {
-                Text("\(rank).")
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-                Text(score.displayName)
-                    .fontWeight(isLocalPlayer(score) ? .bold : .regular)
-                    .foregroundStyle(isLocalPlayer(score) ? .accent : .primary)
-            }
+            Text(score.displayName)
+                .fontWeight(isLocalPlayer(score) ? .bold : .regular)
+                .foregroundStyle(isLocalPlayer(score) ? Color.accentColor : Color.primary)
         }
     }
 
