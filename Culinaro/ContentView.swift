@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    private enum AppTab: Hashable { case recipes, lessons, stats }
+    private enum AppTab: Hashable { case recipes, lessons, shoppingList, stats }
 
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
@@ -9,11 +9,14 @@ struct ContentView: View {
     @State private var gameCenter = GameCenterManager.shared
     @State private var selection: AppTab = .recipes
     @State private var showAddItem = false
+    @State private var showAddShoppingItem = false
     @State private var recipeSearchText = ""
     @State private var lessonSearchText = ""
+    @State private var shoppingSearchText = ""
 
     @State private var recipesStackID = UUID()
     @State private var lessonsStackID = UUID()
+    @State private var shoppingStackID = UUID()
 
     var body: some View {
         TabView(selection: $selection) {
@@ -37,6 +40,16 @@ struct ContentView: View {
                 .id(lessonsStackID)
             }
 
+            Tab("Einkaufsliste", systemImage: "cart", value: .shoppingList) {
+                NavigationStack {
+                    ShoppingListView(searchText: shoppingSearchText)
+                        .toolbar { addButtonToolbar }
+                        .searchable(text: $shoppingSearchText, placement: .toolbar)
+                        .searchToolbarBehavior(.minimize)
+                }
+                .id(shoppingStackID)
+            }
+
             Tab("Übersicht", systemImage: "chart.bar", value: .stats) {
                 NavigationStack {
                     StatsView()
@@ -55,7 +68,7 @@ struct ContentView: View {
         .onChange(of: lessons.totalCreatedLessons) { _, _ in submitTotalScore() }
         .onChange(of: stats.completedCookModes) { _, _ in submitTotalScore() }
         .onChange(of: stats.completedLessons) { _, _ in submitTotalScore() }
-        .onChange(of: selection) { oldValue, newValue in
+        .onChange(of: selection) { oldValue, _ in
             switch oldValue {
             case .recipes:
                 recipeSearchText = ""
@@ -65,12 +78,19 @@ struct ContentView: View {
                 lessonSearchText = ""
                 lessonsStackID = UUID()
 
+            case .shoppingList:
+                shoppingSearchText = ""
+                shoppingStackID = UUID()
+
             case .stats:
                 break
             }
         }
         .sheet(isPresented: $showAddItem) {
             AddItemView(initialKind: selection == .lessons ? .lesson : .recipe)
+        }
+        .sheet(isPresented: $showAddShoppingItem) {
+            AddShoppingListItemSheet()
         }
     }
 
@@ -88,11 +108,15 @@ struct ContentView: View {
     private var addButtonToolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                showAddItem = true
+                if selection == .shoppingList {
+                    showAddShoppingItem = true
+                } else {
+                    showAddItem = true
+                }
             } label: {
                 Image(systemName: "plus")
             }
-            .accessibilityLabel("Neu erstellen")
+            .accessibilityLabel(selection == .shoppingList ? "Artikel hinzufügen" : "Neu erstellen")
         }
 
         ToolbarSpacer(.flexible, placement: .topBarTrailing)

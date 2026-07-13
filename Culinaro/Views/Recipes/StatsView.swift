@@ -19,7 +19,6 @@ struct StatsView: View {
                 stat("Erstellte Lektionen", lessons.totalCreatedLessons)
                 stat("Abgeschlossene Kochmodi", stats.completedCookModes)
                 stat("Abgeschlossene Lektionen", stats.completedLessons)
-
             }
 
             friendsSection
