@@ -6,6 +6,7 @@ import SwiftUI
 /// gewohnte Sortierung (angepinnt zuerst, dann neueste zuerst) erhalten.
 struct RecipesView: View {
     @EnvironmentObject private var store: RecipeStore
+    @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var editingRecipe: Recipe?
     @State private var categoriesByID: [UUID: String] = [:]
@@ -60,11 +61,11 @@ struct RecipesView: View {
 
     @ViewBuilder
     private func row(for recipe: Recipe) -> some View {
-        NavigationLink { CookModeView(item: recipe) } label: {
+        NavigationLink(value: recipe.id) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(recipe.title).fontWeight(.semibold)
-                    Text("\(recipe.steps.count) Schritte").font(.caption).foregroundStyle(.secondary)
+                    Text(recipeSubtitle(for: recipe)).font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
                 if recipe.isPinned { Image(systemName: "pin.fill").foregroundStyle(.orange) }
@@ -82,13 +83,20 @@ struct RecipesView: View {
         .contextMenu {
             Button { editingRecipe = recipe } label: { Label("Bearbeiten", systemImage: "pencil") }
             Button { store.togglePin(recipe) } label: { Label(recipe.isPinned ? "Lösen" : "Anpinnen", systemImage: "pin") }
+            Button { shoppingListStore.addIngredients(from: recipe) } label: { Label("Zutaten zum Einkauf", systemImage: "cart.badge.plus") }
             if let pdf = PDFExporter.export(recipe) {
                 ShareLink(item: pdf, preview: SharePreview(recipe.title, image: Image(systemName: "doc.richtext"))) {
-                    Label("Als PDF teilen", systemImage: "square.and.arrow.up")
+                    Label("Exportieren", systemImage: "square.and.arrow.up")
                 }
             }
             Button(role: .destructive) { store.delete(recipe) } label: { Label("Löschen", systemImage: "trash") }
         }
+    }
+
+    private func recipeSubtitle(for recipe: Recipe) -> String {
+        let stepsText = "\(recipe.steps.count) Schritte"
+        guard let calories = recipe.nutrition?.calories else { return stepsText }
+        return "\(calories) kcal · \(stepsText)"
     }
 
     /// Lässt das Modell die aktuellen Rezepttitel in sinnvolle Kategorien

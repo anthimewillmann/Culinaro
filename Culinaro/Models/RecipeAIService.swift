@@ -54,6 +54,20 @@ final class RecipeAIService {
         return response.content
     }
 
+    /// Estimates nutritional values per serving from a recipe title and ingredients.
+    func estimateNutrition(title: String, ingredients: [String]) async throws -> NutritionEstimate {
+        let session = LanguageModelSession()
+        let listing = ingredients.map { "- \($0)" }.joined(separator: "\n")
+        let fullPrompt = """
+        \(languageInstruction)Estimate approximate nutrition for this recipe. This is only an estimate, not an exact medical or dietetic statement. Return values per serving and the assumed number of servings.
+        Title: \(title)
+        Ingredients:
+        \(listing)
+        """
+        let response = try await session.respond(to: fullPrompt, generating: NutritionEstimate.self)
+        return response.content
+    }
+
     /// Generates a short, practical cooking tip for a given recipe step.
     func cookingTip(for step: String) async throws -> String {
         let session = LanguageModelSession()

@@ -20,6 +20,11 @@ struct CookModeView: View {
     @State private var phase: Phase = .start
     @State private var currentTip: String? = nil
     @State private var isGeneratingTip = false
+    @State private var servingsEaten = 1.0
+    @State private var didLogMeal = false
+    @State private var estimatedNutrition: NutritionInfo?
+    @State private var isEstimatingNutrition = false
+    @State private var didAttemptNutritionEstimate = false
 
     /// In-session cache mapping step index → generated tip string.
     @State private var tipsCache: [Int: String] = [:]
@@ -31,6 +36,9 @@ struct CookModeView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(RecipeAIService.self) private var aiService
     @EnvironmentObject private var statsStore: StatsStore
+    @EnvironmentObject private var nutritionStore: NutritionStore
+    @EnvironmentObject private var shoppingListStore: ShoppingListStore
+    @EnvironmentObject private var recipeStore: RecipeStore
 
     /// Total number of phases: ingredients screen + all steps.
     private var totalSteps: Int { item.steps.count + 1 }
@@ -48,6 +56,20 @@ struct CookModeView: View {
                                 .font(.title2).fontWeight(.semibold)
                         } else {
                             ForEach(item.ingredients, id: \.self) { ingredient in Text(ingredient) }
+                        }
+                    }
+
+                    if !item.ingredients.isEmpty {
+                        nutritionSummarySection
+                    }
+
+                    if !item.ingredients.isEmpty {
+                        Section {
+                            Button {
+                                addIngredientsToShoppingList()
+                            } label: {
+                                Text("Zutaten zum Einkauf")
+                            }
                         }
                     }
                 }
@@ -142,10 +164,130 @@ struct CookModeView: View {
             }
         }
         .onAppear {
+            estimateMissingNutritionIfNeeded()
+
             // Load tip if the view appears directly on a step (edge case)
             if case .step(let index) = phase, index < item.steps.count {
                 tipTask = Task { await loadTip(for: index) }
             }
+        }
+    }
+
+    // MARK: - Nutrition Logging
+
+    private var nutritionSummarySection: some View {
+        Section {
+            nutritionField("Kalorien", nutritionValue?.calories.map { "\($0)" })
+            nutritionField("Protein", nutritionValue?.proteinGrams.map(gramsText))
+            nutritionField("Kohlenhydrate", nutritionValue?.carbsGrams.map(gramsText))
+            nutritionField("Fett", nutritionValue?.fatGrams.map(gramsText))
+
+            if let recipe = item as? Recipe, let nutrition = nutritionValue {
+                Stepper(value: $servingsEaten, in: 0.5...10, step: 0.5) {
+                    Text("\(servingsEaten.formatted(.number.precision(.fractionLength(0...1)))) Portionen")
+                }
+
+                Button {
+                    logMeal(recipe.withNutrition(nutrition))
+                } label: {
+                    Label(didLogMeal ? "Geloggt" : "Als gegessen loggen", systemImage: didLogMeal ? "checkmark.circle.fill" : "fork.knife")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    private var nutritionValue: NutritionInfo? {
+        if let recipe = item as? Recipe, let stored = recipe.nutrition {
+            guard let estimatedNutrition else { return stored }
+            return NutritionInfo(
+                calories: stored.calories ?? estimatedNutrition.calories,
+                proteinGrams: stored.proteinGrams ?? estimatedNutrition.proteinGrams,
+                carbsGrams: stored.carbsGrams ?? estimatedNutrition.carbsGrams,
+                fatGrams: stored.fatGrams ?? estimatedNutrition.fatGrams,
+                servings: stored.servings
+            )
+        }
+        return estimatedNutrition
+    }
+
+    private func nutritionField(_ title: String, _ value: String?) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            if let value {
+                Text(value)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+            } else {
+                ProgressView()
+                    .controlSize(.small)
+            }
+        }
+    }
+
+    private func gramsText(_ value: Double) -> String {
+        "\(value.formatted(.number.precision(.fractionLength(0...1)))) g"
+    }
+
+    private func logMeal(_ recipe: Recipe) {
+        nutritionStore.logMeal(recipe: recipe, servings: servingsEaten)
+        withAnimation { didLogMeal = true }
+        Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            await MainActor.run {
+                withAnimation { didLogMeal = false }
+            }
+        }
+    }
+
+    private func estimateMissingNutritionIfNeeded() {
+        guard !didAttemptNutritionEstimate,
+              !item.ingredients.isEmpty else { return }
+
+        if let recipe = item as? Recipe,
+           let nutrition = recipe.nutrition,
+           nutrition.calories != nil,
+           nutrition.proteinGrams != nil,
+           nutrition.carbsGrams != nil,
+           nutrition.fatGrams != nil {
+            return
+        }
+
+        didAttemptNutritionEstimate = true
+        isEstimatingNutrition = true
+
+        Task {
+            do {
+                let estimate = try await aiService.estimateNutrition(title: item.title, ingredients: item.ingredients)
+                let nutrition = NutritionInfo(
+                    calories: estimate.calories,
+                    proteinGrams: estimate.protein,
+                    carbsGrams: estimate.carbs,
+                    fatGrams: estimate.fat,
+                    servings: max(estimate.servings, 1)
+                )
+                await MainActor.run {
+                    estimatedNutrition = nutrition
+                    isEstimatingNutrition = false
+                    if let recipe = item as? Recipe {
+                        recipeStore.save(recipe.withNutrition(nutrition), editing: recipe)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isEstimatingNutrition = false
+                }
+            }
+        }
+    }
+
+    private func addIngredientsToShoppingList() {
+        if let recipe = item as? Recipe {
+            shoppingListStore.addIngredients(from: recipe)
+        } else if let lesson = item as? Lesson {
+            shoppingListStore.addIngredients(from: lesson)
         }
     }
 
@@ -236,3 +378,19 @@ struct CookModeView: View {
         }
     }
 }
+private extension Recipe {
+    func withNutrition(_ nutrition: NutritionInfo) -> Recipe {
+        Recipe(
+            id: id,
+            title: title,
+            ingredients: ingredients,
+            steps: steps,
+            isPinned: isPinned,
+            tipsEnabled: tipsEnabled,
+            wasGenerated: wasGenerated,
+            nutrition: nutrition,
+            createdAt: createdAt
+        )
+    }
+}
+

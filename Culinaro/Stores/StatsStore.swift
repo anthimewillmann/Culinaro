@@ -6,6 +6,7 @@ final class StatsStore: ObservableObject {
     @Published var completedCookModes: Int { didSet { save() } }
     @Published var completedLessons: Int { didSet { save() } }
     @Published var allergies: String { didSet { save() } }
+    @Published var calorieGoal: Int { didSet { save() } }
     @Published private var completionDates: [Date] { didSet { save() } }
 
     private let defaults: UserDefaults
@@ -35,6 +36,7 @@ final class StatsStore: ObservableObject {
         completedCookModes = defaults.integer(forKey: "culinaro.stats.cookModes")
         completedLessons = defaults.integer(forKey: "culinaro.stats.lessons")
         allergies = defaults.string(forKey: "culinaro.stats.allergies") ?? ""
+        calorieGoal = defaults.integer(forKey: "culinaro.stats.calorieGoal")
         completionDates = defaults.array(forKey: "culinaro.stats.completionDates") as? [Date] ?? []
     }
 
@@ -51,6 +53,7 @@ final class StatsStore: ObservableObject {
         defaults.set(completedCookModes, forKey: "culinaro.stats.cookModes")
         defaults.set(completedLessons, forKey: "culinaro.stats.lessons")
         defaults.set(allergies, forKey: "culinaro.stats.allergies")
+        defaults.set(calorieGoal, forKey: "culinaro.stats.calorieGoal")
         defaults.set(completionDates, forKey: "culinaro.stats.completionDates")
     }
 }

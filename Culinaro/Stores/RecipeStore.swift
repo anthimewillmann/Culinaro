@@ -27,6 +27,7 @@ final class RecipeStore: ObservableObject {
             isPinned: original?.isPinned ?? recipe.isPinned,
             tipsEnabled: recipe.tipsEnabled,
             wasGenerated: recipe.wasGenerated,
+            nutrition: recipe.nutrition,
             createdAt: original?.createdAt ?? recipe.createdAt
         )
         if let index = recipes.firstIndex(where: { $0.id == cleaned.id }) {

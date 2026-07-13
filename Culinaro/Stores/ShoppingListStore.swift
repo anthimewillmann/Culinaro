@@ -8,7 +8,7 @@ final class ShoppingListStore: ObservableObject {
 
     private let storageKey = "culinaro.shoppingList.items"
     private let cloud: CloudKitManager
-    private let recipeLookup: (UUID) -> Recipe?
+    private let recipeLookup: @MainActor (UUID) -> Recipe?
 
     var plannedCalories: Int {
         let recipeIDs = Set(items.compactMap { $0.sourceRecipeID })
@@ -17,7 +17,7 @@ final class ShoppingListStore: ObservableObject {
         }
     }
 
-    init(cloud: CloudKitManager? = nil, recipeLookup: @escaping (UUID) -> Recipe? = { _ in nil }) {
+    init(cloud: CloudKitManager? = nil, recipeLookup: @escaping @MainActor (UUID) -> Recipe? = { _ in nil }) {
         self.cloud = cloud ?? .shared
         self.recipeLookup = recipeLookup
         loadCache()

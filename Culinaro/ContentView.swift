@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    private enum AppTab: Hashable { case recipes, lessons, shoppingList, stats }
+    private enum AppTab: Hashable { case recipes, lessons, shoppingList, health, stats }
 
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
@@ -17,30 +17,48 @@ struct ContentView: View {
     @State private var recipesStackID = UUID()
     @State private var lessonsStackID = UUID()
     @State private var shoppingStackID = UUID()
+    @State private var recipePath: [UUID] = []
+    @State private var lessonPath: [UUID] = []
 
     var body: some View {
         TabView(selection: $selection) {
             Tab("Rezepte", systemImage: "fork.knife", value: .recipes) {
-                NavigationStack {
+                NavigationStack(path: $recipePath) {
                     RecipesView()
                         .toolbar { addButtonToolbar }
                         .searchable(text: $recipeSearchText, placement: .toolbar)
                         .searchToolbarBehavior(.minimize)
+                        .navigationDestination(for: UUID.self) { recipeID in
+                            if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
+                                CookModeView(item: recipe)
+                            } else {
+                                ContentUnavailableView("Rezept nicht gefunden", systemImage: "fork.knife")
+                            }
+                        }
                 }
+                .toolbar(recipePath.isEmpty ? .visible : .hidden, for: .tabBar)
                 .id(recipesStackID)
             }
 
             Tab("Lektionen", systemImage: "graduationcap", value: .lessons) {
-                NavigationStack {
+                NavigationStack(path: $lessonPath) {
                     LessonsView()
                         .toolbar { addButtonToolbar }
                         .searchable(text: $lessonSearchText, placement: .toolbar)
                         .searchToolbarBehavior(.minimize)
+                        .navigationDestination(for: UUID.self) { lessonID in
+                            if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
+                                CookModeView(item: lesson)
+                            } else {
+                                ContentUnavailableView("Lektion nicht gefunden", systemImage: "graduationcap")
+                            }
+                        }
                 }
+                .toolbar(lessonPath.isEmpty ? .visible : .hidden, for: .tabBar)
                 .id(lessonsStackID)
             }
 
-            Tab("Einkaufsliste", systemImage: "cart", value: .shoppingList) {
+            Tab("Einkauf", systemImage: "cart", value: .shoppingList) {
                 NavigationStack {
                     ShoppingListView(searchText: shoppingSearchText)
                         .toolbar { addButtonToolbar }
@@ -48,6 +66,12 @@ struct ContentView: View {
                         .searchToolbarBehavior(.minimize)
                 }
                 .id(shoppingStackID)
+            }
+
+            Tab("Ernährung", systemImage: "heart.text.square", value: .health) {
+                NavigationStack {
+                    HealthView()
+                }
             }
 
             Tab("Übersicht", systemImage: "chart.bar", value: .stats) {
@@ -72,17 +96,19 @@ struct ContentView: View {
             switch oldValue {
             case .recipes:
                 recipeSearchText = ""
+                recipePath = []
                 recipesStackID = UUID()
 
             case .lessons:
                 lessonSearchText = ""
+                lessonPath = []
                 lessonsStackID = UUID()
 
             case .shoppingList:
                 shoppingSearchText = ""
                 shoppingStackID = UUID()
 
-            case .stats:
+            case .health, .stats:
                 break
             }
         }

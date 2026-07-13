@@ -72,9 +72,9 @@ struct StatsView: View {
     }
 
     private var notesSection: some View {
-        Section("Notizen") {
+        Section("Anmerkungen") {
             ForEach(Array(notes.enumerated()), id: \.element.id) { index, note in
-                TextField("\(index + 1). Notiz", text: noteBinding(index), axis: .vertical)
+                TextField("\(index + 1). Anmerkung", text: noteBinding(index), axis: .vertical)
                     .focused($focusedNote, equals: note.id)
                     .onChange(of: notes[index].text) { _, value in
                         updateNotes(index: index, value: value, id: note.id)

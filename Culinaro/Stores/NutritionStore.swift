@@ -20,30 +20,12 @@ final class NutritionStore: ObservableObject {
     var carbsToday: Double { macroToday(\.carbsGrams) }
     var fatToday: Double { macroToday(\.fatGrams) }
 
-    var caloriesLastSevenDays: [DailyCalories] {
-        let today = calendar.startOfDay(for: Date())
-        return (0..<7).compactMap { offset in
-            guard let date = calendar.date(byAdding: .day, value: offset - 6, to: today) else { return nil }
-            return DailyCalories(date: date, calories: calories(on: date))
-        }
+    var averageLastSevenDays: AverageNutrition {
+        averageNutrition(forLast: 7)
     }
 
     var averageLastThirtyDays: AverageNutrition {
-        let today = calendar.startOfDay(for: Date())
-        guard let startDate = calendar.date(byAdding: .day, value: -29, to: today),
-              let endDate = calendar.date(byAdding: .day, value: 1, to: today) else {
-            return .empty
-        }
-
-        let meals = loggedMeals.filter { $0.loggedAt >= startDate && $0.loggedAt < endDate }
-        let dayCount = 30.0
-
-        return AverageNutrition(
-            calories: Double(meals.reduce(0) { $0 + $1.calories }) / dayCount,
-            proteinGrams: meals.reduce(0) { $0 + $1.proteinGrams } / dayCount,
-            carbsGrams: meals.reduce(0) { $0 + $1.carbsGrams } / dayCount,
-            fatGrams: meals.reduce(0) { $0 + $1.fatGrams } / dayCount
-        )
+        averageNutrition(forLast: 30)
     }
 
     init(cloud: CloudKitManager? = nil, calendar: Calendar = .current) {
@@ -104,10 +86,22 @@ final class NutritionStore: ObservableObject {
             .reduce(0) { $0 + $1[keyPath: keyPath] }
     }
 
-    private func calories(on date: Date) -> Int {
-        loggedMeals
-            .filter { calendar.isDate($0.loggedAt, inSameDayAs: date) }
-            .reduce(0) { $0 + $1.calories }
+    private func averageNutrition(forLast dayCount: Int) -> AverageNutrition {
+        let today = calendar.startOfDay(for: Date())
+        guard let startDate = calendar.date(byAdding: .day, value: 1 - dayCount, to: today),
+              let endDate = calendar.date(byAdding: .day, value: 1, to: today) else {
+            return .empty
+        }
+
+        let meals = loggedMeals.filter { $0.loggedAt >= startDate && $0.loggedAt < endDate }
+        let divisor = Double(dayCount)
+
+        return AverageNutrition(
+            calories: Double(meals.reduce(0) { $0 + $1.calories }) / divisor,
+            proteinGrams: meals.reduce(0) { $0 + $1.proteinGrams } / divisor,
+            carbsGrams: meals.reduce(0) { $0 + $1.carbsGrams } / divisor,
+            fatGrams: meals.reduce(0) { $0 + $1.fatGrams } / divisor
+        )
     }
 
     private func persistCache() {
@@ -120,12 +114,6 @@ final class NutritionStore: ObservableObject {
               let decoded = try? JSONDecoder().decode([LoggedMeal].self, from: data) else { return }
         loggedMeals = decoded
     }
-}
-
-struct DailyCalories: Identifiable, Equatable {
-    var id: Date { date }
-    let date: Date
-    let calories: Int
 }
 
 struct AverageNutrition: Equatable {

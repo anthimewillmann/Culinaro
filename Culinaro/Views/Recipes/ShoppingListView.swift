@@ -1,14 +1,22 @@
 import SwiftUI
 
 struct ShoppingListView: View {
+    let searchText: String
+
     @EnvironmentObject private var store: ShoppingListStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
-    @State private var showAddItem = false
+    init(searchText: String = "") {
+        self.searchText = searchText
+    }
 
     private var items: [ShoppingListItem] {
-        store.items.sorted { $0.createdAt > $1.createdAt }
+        store.items
+            .filter { item in
+                searchText.isEmpty || item.name.localizedCaseInsensitiveContains(searchText) || item.sourceRecipeTitle?.localizedCaseInsensitiveContains(searchText) == true
+            }
+            .sorted { $0.createdAt > $1.createdAt }
     }
 
     private var groupedItems: [(category: String, items: [ShoppingListItem])] {
@@ -45,21 +53,8 @@ struct ShoppingListView: View {
             }
         }
         .overlay { if items.isEmpty { ContentUnavailableView("Noch keine Artikel", systemImage: "cart") } }
-        .navigationTitle("Einkaufsliste")
+        .navigationTitle("Einkauf")
         .navigationSubtitle(subtitle)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showAddItem = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Artikel hinzufügen")
-            }
-        }
-        .sheet(isPresented: $showAddItem) {
-            AddShoppingListItemSheet()
-        }
         .refreshable { await store.syncFromCloud() }
         .task(id: categorizationSignature) {
             await categorize()
@@ -96,9 +91,9 @@ struct ShoppingListView: View {
                 }
 
                 if let sourceRecipeTitle = item.sourceRecipeTitle {
-                    Text("aus: \(sourceRecipeTitle)")
+                    Text("aus \(sourceRecipeTitle)")
                         .font(.caption)
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -136,7 +131,7 @@ struct ShoppingListView: View {
     }
 }
 
-private struct AddShoppingListItemSheet: View {
+struct AddShoppingListItemSheet: View {
     @EnvironmentObject private var store: ShoppingListStore
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""

@@ -39,6 +39,26 @@ struct CookingTip {
     var tip: String
 }
 
+// MARK: - NutritionEstimate
+
+@Generable
+struct NutritionEstimate {
+    @Guide(description: "Estimated total calories per serving")
+    var calories: Int
+
+    @Guide(description: "Estimated grams of protein per serving")
+    var protein: Double
+
+    @Guide(description: "Estimated grams of carbohydrates per serving")
+    var carbs: Double
+
+    @Guide(description: "Estimated grams of fat per serving")
+    var fat: Double
+
+    @Guide(description: "Assumed number of servings this recipe makes")
+    var servings: Int
+}
+
 // MARK: - Categorization
 
 /// A structured output model for Apple Intelligence (FoundationModels).

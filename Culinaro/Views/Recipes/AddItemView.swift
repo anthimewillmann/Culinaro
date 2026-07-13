@@ -225,10 +225,68 @@ struct AddItemView: View {
 
     private func save() {
         if kind == .recipe {
-            recipeStore.save(Recipe(title: title, ingredients: cleaned(ingredients), steps: cleaned(steps), tipsEnabled: tipsEnabled, wasGenerated: generateEnabled), editing: editingRecipe)
+            let recipeIngredients = cleaned(ingredients)
+            let recipe = Recipe(
+                id: editingRecipe?.id ?? UUID(),
+                title: title,
+                ingredients: recipeIngredients,
+                steps: cleaned(steps),
+                isPinned: editingRecipe?.isPinned ?? false,
+                tipsEnabled: tipsEnabled,
+                wasGenerated: generateEnabled,
+                nutrition: retainedNutrition(forTitle: title, ingredients: recipeIngredients),
+                createdAt: editingRecipe?.createdAt ?? Date()
+            )
+            recipeStore.save(recipe, editing: editingRecipe)
+            estimateNutritionInBackground(for: recipe)
         } else {
             // Fix: ingredients wurde hier vorher gar nicht mitgegeben.
             lessonStore.save(Lesson(title: title, ingredients: cleaned(ingredients), steps: cleaned(steps), wasGenerated: generateEnabled, tipsEnabled: tipsEnabled), editing: editingLesson)
         }
+    }
+
+    private func retainedNutrition(forTitle title: String, ingredients: [String]) -> NutritionInfo? {
+        guard let editingRecipe else { return nil }
+
+        let titleMatches = editingRecipe.title.trimmingCharacters(in: .whitespacesAndNewlines) == title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let ingredientsMatch = editingRecipe.ingredients == ingredients
+        return titleMatches && ingredientsMatch ? editingRecipe.nutrition : nil
+    }
+
+    private func estimateNutritionInBackground(for recipe: Recipe) {
+        guard recipe.nutrition == nil, !recipe.ingredients.isEmpty else { return }
+
+        Task {
+            do {
+                let nutrition = try await nutritionInfo(title: recipe.title, ingredients: recipe.ingredients)
+                let updatedRecipe = Recipe(
+                    id: recipe.id,
+                    title: recipe.title,
+                    ingredients: recipe.ingredients,
+                    steps: recipe.steps,
+                    isPinned: recipe.isPinned,
+                    tipsEnabled: recipe.tipsEnabled,
+                    wasGenerated: recipe.wasGenerated,
+                    nutrition: nutrition,
+                    createdAt: recipe.createdAt
+                )
+                await MainActor.run {
+                    recipeStore.save(updatedRecipe, editing: updatedRecipe)
+                }
+            } catch {
+                // Nutrition is helpful metadata, so recipe creation should not fail if estimation is unavailable.
+            }
+        }
+    }
+
+    private func nutritionInfo(title: String, ingredients: [String]) async throws -> NutritionInfo {
+        let estimate = try await aiService.estimateNutrition(title: title, ingredients: ingredients)
+        return NutritionInfo(
+            calories: estimate.calories,
+            proteinGrams: estimate.protein,
+            carbsGrams: estimate.carbs,
+            fatGrams: estimate.fat,
+            servings: max(estimate.servings, 1)
+        )
     }
 }

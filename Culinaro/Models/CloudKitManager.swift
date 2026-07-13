@@ -16,8 +16,18 @@ final class CloudKitManager {
         try await fetch(recordType: "Lesson").compactMap(Lesson.init(record:))
     }
 
+    func fetchLoggedMeals() async throws -> [LoggedMeal] {
+        try await fetch(recordType: "LoggedMeal").compactMap(LoggedMeal.init(record:))
+    }
+
+    func fetchShoppingListItems() async throws -> [ShoppingListItem] {
+        try await fetch(recordType: "ShoppingListItem").compactMap(ShoppingListItem.init(record:))
+    }
+
     func save(_ recipe: Recipe) async throws { _ = try await database.save(recipe.cloudRecord) }
     func save(_ lesson: Lesson) async throws { _ = try await database.save(lesson.cloudRecord) }
+    func save(_ loggedMeal: LoggedMeal) async throws { _ = try await database.save(loggedMeal.cloudRecord) }
+    func save(_ item: ShoppingListItem) async throws { _ = try await database.save(item.cloudRecord) }
 
     func delete(id: UUID) async throws {
         _ = try await database.deleteRecord(withID: CKRecord.ID(recordName: id.uuidString))

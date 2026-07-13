@@ -3,10 +3,16 @@ import SwiftUI
 struct SearchResultsView: View {
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
+    @EnvironmentObject private var shoppingList: ShoppingListStore
     @State private var query = ""
 
     private var matchingRecipes: [Recipe] { recipes.recipes.filter { query.isEmpty || $0.title.localizedCaseInsensitiveContains(query) } }
     private var matchingLessons: [Lesson] { lessons.lessons.filter { query.isEmpty || $0.title.localizedCaseInsensitiveContains(query) } }
+    private var matchingShoppingItems: [ShoppingListItem] {
+        shoppingList.items.filter { item in
+            query.isEmpty || item.name.localizedCaseInsensitiveContains(query) || item.sourceRecipeTitle?.localizedCaseInsensitiveContains(query) == true
+        }
+    }
 
     var body: some View {
         List {
@@ -24,13 +30,27 @@ struct SearchResultsView: View {
                     }
                 }
             }
+            if !matchingShoppingItems.isEmpty {
+                Section("Einkauf") {
+                    ForEach(matchingShoppingItems) { item in
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(item.name)
+                            if let sourceRecipeTitle = item.sourceRecipeTitle {
+                                Text("aus \(sourceRecipeTitle)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
         }
         .overlay {
-            if !query.isEmpty && matchingRecipes.isEmpty && matchingLessons.isEmpty {
+            if !query.isEmpty && matchingRecipes.isEmpty && matchingLessons.isEmpty && matchingShoppingItems.isEmpty {
                 ContentUnavailableView.search(text: query)
             }
         }
         .navigationTitle("Suchen")
-        .searchable(text: $query, prompt: "Rezepte und Lektionen")
+        .searchable(text: $query, prompt: "Rezepte, Lektionen und Einkauf")
     }
 }

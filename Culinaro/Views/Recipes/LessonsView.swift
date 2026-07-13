@@ -5,6 +5,7 @@ import SwiftUI
 /// passend zum aktuell vorhandenen Titel-Set.
 struct LessonsView: View {
     @EnvironmentObject private var store: LessonStore
+    @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var editingLesson: Lesson?
     @State private var categoriesByID: [UUID: String] = [:]
@@ -52,7 +53,7 @@ struct LessonsView: View {
 
     @ViewBuilder
     private func row(for lesson: Lesson) -> some View {
-        NavigationLink { CookModeView(item: lesson) } label: {
+        NavigationLink(value: lesson.id) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(lesson.title).fontWeight(.semibold)
@@ -74,9 +75,10 @@ struct LessonsView: View {
         .contextMenu {
             Button { editingLesson = lesson } label: { Label("Bearbeiten", systemImage: "pencil") }
             Button { store.togglePin(lesson) } label: { Label(lesson.isPinned ? "Lösen" : "Anpinnen", systemImage: "pin") }
+            Button { shoppingListStore.addIngredients(from: lesson) } label: { Label("Zutaten zum Einkauf", systemImage: "cart.badge.plus") }
             if let pdf = PDFExporter.export(lesson) {
                 ShareLink(item: pdf, preview: SharePreview(lesson.title, image: Image(systemName: "doc.richtext"))) {
-                    Label("Als PDF teilen", systemImage: "square.and.arrow.up")
+                    Label("Exportieren", systemImage: "square.and.arrow.up")
                 }
             }
             Button(role: .destructive) { store.delete(lesson) } label: { Label("Löschen", systemImage: "trash") }
