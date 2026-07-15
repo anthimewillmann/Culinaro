@@ -56,7 +56,7 @@ struct AddItemView: View {
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
 
-                Section {
+                Section("Titel") {
                     TextField(kind == .recipe ? "Rezepttitel" : "Lektionstitel", text: $title)
                 }
 

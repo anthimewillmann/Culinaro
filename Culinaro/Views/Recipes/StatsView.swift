@@ -32,6 +32,14 @@ struct StatsView: View {
         .refreshable {
             await loadFriendScores()
         }
+        .onChange(of: gameCenter.isAuthenticated) { _, isAuthenticated in
+            if isAuthenticated {
+                Task { await loadFriendScores() }
+            } else {
+                friendScores = []
+                friendsErrorMessage = nil
+            }
+        }
     }
 
     private var streakSection: some View {
@@ -48,9 +56,6 @@ struct StatsView: View {
                 }
             } else if let friendsErrorMessage {
                 LabeledContent("Fehler", value: friendsErrorMessage)
-                Button("Erneut laden") {
-                    Task { await loadFriendScores() }
-                }
             } else if friendScores.isEmpty {
                 Text("Keine Einträge")
                     .foregroundStyle(.secondary)
@@ -63,10 +68,6 @@ struct StatsView: View {
                         Text(score.displayName)
                     }
                 }
-            }
-
-            NavigationLink("Alle anzeigen") {
-                FriendsLeaderboardView()
             }
         }
     }

@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var selection: AppTab = .recipes
     @State private var showAddItem = false
     @State private var showAddShoppingItem = false
+    @State private var showAddHealthRecipe = false
     @State private var recipeSearchText = ""
     @State private var lessonSearchText = ""
     @State private var shoppingSearchText = ""
@@ -71,6 +72,7 @@ struct ContentView: View {
             Tab("Ernährung", systemImage: "heart.text.square", value: .health) {
                 NavigationStack {
                     HealthView()
+                        .toolbar { addButtonToolbar }
                 }
             }
 
@@ -118,6 +120,9 @@ struct ContentView: View {
         .sheet(isPresented: $showAddShoppingItem) {
             AddShoppingListItemSheet()
         }
+        .sheet(isPresented: $showAddHealthRecipe) {
+            AddHealthRecipeSheet()
+        }
     }
 
     private var totalScore: Int {
@@ -130,23 +135,38 @@ struct ContentView: View {
         }
     }
 
+    private var addButtonAccessibilityLabel: String {
+        switch selection {
+        case .shoppingList:
+            return "Zutat hinzufügen"
+        case .health:
+            return "Rezept hinzufügen"
+        case .recipes, .lessons, .stats:
+            return "Neu erstellen"
+        }
+    }
+
     @ToolbarContentBuilder
     private var addButtonToolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                if selection == .shoppingList {
+                switch selection {
+                case .shoppingList:
                     showAddShoppingItem = true
-                } else {
+                case .health:
+                    showAddHealthRecipe = true
+                case .recipes, .lessons, .stats:
                     showAddItem = true
                 }
             } label: {
                 Image(systemName: "plus")
             }
-            .accessibilityLabel(selection == .shoppingList ? "Artikel hinzufügen" : "Neu erstellen")
+            .accessibilityLabel(addButtonAccessibilityLabel)
         }
 
-        ToolbarSpacer(.flexible, placement: .topBarTrailing)
-
-        DefaultToolbarItem(kind: .search, placement: .topBarTrailing)
+        if selection != .health {
+            ToolbarSpacer(.flexible, placement: .topBarTrailing)
+            DefaultToolbarItem(kind: .search, placement: .topBarTrailing)
+        }
     }
 }

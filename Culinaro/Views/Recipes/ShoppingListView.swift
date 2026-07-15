@@ -134,30 +134,25 @@ struct ShoppingListView: View {
 struct AddShoppingListItemSheet: View {
     @EnvironmentObject private var store: ShoppingListStore
     @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var quantity = ""
-    @FocusState private var focusedField: Field?
+    @State private var ingredients = [TextRow(text: "")]
+    @FocusState private var focusedField: UUID?
 
-    private enum Field {
-        case name
-        case quantity
+    private var hasIngredients: Bool {
+        !cleanedIngredients.isEmpty
+    }
+
+    private var cleanedIngredients: [String] {
+        ingredients
+            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Artikel") {
-                    TextField("Name", text: $name)
-                        .focused($focusedField, equals: .name)
-                        .submitLabel(.done)
-                        .onSubmit(addAndReset)
-                    TextField("Menge", text: $quantity)
-                        .focused($focusedField, equals: .quantity)
-                        .submitLabel(.done)
-                        .onSubmit(addAndReset)
-                }
+                dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients)
             }
-            .navigationTitle("Hinzufügen")
+            .navigationTitle("Zutat hinzufügen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -167,15 +162,57 @@ struct AddShoppingListItemSheet: View {
                         Image(systemName: "xmark")
                     }
                 }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        save()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "checkmark")
+                    }
+                    .disabled(!hasIngredients)
+                }
             }
-            .onAppear { focusedField = .name }
+            .onAppear { focusedField = ingredients.first?.id }
         }
     }
 
-    private func addAndReset() {
-        store.add(name: name, quantity: quantity)
-        name = ""
-        quantity = ""
-        focusedField = .name
+    @ViewBuilder
+    private func dynamicSection(title: String, placeholderTitle: String, rows: Binding<[TextRow]>) -> some View {
+        Section(title) {
+            ForEach(Array(rows.wrappedValue.enumerated()), id: \.element.id) { index, row in
+                TextField("\(index + 1). \(placeholderTitle)", text: rowBinding(rows, index))
+                    .focused($focusedField, equals: row.id)
+                    .onChange(of: rows.wrappedValue[index].text) { _, value in
+                        updateRows(rows, index: index, value: value, id: row.id)
+                    }
+            }
+        }
+    }
+
+    private func rowBinding(_ rows: Binding<[TextRow]>, _ index: Int) -> Binding<String> {
+        Binding(get: { rows.wrappedValue[index].text }, set: { rows.wrappedValue[index].text = $0 })
+    }
+
+    private func updateRows(_ rows: Binding<[TextRow]>, index: Int, value: String, id: UUID) {
+        var array = rows.wrappedValue
+        let isEmpty: (TextRow) -> Bool = { $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+        if index == array.count - 1 && !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            array.append(TextRow(text: ""))
+        }
+
+        let trailingPlaceholder = array.last.flatMap { isEmpty($0) ? $0 : nil }
+        var compacted = array.filter { !isEmpty($0) }
+        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
+
+        rows.wrappedValue = compacted
+        focusedField = compacted.contains { $0.id == id } ? id : nil
+    }
+
+    private func save() {
+        for ingredient in cleanedIngredients {
+            store.add(name: ingredient)
+        }
     }
 }

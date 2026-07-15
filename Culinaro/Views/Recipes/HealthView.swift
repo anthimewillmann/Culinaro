@@ -62,8 +62,9 @@ struct AddHealthRecipeSheet: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @FocusState private var focusedField: UUID?
 
-    private var cleanedTitle: String {
-        title.trimmingCharacters(in: .whitespacesAndNewlines)
+    private var recipeTitle: String {
+        let cleanedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleanedTitle.isEmpty ? "Rezept" : cleanedTitle
     }
 
     private var cleanedIngredients: [String] {
@@ -73,15 +74,15 @@ struct AddHealthRecipeSheet: View {
     }
 
     private var canSave: Bool {
-        !cleanedTitle.isEmpty && !cleanedIngredients.isEmpty && !isProcessing
+        !cleanedIngredients.isEmpty && !isProcessing
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Rezept") {
-                    TextField("Rezept", text: $title)
+                dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients)
 
+                Section("Scannen") {
                     Menu("Rezept scannen") {
                         Button("Kamera", systemImage: "camera") { showCamera = true }
                         Button("Fotomediathek", systemImage: "photo") { showGallery = true }
@@ -93,8 +94,6 @@ struct AddHealthRecipeSheet: View {
                             .foregroundStyle(.red)
                     }
                 }
-
-                dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients)
             }
             .disabled(isProcessing)
             .overlay {
@@ -194,9 +193,9 @@ struct AddHealthRecipeSheet: View {
         errorMessage = nil
         Task {
             do {
-                let estimate = try await aiService.estimateNutrition(title: cleanedTitle, ingredients: cleanedIngredients)
+                let estimate = try await aiService.estimateNutrition(title: recipeTitle, ingredients: cleanedIngredients)
                 let recipe = Recipe(
-                    title: cleanedTitle,
+                    title: recipeTitle,
                     ingredients: cleanedIngredients,
                     steps: [],
                     nutrition: NutritionInfo(
