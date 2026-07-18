@@ -70,9 +70,9 @@ struct ShoppingListView: View {
     private func row(for item: ShoppingListItem) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Button {
-                store.toggleChecked(item)
+                store.delete(item)
             } label: {
-                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
+                Image(systemName: "circle")
                     .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)

@@ -15,6 +15,16 @@ struct PDFExport: Transferable {
 enum PDFExporter {
     static func export(_ item: any Cookable) -> PDFExport? {
         let content = PDFContent(item: item).frame(width: 515, alignment: .topLeading)
+        return render(content, filename: sanitized(item.title) + ".pdf")
+    }
+
+    static func export(_ items: [any Cookable], filename: String) -> PDFExport? {
+        guard !items.isEmpty else { return nil }
+        let content = PDFCollectionContent(items: items).frame(width: 515, alignment: .topLeading)
+        return render(content, filename: sanitized(filename) + ".pdf")
+    }
+
+    private static func render<Content: View>(_ content: Content, filename: String) -> PDFExport? {
         let renderer = ImageRenderer(content: content)
         let data = NSMutableData()
         guard let consumer = CGDataConsumer(data: data as CFMutableData),
@@ -29,7 +39,7 @@ enum PDFExporter {
             context.endPDFPage()
         }
         context.closePDF()
-        return PDFExport(data: data as Data, filename: sanitized(item.title) + ".pdf")
+        return PDFExport(data: data as Data, filename: filename)
     }
 
     private static func sanitized(_ name: String) -> String {
@@ -42,23 +52,47 @@ private struct PDFContent: View {
     let item: any Cookable
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text(item.title).font(.largeTitle.bold())
-            if !item.ingredients.isEmpty {
-                Text("Zutaten").font(.title2.bold())
-                ForEach(Array(item.ingredients.enumerated()), id: \.offset) { _, ingredient in
-                    Text("• \(ingredient)")
-                }
-            }
-            Text("Schritte").font(.title2.bold())
-            ForEach(Array(item.steps.enumerated()), id: \.offset) { index, step in
-                HStack(alignment: .top) {
-                    Text("\(index + 1).").fontWeight(.semibold)
-                    Text(step)
+        cookableContent(item)
+            .foregroundStyle(.black)
+            .padding(.bottom, 20)
+    }
+}
+
+private struct PDFCollectionContent: View {
+    let items: [any Cookable]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 28) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                cookableContent(item)
+
+                if index < items.count - 1 {
+                    Divider()
+                        .overlay(.black.opacity(0.25))
                 }
             }
         }
         .foregroundStyle(.black)
         .padding(.bottom, 20)
+    }
+}
+
+@ViewBuilder
+private func cookableContent(_ item: any Cookable) -> some View {
+    VStack(alignment: .leading, spacing: 18) {
+        Text(item.title).font(.largeTitle.bold())
+        if !item.ingredients.isEmpty {
+            Text("Zutaten").font(.title2.bold())
+            ForEach(Array(item.ingredients.enumerated()), id: \.offset) { _, ingredient in
+                Text("• \(ingredient)")
+            }
+        }
+        Text("Schritte").font(.title2.bold())
+        ForEach(Array(item.steps.enumerated()), id: \.offset) { index, step in
+            HStack(alignment: .top) {
+                Text("\(index + 1).").fontWeight(.semibold)
+                Text(step)
+            }
+        }
     }
 }

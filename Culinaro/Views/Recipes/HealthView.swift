@@ -35,7 +35,7 @@ struct HealthView: View {
             Spacer()
             Text(value)
                 .fontWeight(.semibold)
-                .foregroundStyle(.primary)
+                .foregroundStyle(.secondary)
         }
     }
 

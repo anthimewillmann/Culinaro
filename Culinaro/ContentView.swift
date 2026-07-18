@@ -14,6 +14,8 @@ struct ContentView: View {
     @State private var recipeSearchText = ""
     @State private var lessonSearchText = ""
     @State private var shoppingSearchText = ""
+    @State private var isSelectingRecipes = false
+    @State private var isSelectingLessons = false
 
     @State private var recipesStackID = UUID()
     @State private var lessonsStackID = UUID()
@@ -25,7 +27,7 @@ struct ContentView: View {
         TabView(selection: $selection) {
             Tab("Rezepte", systemImage: "fork.knife", value: .recipes) {
                 NavigationStack(path: $recipePath) {
-                    RecipesView()
+                    RecipesView(isSelecting: $isSelectingRecipes)
                         .toolbar { addButtonToolbar }
                         .searchable(text: $recipeSearchText, placement: .toolbar)
                         .searchToolbarBehavior(.minimize)
@@ -37,13 +39,13 @@ struct ContentView: View {
                             }
                         }
                 }
-                .toolbar(recipePath.isEmpty ? .visible : .hidden, for: .tabBar)
+                .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
                 .id(recipesStackID)
             }
 
             Tab("Lektionen", systemImage: "graduationcap", value: .lessons) {
                 NavigationStack(path: $lessonPath) {
-                    LessonsView()
+                    LessonsView(isSelecting: $isSelectingLessons)
                         .toolbar { addButtonToolbar }
                         .searchable(text: $lessonSearchText, placement: .toolbar)
                         .searchToolbarBehavior(.minimize)
@@ -55,7 +57,7 @@ struct ContentView: View {
                             }
                         }
                 }
-                .toolbar(lessonPath.isEmpty ? .visible : .hidden, for: .tabBar)
+                .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
                 .id(lessonsStackID)
             }
 
@@ -99,11 +101,13 @@ struct ContentView: View {
             case .recipes:
                 recipeSearchText = ""
                 recipePath = []
+                isSelectingRecipes = false
                 recipesStackID = UUID()
 
             case .lessons:
                 lessonSearchText = ""
                 lessonPath = []
+                isSelectingLessons = false
                 lessonsStackID = UUID()
 
             case .shoppingList:
@@ -146,9 +150,50 @@ struct ContentView: View {
         }
     }
 
+    private var isSelectionModeActive: Bool {
+        switch selection {
+        case .recipes:
+            return isSelectingRecipes
+        case .lessons:
+            return isSelectingLessons
+        case .shoppingList, .health, .stats:
+            return false
+        }
+    }
+
+    private var isSelectionButtonDisabled: Bool {
+        switch selection {
+        case .recipes:
+            return recipes.recipes.isEmpty
+        case .lessons:
+            return lessons.lessons.isEmpty
+        case .shoppingList, .health, .stats:
+            return true
+        }
+    }
+
     @ToolbarContentBuilder
     private var addButtonToolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            if selection == .recipes || selection == .lessons {
+                Button {
+                    withAnimation {
+                        switch selection {
+                        case .recipes:
+                            isSelectingRecipes.toggle()
+                        case .lessons:
+                            isSelectingLessons.toggle()
+                        case .shoppingList, .health, .stats:
+                            break
+                        }
+                    }
+                } label: {
+                    Image(systemName: "checkmark.circle")
+                }
+                .disabled(isSelectionButtonDisabled)
+                .accessibilityLabel(isSelectionModeActive ? "Auswahl beenden" : "Auswählen")
+            }
+
             Button {
                 switch selection {
                 case .shoppingList:
