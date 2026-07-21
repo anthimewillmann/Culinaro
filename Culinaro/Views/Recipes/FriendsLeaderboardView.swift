@@ -11,33 +11,33 @@ struct FriendsLeaderboardView: View {
         Group {
             if !gameCenter.isAuthenticated {
                 ContentUnavailableView {
-                    Label("Game Center nicht angemeldet", systemImage: "person.crop.circle.badge.exclamationmark")
+                    Label("game_center_not_signed_in", systemImage: "person.crop.circle.badge.exclamationmark")
                 } description: {
-                    Text("Melde dich an, um deine Gesamtpunktzahl mit Freunden zu vergleichen.")
+                    Text("game_center_sign_in_description")
                 } actions: {
-                    Button("Anmelden") {
+                    Button("sign_in") {
                         gameCenter.authenticate()
                     }
                 }
             } else if let errorMessage {
                 ContentUnavailableView {
-                    Label("Rangliste nicht verfügbar", systemImage: "wifi.exclamationmark")
+                    Label("leaderboard_unavailable", systemImage: "wifi.exclamationmark")
                 } description: {
                     Text(errorMessage)
                 } actions: {
-                    Button("Erneut laden") {
+                    Button("reload") {
                         Task { await loadScores() }
                     }
                 }
             } else if scores.isEmpty && !isLoading {
                 ContentUnavailableView(
-                    "Keine Einträge",
+                    "no_entries",
                     systemImage: "person.2.slash",
-                    description: Text("Sobald du oder deine Freunde Punkte eingereicht haben, erscheinen sie hier.")
+                    description: Text("friends_leaderboard_empty_description")
                 )
             } else {
                 Form {
-                    Section("Freunde") {
+                    Section("friends") {
                         ForEach(scores) { score in
                             scoreRow(score)
                         }
@@ -45,7 +45,7 @@ struct FriendsLeaderboardView: View {
                 }
             }
         }
-        .navigationTitle("Freunde")
+        .navigationTitle("friends")
         .task {
             await loadScores()
         }

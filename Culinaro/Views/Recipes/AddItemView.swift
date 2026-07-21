@@ -2,10 +2,19 @@ import SwiftUI
 import PhotosUI
 
 struct AddItemView: View {
-    enum ItemKind: String, CaseIterable, Identifiable {
-        case recipe = "Rezept"
-        case lesson = "Lektion"
+    enum ItemKind: CaseIterable, Identifiable {
+        case recipe
+        case lesson
         var id: Self { self }
+
+        var localizedTitle: String {
+            switch self {
+            case .recipe:
+                String(localized: "item_kind_recipe")
+            case .lesson:
+                String(localized: "item_kind_lesson")
+            }
+        }
     }
 
     @EnvironmentObject private var recipeStore: RecipeStore
@@ -16,14 +25,20 @@ struct AddItemView: View {
 
     private let editingRecipe: Recipe?
     private let editingLesson: Lesson?
-    private var tipsToggleDisabled: Bool { kind == .lesson && generateEnabled }
     @State private var kind: ItemKind
     @State private var title: String
     @State private var ingredients: [TextRow]
     @State private var steps: [TextRow]
     @State private var generateEnabled: Bool
     @State private var tipsEnabled: Bool
+    @State private var shouldRestoreTipsAfterLessonGeneration = false
+    @State private var isApplyingAutomaticTipsChange = false
+    @State private var calories: String
+    @State private var proteinGrams: String
+    @State private var carbsGrams: String
+    @State private var fatGrams: String
     @State private var isGenerating = false
+    @State private var generationTask: Task<Void, Never>?
     @State private var errorMessage: String?
     @State private var showCamera = false
     @State private var showGallery = false
@@ -41,14 +56,19 @@ struct AddItemView: View {
         _steps = State(initialValue: (editingRecipe?.steps ?? editingLesson?.steps ?? []).map { TextRow(text: $0) } + [TextRow(text: "")])
         _generateEnabled = State(initialValue: editingRecipe?.wasGenerated ?? editingLesson?.wasGenerated ?? false)
         _tipsEnabled = State(initialValue: editingRecipe?.tipsEnabled ?? editingLesson?.tipsEnabled ?? true)
+        let nutrition = editingRecipe?.nutrition ?? editingLesson?.nutrition
+        _calories = State(initialValue: Self.optionalIntText(nutrition?.calories))
+        _proteinGrams = State(initialValue: Self.optionalDoubleText(nutrition?.proteinGrams))
+        _carbsGrams = State(initialValue: Self.optionalDoubleText(nutrition?.carbsGrams))
+        _fatGrams = State(initialValue: Self.optionalDoubleText(nutrition?.fatGrams))
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Picker("Typ", selection: $kind) {
+                Picker("type", selection: $kind) {
                     ForEach(ItemKind.allCases) {
-                        Text($0.rawValue).tag($0)
+                        Text($0.localizedTitle).tag($0)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -56,42 +76,69 @@ struct AddItemView: View {
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
 
-                Section("Titel") {
-                    TextField(kind == .recipe ? "Rezepttitel" : "Lektionstitel", text: $title)
+                Section("title") {
+                    TextField(kind == .recipe ? String(localized: "recipe_title_placeholder") : String(localized: "lesson_title_placeholder"), text: $title)
+                        .onChange(of: title) { _, _ in cancelGenerationIfNeeded() }
                 }
 
                 Section {
-                    Toggle("Mit KI generieren", isOn: $generateEnabled)
-                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isGenerating)
+                    Toggle("generate_with_ai", isOn: $generateEnabled)
+                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         .onChange(of: generateEnabled) { _, enabled in
-                            if kind == .lesson && enabled {
-                                tipsEnabled = false
+                            if enabled {
+                                if kind == .lesson {
+                                    shouldRestoreTipsAfterLessonGeneration = tipsEnabled
+                                    isApplyingAutomaticTipsChange = true
+                                    tipsEnabled = false
+                                }
+                                generateContent()
+                            } else {
+                                if kind == .lesson {
+                                    if shouldRestoreTipsAfterLessonGeneration {
+                                        tipsEnabled = true
+                                    }
+                                    shouldRestoreTipsAfterLessonGeneration = false
+                                    isApplyingAutomaticTipsChange = false
+                                }
+                                cancelGenerationIfNeeded()
                             }
-                            if enabled { generateContent() }
                         }
-                    Toggle("Tipps im Kochmodus", isOn: $tipsEnabled)
-                        .disabled(tipsToggleDisabled)
-                        .opacity(tipsToggleDisabled ? 0.45 : 1)
+                    Toggle("generate_tips", isOn: $tipsEnabled)
+                        .onChange(of: tipsEnabled) { _, enabled in
+                            guard kind == .lesson && generateEnabled else { return }
 
-                    Menu("Foto scannen") {
-                        Button("Kamera", systemImage: "camera") { showCamera = true }
-                        Button("Fotomediathek", systemImage: "photo") { showGallery = true }
+                            if isApplyingAutomaticTipsChange {
+                                isApplyingAutomaticTipsChange = false
+                            } else {
+                                shouldRestoreTipsAfterLessonGeneration = enabled
+                            }
+                        }
+
+                    Menu("scan_photo") {
+                        Button("camera", systemImage: "camera") {
+                            cancelGenerationIfNeeded()
+                            showCamera = true
+                        }
+                        Button("photo_library", systemImage: "photo") {
+                            cancelGenerationIfNeeded()
+                            showGallery = true
+                        }
                     }
                     if let errorMessage {
                         Text(errorMessage).font(.caption).foregroundStyle(.red)
                     }
                 }
 
-                dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients, multiline: false)
-                dynamicSection(title: "Schritte", placeholderTitle: "Schritt", rows: $steps, multiline: true)
+                dynamicSection(title: "ingredients", placeholderTitle: String(localized: "ingredient"), rows: $ingredients, multiline: false)
+                dynamicSection(title: "steps", placeholderTitle: String(localized: "step"), rows: $steps, multiline: true)
+                nutritionSection
             }
-            .disabled(isGenerating)
-            .overlay { if isGenerating { ProgressView("Wird erstellt …").padding().background(.regularMaterial, in: .rect(cornerRadius: 12)) } }
-            .navigationTitle(editingRecipe == nil && editingLesson == nil ? "Neu" : "Bearbeiten")
+            .navigationTitle(editingRecipe == nil && editingLesson == nil ? "new" : "edit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
+                        cancelGenerationIfNeeded()
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
@@ -99,13 +146,28 @@ struct AddItemView: View {
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        save()
-                        dismiss()
-                    } label: {
-                        Image(systemName: "checkmark")
+                    if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Button {
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .disabled(true)
+                    } else {
+                        Button {
+                            cancelGenerationIfNeeded()
+                            save()
+                            dismiss()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.circle)
+                        .controlSize(.large)
+                        .tint(.blue)
                     }
-                    .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
             .fullScreenCover(isPresented: $showCamera) {
@@ -116,6 +178,7 @@ struct AddItemView: View {
             }
             .photosPicker(isPresented: $showGallery, selection: $selectedPhoto, matching: .images)
             .onChange(of: selectedPhoto) { _, item in
+                cancelGenerationIfNeeded()
                 Task {
                     guard let data = try? await item?.loadTransferable(type: Data.self),
                           let image = UIImage(data: data) else { return }
@@ -123,20 +186,55 @@ struct AddItemView: View {
                 }
             }
             .onChange(of: kind) { _, _ in
+                cancelGenerationIfNeeded()
                 resetDraft()
+            }
+            .onChange(of: focusedField) { _, _ in
+                cancelGenerationIfNeeded()
+            }
+        }
+    }
+
+    private var nutritionSection: some View {
+        Section("nutrition_facts") {
+            nutritionTextField(String(localized: "calories"), text: $calories, keyboardType: .numberPad)
+            nutritionTextField(String(localized: "protein"), text: $proteinGrams, keyboardType: .decimalPad)
+            nutritionTextField(String(localized: "carbs"), text: $carbsGrams, keyboardType: .decimalPad)
+            nutritionTextField(String(localized: "fat"), text: $fatGrams, keyboardType: .decimalPad)
+        }
+    }
+
+    private func nutritionTextField(_ title: String, text: Binding<String>, keyboardType: UIKeyboardType) -> some View {
+        HStack {
+            TextField(title, text: text)
+                .keyboardType(keyboardType)
+
+            if isGenerating {
+                Spacer(minLength: 8)
+                ProgressView()
+                    .controlSize(.small)
             }
         }
     }
 
     @ViewBuilder
     private func dynamicSection(title: String, placeholderTitle: String, rows: Binding<[TextRow]>, multiline: Bool) -> some View {
-        Section(title) {
+        Section(LocalizedStringKey(title)) {
             ForEach(Array(rows.wrappedValue.enumerated()), id: \.element.id) { index, row in
-                TextField("\(index + 1). \(placeholderTitle)", text: rowBinding(rows, index), axis: multiline ? .vertical : .horizontal)
-                    .focused($focusedField, equals: row.id)
-                    .onChange(of: rows.wrappedValue[index].text) { _, value in
-                        updateRows(rows, index: index, value: value, id: row.id)
+                HStack {
+                    TextField(String.localizedStringWithFormat(String(localized: "indexed_field_placeholder"), index + 1, placeholderTitle), text: rowBinding(rows, index), axis: multiline ? .vertical : .horizontal)
+                        .focused($focusedField, equals: row.id)
+                        .onChange(of: rows.wrappedValue[index].text) { _, value in
+                            cancelGenerationIfNeeded()
+                            updateRows(rows, index: index, value: value, id: row.id)
+                        }
+
+                    if isGenerating && index == 0 {
+                        Spacer(minLength: 8)
+                        ProgressView()
+                            .controlSize(.small)
                     }
+                }
             }
         }
     }
@@ -162,38 +260,64 @@ struct AddItemView: View {
     }
 
     private func resetDraft() {
+        generationTask?.cancel()
+        generationTask = nil
         title = ""
         ingredients = [TextRow(text: "")]
         steps = [TextRow(text: "")]
         generateEnabled = false
         tipsEnabled = true
+        shouldRestoreTipsAfterLessonGeneration = false
+        isApplyingAutomaticTipsChange = false
+        calories = ""
+        proteinGrams = ""
+        carbsGrams = ""
+        fatGrams = ""
+        isGenerating = false
         errorMessage = nil
         selectedPhoto = nil
         focusedField = nil
     }
 
+    private func cancelGenerationIfNeeded() {
+        guard let generationTask, isGenerating else { return }
+        generationTask.cancel()
+        self.generationTask = nil
+        isGenerating = false
+        generateEnabled = false
+    }
+
     private func generateContent() {
         let prompt = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty else { return }
+        generationTask?.cancel()
         isGenerating = true
         errorMessage = nil
-        Task {
+        generationTask = Task {
             do {
                 if kind == .recipe {
                     let parsed = try await aiService.generate(from: prompt, allergies: statsStore.allergies)
+                    try Task.checkCancellation()
                     title = parsed.title
                     ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                     steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
+                    try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
                 } else {
                     let parsed = try await aiService.generateLesson(from: prompt)
+                    try Task.checkCancellation()
                     title = parsed.title
+                    ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                     steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
+                    try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
                 }
                 isGenerating = false
-            } catch {
-                errorMessage = error.localizedDescription
+                generationTask = nil
+            } catch is CancellationError {
                 isGenerating = false
-                generateEnabled = false
+                generationTask = nil
+            } catch {
+                // Match nutrition estimation behavior: keep the inline loading indicator visible if the model fails.
+                errorMessage = nil
             }
         }
     }
@@ -207,20 +331,69 @@ struct AddItemView: View {
                 title = parsed.title
                 ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                 steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
+                try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
             } else {
                 let parsed = try await aiService.scanLesson(image: image)
                 title = parsed.title
+                ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                 steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
+                try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
             }
             isGenerating = false
         } catch {
-            errorMessage = error.localizedDescription
-            isGenerating = false
+            // Match generation behavior: keep the inline loading indicator visible if scanning or nutrition estimation fails.
+            errorMessage = nil
         }
     }
 
     private func cleaned(_ rows: [TextRow]) -> [String] {
         rows.map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+    }
+
+    private func fillNutrition(title: String, ingredients: [String], steps: [String]) async throws {
+        let nutrition = try await nutritionInfo(title: title, ingredients: ingredients, steps: steps)
+        calories = Self.optionalIntText(nutrition.calories)
+        proteinGrams = Self.optionalDoubleText(nutrition.proteinGrams)
+        carbsGrams = Self.optionalDoubleText(nutrition.carbsGrams)
+        fatGrams = Self.optionalDoubleText(nutrition.fatGrams)
+    }
+
+    private func nutritionFromFields() -> NutritionInfo? {
+        let caloriesValue = intValue(calories)
+        let proteinValue = doubleValue(proteinGrams)
+        let carbsValue = doubleValue(carbsGrams)
+        let fatValue = doubleValue(fatGrams)
+        guard caloriesValue != nil || proteinValue != nil || carbsValue != nil || fatValue != nil else { return nil }
+
+        return NutritionInfo(
+            calories: caloriesValue,
+            proteinGrams: proteinValue,
+            carbsGrams: carbsValue,
+            fatGrams: fatValue,
+            servings: existingNutritionServings
+        )
+    }
+
+    private var existingNutritionServings: Int {
+        (editingRecipe?.nutrition ?? editingLesson?.nutrition)?.servings ?? 1
+    }
+
+    private func intValue(_ text: String) -> Int? {
+        Int(text.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    private func doubleValue(_ text: String) -> Double? {
+        let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ",", with: ".")
+        return Double(normalized)
+    }
+
+    private static func optionalIntText(_ value: Int?) -> String {
+        value.map(String.init) ?? ""
+    }
+
+    private static func optionalDoubleText(_ value: Double?) -> String {
+        guard let value else { return "" }
+        return value.formatted(.number.precision(.fractionLength(0...1)))
     }
 
     private func save() {
@@ -234,14 +407,14 @@ struct AddItemView: View {
                 isPinned: editingRecipe?.isPinned ?? false,
                 tipsEnabled: tipsEnabled,
                 wasGenerated: generateEnabled,
-                nutrition: retainedNutrition(forTitle: title, ingredients: recipeIngredients),
+                nutrition: nutritionFromFields() ?? retainedNutrition(forTitle: title, ingredients: recipeIngredients),
                 createdAt: editingRecipe?.createdAt ?? Date()
             )
             recipeStore.save(recipe, editing: editingRecipe)
             estimateNutritionInBackground(for: recipe)
         } else {
             // Fix: ingredients wurde hier vorher gar nicht mitgegeben.
-            lessonStore.save(Lesson(title: title, ingredients: cleaned(ingredients), steps: cleaned(steps), wasGenerated: generateEnabled, tipsEnabled: tipsEnabled), editing: editingLesson)
+            lessonStore.save(Lesson(title: title, ingredients: cleaned(ingredients), steps: cleaned(steps), wasGenerated: generateEnabled, tipsEnabled: tipsEnabled, nutrition: nutritionFromFields()), editing: editingLesson)
         }
     }
 
@@ -279,8 +452,8 @@ struct AddItemView: View {
         }
     }
 
-    private func nutritionInfo(title: String, ingredients: [String]) async throws -> NutritionInfo {
-        let estimate = try await aiService.estimateNutrition(title: title, ingredients: ingredients)
+    private func nutritionInfo(title: String, ingredients: [String], steps: [String] = []) async throws -> NutritionInfo {
+        let estimate = try await aiService.estimateNutrition(title: title, ingredients: ingredients, steps: steps)
         return NutritionInfo(
             calories: estimate.calories,
             proteinGrams: estimate.protein,

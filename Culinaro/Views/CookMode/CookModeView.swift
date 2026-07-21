@@ -50,25 +50,18 @@ struct CookModeView: View {
             // MARK: – Ingredients list
             case .start:
                 List {
-                    Section {
-                        if item.ingredients.isEmpty {
-                            Text("Bereit für die Lektion „\(item.title)“?")
-                                .font(.title2).fontWeight(.semibold)
-                        } else {
+                    if !item.ingredients.isEmpty {
+                        Section("ingredients") {
                             ForEach(item.ingredients, id: \.self) { ingredient in Text(ingredient) }
                         }
-                    }
 
-                    if !item.ingredients.isEmpty {
                         nutritionSummarySection
-                    }
 
-                    if !item.ingredients.isEmpty {
-                        Section {
+                        Section("shopping") {
                             Button {
                                 addIngredientsToShoppingList()
                             } label: {
-                                Text("Zutaten zum Einkauf")
+                                Text("add_ingredients_to_shopping")
                             }
                         }
                     }
@@ -117,8 +110,7 @@ struct CookModeView: View {
                                 .animation(.easeInOut(duration: 0.3), value: isGeneratingTip)
 
                             } else {
-                                // Final "enjoy" screen
-                                Text(NSLocalizedString("cook_mode_enjoy", comment: ""))
+                                Text(finalStepText)
                                     .font(.largeTitle)
                                     .fontWeight(.bold)
                             }
@@ -176,21 +168,21 @@ struct CookModeView: View {
     // MARK: - Nutrition Logging
 
     private var nutritionSummarySection: some View {
-        Section {
-            nutritionField("Kalorien", nutritionValue?.calories.map { "\($0)" })
-            nutritionField("Protein", nutritionValue?.proteinGrams.map(gramsText))
-            nutritionField("Kohlenhydrate", nutritionValue?.carbsGrams.map(gramsText))
-            nutritionField("Fett", nutritionValue?.fatGrams.map(gramsText))
+        Section("food_section") {
+            nutritionField(String(localized: "calories"), nutritionValue?.calories.map { "\($0)" })
+            nutritionField(String(localized: "protein"), nutritionValue?.proteinGrams.map(gramsText))
+            nutritionField(String(localized: "carbs"), nutritionValue?.carbsGrams.map(gramsText))
+            nutritionField(String(localized: "fat"), nutritionValue?.fatGrams.map(gramsText))
 
             if let recipe = item as? Recipe, let nutrition = nutritionValue {
                 Stepper(value: $servingsEaten, in: 0.5...10, step: 0.5) {
-                    Text("\(servingsEaten.formatted(.number.precision(.fractionLength(0...1)))) Portionen")
+                    Text(String.localizedStringWithFormat(String(localized: "servings_count"), servingsEaten.formatted(.number.precision(.fractionLength(0...1)))))
                 }
 
                 Button {
                     logMeal(recipe.withNutrition(nutrition))
                 } label: {
-                    Label(didLogMeal ? "Geloggt" : "Als gegessen loggen", systemImage: didLogMeal ? "checkmark.circle.fill" : "fork.knife")
+                    Label(LocalizedStringKey(didLogMeal ? "logged" : "log_as_eaten"), systemImage: didLogMeal ? "checkmark.circle.fill" : "fork.knife")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -199,17 +191,24 @@ struct CookModeView: View {
     }
 
     private var nutritionValue: NutritionInfo? {
-        if let recipe = item as? Recipe, let stored = recipe.nutrition {
-            guard let estimatedNutrition else { return stored }
-            return NutritionInfo(
-                calories: stored.calories ?? estimatedNutrition.calories,
-                proteinGrams: stored.proteinGrams ?? estimatedNutrition.proteinGrams,
-                carbsGrams: stored.carbsGrams ?? estimatedNutrition.carbsGrams,
-                fatGrams: stored.fatGrams ?? estimatedNutrition.fatGrams,
-                servings: stored.servings
-            )
+        let storedNutrition: NutritionInfo?
+        if let recipe = item as? Recipe {
+            storedNutrition = recipe.nutrition
+        } else if let lesson = item as? Lesson {
+            storedNutrition = lesson.nutrition
+        } else {
+            storedNutrition = nil
         }
-        return estimatedNutrition
+
+        guard let storedNutrition else { return estimatedNutrition }
+        guard let estimatedNutrition else { return storedNutrition }
+        return NutritionInfo(
+            calories: storedNutrition.calories ?? estimatedNutrition.calories,
+            proteinGrams: storedNutrition.proteinGrams ?? estimatedNutrition.proteinGrams,
+            carbsGrams: storedNutrition.carbsGrams ?? estimatedNutrition.carbsGrams,
+            fatGrams: storedNutrition.fatGrams ?? estimatedNutrition.fatGrams,
+            servings: storedNutrition.servings
+        )
     }
 
     private func nutritionField(_ title: String, _ value: String?) -> some View {
@@ -246,12 +245,20 @@ struct CookModeView: View {
         guard !didAttemptNutritionEstimate,
               !item.ingredients.isEmpty else { return }
 
-        if let recipe = item as? Recipe,
-           let nutrition = recipe.nutrition,
-           nutrition.calories != nil,
-           nutrition.proteinGrams != nil,
-           nutrition.carbsGrams != nil,
-           nutrition.fatGrams != nil {
+        let storedNutrition: NutritionInfo?
+        if let recipe = item as? Recipe {
+            storedNutrition = recipe.nutrition
+        } else if let lesson = item as? Lesson {
+            storedNutrition = lesson.nutrition
+        } else {
+            storedNutrition = nil
+        }
+
+        if let storedNutrition,
+           storedNutrition.calories != nil,
+           storedNutrition.proteinGrams != nil,
+           storedNutrition.carbsGrams != nil,
+           storedNutrition.fatGrams != nil {
             return
         }
 
@@ -353,10 +360,14 @@ struct CookModeView: View {
         return "chevron.right"
     }
 
+    private var finalStepText: String {
+        item is Lesson ? String(localized: "practice") : NSLocalizedString("cook_mode_enjoy", comment: "")
+    }
+
     /// Navigation bar title for the current phase.
     private var title: String {
         switch phase {
-        case .start: return item.ingredients.isEmpty ? "Übersicht" : NSLocalizedString("ingredients", comment: "")
+        case .start: return item.ingredients.isEmpty ? String(localized: "overview") : NSLocalizedString("ingredients", comment: "")
         case .step(let index):
             return String.localizedStringWithFormat(
                 NSLocalizedString("step_number", comment: ""), index + 1
@@ -393,4 +404,3 @@ private extension Recipe {
         )
     }
 }
-

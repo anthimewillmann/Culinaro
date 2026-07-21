@@ -133,6 +133,7 @@ extension Lesson {
             let steps = record["steps"] as? [String]
         else { return nil }
         let wasGenerated = (record["wasGenerated"] as? NSNumber)?.boolValue ?? false
+        let nutrition = Lesson.nutrition(from: record)
         self.init(
             id: id,
             title: title,
@@ -141,6 +142,7 @@ extension Lesson {
             isPinned: (record["isPinned"] as? NSNumber)?.boolValue ?? false,
             wasGenerated: wasGenerated,
             tipsEnabled: (record["tipsEnabled"] as? NSNumber)?.boolValue ?? !wasGenerated,
+            nutrition: nutrition,
             createdAt: record["createdAt"] as? Date ?? .now
         )
     }
@@ -154,6 +156,23 @@ extension Lesson {
         record["wasGenerated"] = wasGenerated as CKRecordValue
         record["tipsEnabled"] = tipsEnabled as CKRecordValue
         record["createdAt"] = createdAt as CKRecordValue
+        if let nutrition {
+            record["nutritionCalories"] = nutrition.calories as CKRecordValue?
+            record["nutritionProtein"] = nutrition.proteinGrams as CKRecordValue?
+            record["nutritionCarbs"] = nutrition.carbsGrams as CKRecordValue?
+            record["nutritionFat"] = nutrition.fatGrams as CKRecordValue?
+            record["nutritionServings"] = nutrition.servings as CKRecordValue
+        }
         return record
+    }
+
+    private static func nutrition(from record: CKRecord) -> NutritionInfo? {
+        let calories = record["nutritionCalories"] as? Int
+        let protein = record["nutritionProtein"] as? Double
+        let carbs = record["nutritionCarbs"] as? Double
+        let fat = record["nutritionFat"] as? Double
+        let servings = record["nutritionServings"] as? Int ?? 1
+        guard calories != nil || protein != nil || carbs != nil || fat != nil else { return nil }
+        return NutritionInfo(calories: calories, proteinGrams: protein, carbsGrams: carbs, fatGrams: fat, servings: servings)
     }
 }

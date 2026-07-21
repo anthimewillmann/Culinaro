@@ -6,11 +6,17 @@ import SwiftUI
 struct LessonsView: View {
     @EnvironmentObject private var store: LessonStore
     @EnvironmentObject private var shoppingListStore: ShoppingListStore
+    @EnvironmentObject private var nutritionStore: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var editingLesson: Lesson?
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
+    @State private var isCategorizing = false
     @Binding var isSelecting: Bool
+    @Binding var navigationPath: [UUID]
+
+    private let pinnedCategoryID = "__pinnedCategory__"
+    private let pendingCategoryID = "__pendingCategory__"
     @State private var selectedLessonIDs: Set<UUID> = []
 
     private var lessons: [Lesson] {
@@ -28,36 +34,55 @@ struct LessonsView: View {
         PDFExporter.export(selectedLessons.map { $0 as any Cookable }, filename: "Lektionen")
     }
 
+    private var hasSelectedLessonsWithNutritionInput: Bool {
+        selectedLessons.contains { $0.nutrition != nil || !$0.ingredients.isEmpty }
+    }
+
     private var lessonExportForToolbar: PDFExport {
         selectedLessonExport ?? PDFExport(data: Data(), filename: "Lektionen.pdf")
     }
 
     private var groupedLessons: [(category: String, lessons: [Lesson])] {
-        let groups = Dictionary(grouping: lessons) { categoriesByID[$0.id] ?? "Weitere" }
-        let orderedKeys = categoryOrder + groups.keys.filter { !categoryOrder.contains($0) }.sorted()
-        return orderedKeys.compactMap { key in
+        let pinnedLessons = lessons.filter(\.isPinned)
+        let regularLessons = lessons.filter { !$0.isPinned }
+        let groups = Dictionary(grouping: regularLessons) { categoriesByID[$0.id] ?? pendingCategoryID }
+        let orderedKeys = categoryOrder
+            + groups.keys.filter { !categoryOrder.contains($0) && $0 != pendingCategoryID }.sorted()
+            + (groups[pendingCategoryID]?.isEmpty == false ? [pendingCategoryID] : [])
+
+        var result: [(category: String, lessons: [Lesson])] = []
+        if !pinnedLessons.isEmpty {
+            result.append((pinnedCategoryID, pinnedLessons))
+        }
+        result += orderedKeys.compactMap { key in
             guard let items = groups[key], !items.isEmpty else { return nil }
             return (key, items)
         }
+        return result
     }
 
     private var categorizationSignature: String {
-        lessons.map { "\($0.id.uuidString):\($0.title)" }.joined(separator: "|")
+        store.lessons
+            .map { "\($0.id.uuidString):\($0.title)" }
+            .sorted()
+            .joined(separator: "|")
     }
 
     var body: some View {
         List {
             ForEach(groupedLessons, id: \.category) { group in
-                Section(group.category) {
+                Section {
                     ForEach(group.lessons) { lesson in
                         row(for: lesson)
                     }
+                } header: {
+                    categoryHeader(for: group.category)
                 }
             }
         }
-        .overlay { if lessons.isEmpty { ContentUnavailableView("Noch keine Lektionen", systemImage: "graduationcap") } }
-        .navigationTitle("Lektionen")
-        .navigationSubtitle("\(store.lessons.count) erstellt")
+        .overlay { if lessons.isEmpty { ContentUnavailableView("no_lessons", systemImage: "graduationcap") } }
+        .navigationTitle("lessons")
+        .navigationSubtitle(String.localizedStringWithFormat(String(localized: "created_count"), store.lessons.count))
         .refreshable { await store.syncFromCloud() }
         .sheet(item: $editingLesson) { AddItemView(editingLesson: $0) }
         .toolbar { selectionToolbar }
@@ -89,28 +114,39 @@ struct LessonsView: View {
             }
             .buttonStyle(.plain)
         } else {
-            NavigationLink(value: lesson.id) {
+            Button {
+                navigationPath.append(lesson.id)
+            } label: {
                 rowContent(for: lesson)
             }
+            .buttonStyle(.plain)
             .swipeActions(edge: .trailing) {
-                Button(role: .destructive) { store.delete(lesson) } label: { Label("Löschen", systemImage: "trash") }
-                Button { editingLesson = lesson } label: { Label("Bearbeiten", systemImage: "pencil") }.tint(.blue)
+                Button(role: .destructive) { store.delete(lesson) } label: { Label("delete", systemImage: "trash") }
+                Button { editingLesson = lesson } label: { Label("edit", systemImage: "pencil") }.tint(.blue)
+                if let pdf = PDFExporter.export(lesson) {
+                    ShareLink(item: pdf, preview: SharePreview(lesson.title, image: Image(systemName: "doc.richtext"))) {
+                        Label("export", systemImage: "square.and.arrow.up")
+                    }
+                    .tint(Color(red: 0.48, green: 0.44, blue: 1.0))
+                }
             }
             .swipeActions(edge: .leading) {
                 Button { withAnimation { store.togglePin(lesson) } } label: {
-                    Label(lesson.isPinned ? "Lösen" : "Anpinnen", systemImage: lesson.isPinned ? "pin.slash" : "pin")
+                    Label(LocalizedStringKey(lesson.isPinned ? "unpin" : "pin"), systemImage: lesson.isPinned ? "pin.slash" : "pin")
                 }.tint(.orange)
             }
             .contextMenu {
-                Button { editingLesson = lesson } label: { Label("Bearbeiten", systemImage: "pencil") }
-                Button { store.togglePin(lesson) } label: { Label(lesson.isPinned ? "Lösen" : "Anpinnen", systemImage: "pin") }
-                Button { shoppingListStore.addIngredients(from: lesson) } label: { Label("Zutaten zum Einkauf", systemImage: "cart.badge.plus") }
+                Button { editingLesson = lesson } label: { Label("edit", systemImage: "pencil") }
+                Button { store.togglePin(lesson) } label: { Label(LocalizedStringKey(lesson.isPinned ? "unpin" : "pin"), systemImage: "pin") }
+                Button { shoppingListStore.addIngredients(from: lesson) } label: { Label("add_ingredients_to_shopping", systemImage: "cart.badge.plus") }
+                Button { Task { await addNutrition(for: lesson) } } label: { Label("add_to_nutrition", systemImage: "heart.text.square") }
+                    .disabled(lesson.nutrition == nil && lesson.ingredients.isEmpty)
                 if let pdf = PDFExporter.export(lesson) {
                     ShareLink(item: pdf, preview: SharePreview(lesson.title, image: Image(systemName: "doc.richtext"))) {
-                        Label("Exportieren", systemImage: "square.and.arrow.up")
+                        Label("export", systemImage: "square.and.arrow.up")
                     }
                 }
-                Button(role: .destructive) { store.delete(lesson) } label: { Label("Löschen", systemImage: "trash") }
+                Button(role: .destructive) { store.delete(lesson) } label: { Label("delete", systemImage: "trash") }
             }
         }
     }
@@ -119,10 +155,9 @@ struct LessonsView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(lesson.title).fontWeight(.semibold)
-                Text("\(lesson.steps.count) Schritte").font(.caption).foregroundStyle(.secondary)
+                Text(String.localizedStringWithFormat(String(localized: "steps_count"), lesson.steps.count + 1)).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
-            if lesson.isPinned { Image(systemName: "pin.fill").foregroundStyle(.orange) }
         }
     }
 
@@ -136,24 +171,44 @@ struct LessonsView: View {
                     Image(systemName: "cart.badge.plus")
                 }
                 .disabled(selectedLessonIDs.isEmpty)
-                .accessibilityLabel("Zum Einkauf hinzufügen")
+                .accessibilityLabel("add_to_shopping")
 
-                ShareLink(item: lessonExportForToolbar, preview: SharePreview("Lektionen", image: Image(systemName: "doc.richtext"))) {
-                    Label("Exportieren", systemImage: "square.and.arrow.up")
+                Button {
+                    addSelectedNutrition()
+                } label: {
+                    Image(systemName: "heart.text.square")
+                }
+                .disabled(!hasSelectedLessonsWithNutritionInput)
+                .accessibilityLabel("add_to_nutrition")
+
+                ShareLink(item: lessonExportForToolbar, preview: SharePreview(String(localized: "lessons"), image: Image(systemName: "doc.richtext"))) {
+                    Label("export", systemImage: "square.and.arrow.up")
                 }
                 .disabled(selectedLessonExport == nil)
-                .accessibilityLabel("Ausgewählte Lektionen exportieren")
+                .accessibilityLabel("export_selected_lessons")
 
-                Button(role: .destructive) {
+                Spacer()
+
+                Button {
                     deleteSelectedLessons()
                 } label: {
                     Image(systemName: "trash")
                 }
                 .disabled(selectedLessonIDs.isEmpty)
-                .accessibilityLabel("Ausgewählte Lektionen löschen")
-
-                Spacer()
+                .accessibilityLabel("delete_selected_lessons")
             }
+        }
+    }
+
+    @ViewBuilder
+    private func categoryHeader(for category: String) -> some View {
+        if category == pinnedCategoryID {
+            Text("pinned")
+        } else if category == pendingCategoryID {
+            ProgressView()
+                .controlSize(.small)
+        } else {
+            Text(category)
         }
     }
 
@@ -170,6 +225,52 @@ struct LessonsView: View {
             shoppingListStore.addIngredients(from: lesson)
         }
         finishSelection()
+    }
+
+    private func addSelectedNutrition() {
+        let lessonsToLog = selectedLessons.filter { !$0.ingredients.isEmpty }
+        finishSelection()
+        Task {
+            for lesson in lessonsToLog {
+                await addNutrition(for: lesson)
+            }
+        }
+    }
+
+    private func addNutrition(for lesson: Lesson) async {
+        if let nutrition = lesson.nutrition {
+            let recipe = Recipe(
+                title: lesson.title,
+                ingredients: lesson.ingredients,
+                steps: lesson.steps,
+                nutrition: nutrition
+            )
+            nutritionStore.logMeal(recipe: recipe, servings: 1)
+            return
+        }
+
+        guard !lesson.ingredients.isEmpty else { return }
+
+        do {
+            let estimate = try await aiService.estimateNutrition(title: lesson.title, ingredients: lesson.ingredients)
+            let recipe = Recipe(
+                title: lesson.title,
+                ingredients: lesson.ingredients,
+                steps: lesson.steps,
+                nutrition: NutritionInfo(
+                    calories: estimate.calories,
+                    proteinGrams: estimate.protein,
+                    carbsGrams: estimate.carbs,
+                    fatGrams: estimate.fat,
+                    servings: max(estimate.servings, 1)
+                )
+            )
+            await MainActor.run {
+                nutritionStore.logMeal(recipe: recipe, servings: 1)
+            }
+        } catch {
+            // Nutrition logging is optional; unavailable estimates should not block the lesson UI.
+        }
     }
 
     private func deleteSelectedLessons() {
@@ -190,8 +291,13 @@ struct LessonsView: View {
         guard !lessons.isEmpty else {
             categoriesByID = [:]
             categoryOrder = []
+            isCategorizing = false
             return
         }
+
+        isCategorizing = true
+        categoriesByID = [:]
+        categoryOrder = []
 
         let items = lessons.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
         do {
@@ -207,9 +313,10 @@ struct LessonsView: View {
             withAnimation {
                 categoriesByID = byID
                 categoryOrder = order
+                isCategorizing = false
             }
         } catch {
-            // Bleibt einfach unkategorisiert unter "Weitere".
+            // Bleibt im Ladezustand, damit kein unkategorisierter Text-Fallback erscheint.
         }
     }
 }

@@ -82,12 +82,12 @@ private func cookableContent(_ item: any Cookable) -> some View {
     VStack(alignment: .leading, spacing: 18) {
         Text(item.title).font(.largeTitle.bold())
         if !item.ingredients.isEmpty {
-            Text("Zutaten").font(.title2.bold())
+            Text("ingredients").font(.title2.bold())
             ForEach(Array(item.ingredients.enumerated()), id: \.offset) { _, ingredient in
                 Text("• \(ingredient)")
             }
         }
-        Text("Schritte").font(.title2.bold())
+        Text("steps").font(.title2.bold())
         ForEach(Array(item.steps.enumerated()), id: \.offset) { index, step in
             HStack(alignment: .top) {
                 Text("\(index + 1).").fontWeight(.semibold)

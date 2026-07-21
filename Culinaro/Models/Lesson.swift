@@ -8,6 +8,7 @@ struct Lesson: Cookable, Codable, Equatable {
     var isPinned: Bool
     var wasGenerated: Bool
     var tipsEnabled: Bool
+    var nutrition: NutritionInfo?
     let createdAt: Date
     var completionKind: CompletionKind { .lesson }
 
@@ -19,6 +20,7 @@ struct Lesson: Cookable, Codable, Equatable {
         isPinned: Bool = false,
         wasGenerated: Bool = false,
         tipsEnabled: Bool = true,
+        nutrition: NutritionInfo? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -28,6 +30,7 @@ struct Lesson: Cookable, Codable, Equatable {
         self.isPinned = isPinned
         self.wasGenerated = wasGenerated
         self.tipsEnabled = tipsEnabled
+        self.nutrition = nutrition
         self.createdAt = createdAt
     }
 }

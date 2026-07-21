@@ -27,6 +27,7 @@ final class LessonStore: ObservableObject {
             isPinned: original?.isPinned ?? lesson.isPinned,
             wasGenerated: lesson.wasGenerated,
             tipsEnabled: lesson.tipsEnabled,
+            nutrition: lesson.nutrition,
             createdAt: original?.createdAt ?? lesson.createdAt
         )
         if let index = lessons.firstIndex(where: { $0.id == cleaned.id }) {

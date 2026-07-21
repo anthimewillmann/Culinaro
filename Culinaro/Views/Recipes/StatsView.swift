@@ -14,17 +14,17 @@ struct StatsView: View {
         Form {
             streakSection
 
-            Section("Statistik") {
-                stat("Erstellte Rezepte", recipes.totalCreatedRecipes)
-                stat("Erstellte Lektionen", lessons.totalCreatedLessons)
-                stat("Abgeschlossene Kochmodi", stats.completedCookModes)
-                stat("Abgeschlossene Lektionen", stats.completedLessons)
+            Section("statistics") {
+                stat(String(localized: "created_recipes"), recipes.totalCreatedRecipes)
+                stat(String(localized: "created_lessons"), lessons.totalCreatedLessons)
+                stat(String(localized: "completed_cook_modes"), stats.completedCookModes)
+                stat(String(localized: "completed_lessons"), stats.completedLessons)
             }
 
             friendsSection
             notesSection
         }
-        .navigationTitle("Übersicht")
+        .navigationTitle("overview")
         .onAppear(perform: loadNotes)
         .task {
             await loadFriendScores()
@@ -43,21 +43,21 @@ struct StatsView: View {
     }
 
     private var streakSection: some View {
-        Section("Streak") {
-            stat("Tage", stats.currentStreak)
+        Section("streak") {
+            stat(String(localized: "days"), stats.currentStreak)
         }
     }
 
     private var friendsSection: some View {
-        Section("Freunde") {
+        Section("friends") {
             if !gameCenter.isAuthenticated {
-                Button("Anmelden") {
+                Button("sign_in") {
                     gameCenter.authenticate()
                 }
             } else if let friendsErrorMessage {
-                LabeledContent("Fehler", value: friendsErrorMessage)
+                LabeledContent("error", value: friendsErrorMessage)
             } else if friendScores.isEmpty {
-                Text("Keine Einträge")
+                Text("no_entries")
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(friendScores) { score in
@@ -73,9 +73,9 @@ struct StatsView: View {
     }
 
     private var notesSection: some View {
-        Section("Anmerkungen") {
+        Section("notes") {
             ForEach(Array(notes.enumerated()), id: \.element.id) { index, note in
-                TextField("\(index + 1). Anmerkung", text: noteBinding(index), axis: .vertical)
+                TextField(String.localizedStringWithFormat(String(localized: "indexed_note_placeholder"), index + 1), text: noteBinding(index), axis: .vertical)
                     .focused($focusedNote, equals: note.id)
                     .onChange(of: notes[index].text) { _, value in
                         updateNotes(index: index, value: value, id: note.id)

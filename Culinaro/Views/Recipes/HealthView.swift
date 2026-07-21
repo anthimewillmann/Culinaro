@@ -6,27 +6,27 @@ struct HealthView: View {
 
     var body: some View {
         Form {
-            Section("Heute") {
-                nutritionField("Kalorien", formattedWholeNumber(Double(nutrition.caloriesToday)))
-                nutritionField("Protein", formattedDecimal(nutrition.proteinToday))
-                nutritionField("Kohlenhydrate", formattedDecimal(nutrition.carbsToday))
-                nutritionField("Fett", formattedDecimal(nutrition.fatToday))
+            Section("today") {
+                nutritionField(String(localized: "calories"), formattedWholeNumber(Double(nutrition.caloriesToday)))
+                nutritionField(String(localized: "protein"), formattedDecimal(nutrition.proteinToday))
+                nutritionField(String(localized: "carbs"), formattedDecimal(nutrition.carbsToday))
+                nutritionField(String(localized: "fat"), formattedDecimal(nutrition.fatToday))
             }
 
-            Section("Durchschnitt der letzten 7 Tage") {
+            Section("average_last_7_days") {
                 let average = nutrition.averageLastSevenDays
-                nutritionField("Kalorien", formattedWholeNumber(average.calories))
-                nutritionField("Protein", formattedDecimal(average.proteinGrams))
-                nutritionField("Kohlenhydrate", formattedDecimal(average.carbsGrams))
-                nutritionField("Fett", formattedDecimal(average.fatGrams))
+                nutritionField(String(localized: "calories"), formattedWholeNumber(average.calories))
+                nutritionField(String(localized: "protein"), formattedDecimal(average.proteinGrams))
+                nutritionField(String(localized: "carbs"), formattedDecimal(average.carbsGrams))
+                nutritionField(String(localized: "fat"), formattedDecimal(average.fatGrams))
             }
 
-            Section("Durchschnitt der letzten 30 Tage") {
+            Section("average_last_30_days") {
                 let average = nutrition.averageLastThirtyDays
-                nutritionField("Kalorien", formattedWholeNumber(average.calories))
+                nutritionField(String(localized: "calories"), formattedWholeNumber(average.calories))
             }
         }
-        .navigationTitle("Ernährung")
+        .navigationTitle("nutrition")
     }
 
     private func nutritionField(_ title: String, _ value: String) -> some View {
@@ -53,9 +53,15 @@ struct AddHealthRecipeSheet: View {
     @Environment(RecipeAIService.self) private var aiService
     @Environment(\.dismiss) private var dismiss
 
-    @State private var title = ""
     @State private var ingredients = [TextRow(text: "")]
+    @State private var generateNutritionWithAI = false
+    @State private var calories = ""
+    @State private var proteinGrams = ""
+    @State private var carbsGrams = ""
+    @State private var fatGrams = ""
     @State private var isProcessing = false
+    @State private var isScanningFood = false
+    @State private var generationTask: Task<Void, Never>?
     @State private var errorMessage: String?
     @State private var showCamera = false
     @State private var showGallery = false
@@ -63,8 +69,7 @@ struct AddHealthRecipeSheet: View {
     @FocusState private var focusedField: UUID?
 
     private var recipeTitle: String {
-        let cleanedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        return cleanedTitle.isEmpty ? "Rezept" : cleanedTitle
+        cleanedIngredients.first ?? String(localized: "food")
     }
 
     private var cleanedIngredients: [String] {
@@ -73,19 +78,43 @@ struct AddHealthRecipeSheet: View {
             .filter { !$0.isEmpty }
     }
 
+    private var hasManualNutrition: Bool {
+        nutritionFromFields() != nil
+    }
+
+    private var canGenerateNutrition: Bool {
+        generateNutritionWithAI && !cleanedIngredients.isEmpty
+    }
+
     private var canSave: Bool {
-        !cleanedIngredients.isEmpty && !isProcessing
+        !isProcessing && (hasManualNutrition || canGenerateNutrition)
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                dynamicSection(title: "Zutaten", placeholderTitle: "Zutat", rows: $ingredients)
+                dynamicSection(title: "ingredients", placeholderTitle: String(localized: "ingredient"), rows: $ingredients)
 
-                Section("Scannen") {
-                    Menu("Rezept scannen") {
-                        Button("Kamera", systemImage: "camera") { showCamera = true }
-                        Button("Fotomediathek", systemImage: "photo") { showGallery = true }
+                Section {
+                    Toggle("generate_with_ai", isOn: $generateNutritionWithAI)
+                        .disabled(cleanedIngredients.isEmpty)
+                        .onChange(of: generateNutritionWithAI) { _, isEnabled in
+                            guard isEnabled else {
+                                cancelGenerationIfNeeded()
+                                return
+                            }
+                            generateNutrition()
+                        }
+
+                    Menu("scan_photo") {
+                        Button("camera", systemImage: "camera") {
+                            cancelGenerationIfNeeded()
+                            showCamera = true
+                        }
+                        Button("photo_library", systemImage: "photo") {
+                            cancelGenerationIfNeeded()
+                            showGallery = true
+                        }
                     }
 
                     if let errorMessage {
@@ -94,20 +123,15 @@ struct AddHealthRecipeSheet: View {
                             .foregroundStyle(.red)
                     }
                 }
+
+                nutritionSection
             }
-            .disabled(isProcessing)
-            .overlay {
-                if isProcessing {
-                    ProgressView("Wird analysiert ...")
-                        .padding()
-                        .background(.regularMaterial, in: .rect(cornerRadius: 12))
-                }
-            }
-            .navigationTitle("Rezept hinzufügen")
+            .navigationTitle("add_food")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
+                        cancelGenerationIfNeeded()
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
@@ -115,41 +139,87 @@ struct AddHealthRecipeSheet: View {
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        save()
-                    } label: {
-                        Image(systemName: "checkmark")
+                    if canSave {
+                        Button {
+                            save()
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.circle)
+                        .controlSize(.large)
+                        .tint(.blue)
+                    } else {
+                        Button {
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .disabled(true)
                     }
-                    .disabled(!canSave)
                 }
             }
             .fullScreenCover(isPresented: $showCamera) {
                 CameraPickerView { image in
                     showCamera = false
-                    Task { await process(image) }
+                    process(image)
                 }
             }
             .photosPicker(isPresented: $showGallery, selection: $selectedPhoto, matching: .images)
             .onChange(of: selectedPhoto) { _, item in
+                cancelGenerationIfNeeded()
                 Task {
                     guard let data = try? await item?.loadTransferable(type: Data.self),
                           let image = UIImage(data: data) else { return }
-                    await process(image)
+                    process(image)
                 }
             }
             .onAppear { focusedField = ingredients.first?.id }
         }
     }
 
+    private var nutritionSection: some View {
+        Section("nutrition_facts") {
+            nutritionTextField(String(localized: "calories"), text: $calories, keyboardType: .numberPad)
+            nutritionTextField(String(localized: "protein"), text: $proteinGrams, keyboardType: .decimalPad)
+            nutritionTextField(String(localized: "carbs"), text: $carbsGrams, keyboardType: .decimalPad)
+            nutritionTextField(String(localized: "fat"), text: $fatGrams, keyboardType: .decimalPad)
+        }
+    }
+
+    private func nutritionTextField(_ title: String, text: Binding<String>, keyboardType: UIKeyboardType) -> some View {
+        HStack {
+            TextField(title, text: text)
+                .keyboardType(keyboardType)
+
+            if isProcessing {
+                Spacer(minLength: 8)
+                ProgressView()
+                    .controlSize(.small)
+            }
+        }
+    }
+
     @ViewBuilder
     private func dynamicSection(title: String, placeholderTitle: String, rows: Binding<[TextRow]>) -> some View {
-        Section(title) {
+        Section(LocalizedStringKey(title)) {
             ForEach(Array(rows.wrappedValue.enumerated()), id: \.element.id) { index, row in
-                TextField("\(index + 1). \(placeholderTitle)", text: rowBinding(rows, index))
-                    .focused($focusedField, equals: row.id)
-                    .onChange(of: rows.wrappedValue[index].text) { _, value in
-                        updateRows(rows, index: index, value: value, id: row.id)
+                HStack {
+                    TextField(String.localizedStringWithFormat(String(localized: "indexed_field_placeholder"), index + 1, placeholderTitle), text: rowBinding(rows, index))
+                        .focused($focusedField, equals: row.id)
+                        .onChange(of: rows.wrappedValue[index].text) { _, value in
+                            cancelGenerationIfNeeded()
+                            updateRows(rows, index: index, value: value, id: row.id)
+                        }
+
+                    if isScanningFood && index == 0 {
+                        Spacer(minLength: 8)
+                        ProgressView()
+                            .controlSize(.small)
                     }
+                }
             }
         }
     }
@@ -171,43 +241,155 @@ struct AddHealthRecipeSheet: View {
         compacted.append(trailingPlaceholder ?? TextRow(text: ""))
 
         rows.wrappedValue = compacted
+        if compacted.allSatisfy({ $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+            generateNutritionWithAI = false
+        }
         focusedField = compacted.contains { $0.id == id } ? id : nil
     }
 
-    private func process(_ image: UIImage) async {
+    private func process(_ image: UIImage) {
+        generationTask?.cancel()
         isProcessing = true
+        isScanningFood = true
         errorMessage = nil
-        do {
-            let parsed = try await aiService.scan(image: image)
-            title = parsed.title
-            ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
-            isProcessing = false
-        } catch {
-            errorMessage = error.localizedDescription
-            isProcessing = false
+        generationTask = Task {
+            do {
+                let parsed = try await aiService.scan(image: image)
+                try Task.checkCancellation()
+
+                let newIngredients = appendGeneratedIngredients(parsed.ingredients)
+                guard !newIngredients.isEmpty else { return }
+
+                let estimate = try await aiService.estimateNutrition(
+                    title: parsed.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? newIngredients[0] : parsed.title,
+                    ingredients: newIngredients,
+                    steps: parsed.steps
+                )
+                try Task.checkCancellation()
+
+                addNutritionEstimate(estimate)
+                isProcessing = false
+                isScanningFood = false
+                generationTask = nil
+            } catch is CancellationError {
+                isProcessing = false
+                isScanningFood = false
+                generationTask = nil
+            } catch {
+                // Match recipe/lesson generation: keep the inline loading indicator visible when scanning/generation fails.
+                errorMessage = nil
+            }
         }
     }
 
-    private func save() {
+    private func cancelGenerationIfNeeded() {
+        guard generationTask != nil, isProcessing else { return }
+        generationTask?.cancel()
+        generationTask = nil
+        isProcessing = false
+        isScanningFood = false
+        generateNutritionWithAI = false
+    }
+
+    private func generateNutrition() {
+        guard !cleanedIngredients.isEmpty else { return }
+        generationTask?.cancel()
         isProcessing = true
         errorMessage = nil
+        generationTask = Task {
+            do {
+                try await fillNutritionFromIngredients()
+                try Task.checkCancellation()
+                isProcessing = false
+                generationTask = nil
+            } catch is CancellationError {
+                isProcessing = false
+                generationTask = nil
+            } catch {
+                // Match recipe/lesson generation: keep the inline loading indicator visible when generation fails.
+                errorMessage = nil
+            }
+        }
+    }
+
+    private func fillNutritionFromIngredients() async throws {
+        let estimate = try await aiService.estimateNutrition(title: recipeTitle, ingredients: cleanedIngredients)
+        addNutritionEstimate(estimate)
+    }
+
+    private func appendGeneratedIngredients(_ generatedIngredients: [String]) -> [String] {
+        let existingValues = cleanedIngredients
+        let newValues = generatedIngredients
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        guard !newValues.isEmpty else { return [] }
+        ingredients = (existingValues + newValues).map { TextRow(text: $0) } + [TextRow(text: "")]
+        focusedField = ingredients.last?.id
+        return newValues
+    }
+
+    private func addNutritionEstimate(_ estimate: NutritionEstimate) {
+        let updatedCalories = (intValue(calories) ?? 0) + estimate.calories
+        let updatedProtein = (doubleValue(proteinGrams) ?? 0) + estimate.protein
+        let updatedCarbs = (doubleValue(carbsGrams) ?? 0) + estimate.carbs
+        let updatedFat = (doubleValue(fatGrams) ?? 0) + estimate.fat
+
+        calories = String(updatedCalories)
+        proteinGrams = formattedDecimal(updatedProtein)
+        carbsGrams = formattedDecimal(updatedCarbs)
+        fatGrams = formattedDecimal(updatedFat)
+    }
+
+    private func nutritionFromFields() -> NutritionInfo? {
+        let caloriesValue = intValue(calories)
+        let proteinValue = doubleValue(proteinGrams)
+        let carbsValue = doubleValue(carbsGrams)
+        let fatValue = doubleValue(fatGrams)
+        guard caloriesValue != nil || proteinValue != nil || carbsValue != nil || fatValue != nil else { return nil }
+
+        return NutritionInfo(
+            calories: caloriesValue,
+            proteinGrams: proteinValue,
+            carbsGrams: carbsValue,
+            fatGrams: fatValue,
+            servings: 1
+        )
+    }
+
+    private func intValue(_ text: String) -> Int? {
+        Int(text.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    private func doubleValue(_ text: String) -> Double? {
+        let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: ",", with: ".")
+        return Double(normalized)
+    }
+
+    private func formattedDecimal(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(0...1)))
+    }
+
+    private func save() {
+        if let manualNutrition = nutritionFromFields() {
+            logMeal(with: manualNutrition)
+            dismiss()
+            return
+        }
+
         Task {
+            isProcessing = true
+            errorMessage = nil
             do {
                 let estimate = try await aiService.estimateNutrition(title: recipeTitle, ingredients: cleanedIngredients)
-                let recipe = Recipe(
-                    title: recipeTitle,
-                    ingredients: cleanedIngredients,
-                    steps: [],
-                    nutrition: NutritionInfo(
+                await MainActor.run {
+                    logMeal(with: NutritionInfo(
                         calories: estimate.calories,
                         proteinGrams: estimate.protein,
                         carbsGrams: estimate.carbs,
                         fatGrams: estimate.fat,
                         servings: max(estimate.servings, 1)
-                    )
-                )
-                await MainActor.run {
-                    nutrition.logMeal(recipe: recipe, servings: 1)
+                    ))
                     dismiss()
                 }
             } catch {
@@ -217,5 +399,15 @@ struct AddHealthRecipeSheet: View {
                 }
             }
         }
+    }
+
+    private func logMeal(with nutritionInfo: NutritionInfo) {
+        let recipe = Recipe(
+            title: recipeTitle,
+            ingredients: cleanedIngredients,
+            steps: [],
+            nutrition: nutritionInfo
+        )
+        nutrition.logMeal(recipe: recipe, servings: 1)
     }
 }

@@ -54,15 +54,29 @@ final class RecipeAIService {
         return response.content
     }
 
-    /// Estimates nutritional values per serving from a recipe title and ingredients.
-    func estimateNutrition(title: String, ingredients: [String]) async throws -> NutritionEstimate {
+    /// Scans an image and extracts shopping list items using OCR and the language model.
+    /// Quantities stay attached to the item text so the existing shopping-list editor can refine them.
+    func scanShoppingList(image: UIImage) async throws -> ParsedShoppingList {
         let session = LanguageModelSession()
-        let listing = ingredients.map { "- \($0)" }.joined(separator: "\n")
+        let rawText = try await extractText(from: image)
+        guard !rawText.isEmpty else { throw ScanError.noTextFound }
+        let fullPrompt = "\(languageInstruction)Extract only the shopping list items or ingredients from this text. Keep visible quantities with the item, ignore notes, prices, totals and preparation instructions: \(rawText)"
+        let response = try await session.respond(to: fullPrompt, generating: ParsedShoppingList.self)
+        return response.content
+    }
+
+    /// Estimates nutritional values per serving from a recipe title and ingredients.
+    func estimateNutrition(title: String, ingredients: [String], steps: [String] = []) async throws -> NutritionEstimate {
+        let session = LanguageModelSession()
+        let ingredientListing = ingredients.map { "- \($0)" }.joined(separator: "\n")
+        let stepListing = steps.map { "- \($0)" }.joined(separator: "\n")
         let fullPrompt = """
-        \(languageInstruction)Estimate approximate nutrition for this recipe. This is only an estimate, not an exact medical or dietetic statement. Return values per serving and the assumed number of servings.
+        \(languageInstruction)Estimate approximate nutrition for this recipe or cooking lesson. This is only an estimate, not an exact medical or dietetic statement. Return all nutrition fields: calories, protein, carbohydrates and fat, plus the assumed number of servings. If ingredients are missing, infer a reasonable estimate from the title and preparation steps.
         Title: \(title)
         Ingredients:
-        \(listing)
+        \(ingredientListing)
+        Steps:
+        \(stepListing)
         """
         let response = try await session.respond(to: fullPrompt, generating: NutritionEstimate.self)
         return response.content
@@ -82,17 +96,17 @@ final class RecipeAIService {
     /// step by step, similar to a Duolingo lesson) from a title prompt.
     func generateLesson(from prompt: String) async throws -> ParsedLesson {
         let session = LanguageModelSession()
-        let fullPrompt = "\(languageInstruction)Create a short, beginner-friendly cooking lesson, similar to a Duolingo-style lesson, that teaches this cooking technique step by step: \(prompt). Respond structured with a title and a sequence of teaching steps."
+        let fullPrompt = "\(languageInstruction)Create a short, beginner-friendly cooking lesson, similar to a Duolingo-style lesson, that teaches this cooking technique step by step: \(prompt). Respond structured with a title, ingredients or tools used, and a sequence of teaching steps."
         let response = try await session.respond(to: fullPrompt, generating: ParsedLesson.self)
         return response.content
     }
 
-    /// Scans an image and extracts a lesson (title + steps) using OCR and the language model.
+    /// Scans an image and extracts a lesson (title + ingredients + steps) using OCR and the language model.
     func scanLesson(image: UIImage) async throws -> ParsedLesson {
         let session = LanguageModelSession()
         let rawText = try await extractText(from: image)
         guard !rawText.isEmpty else { throw ScanError.noTextFound }
-        let fullPrompt = "\(languageInstruction)Extract a cooking lesson (title and teaching steps) from: \(rawText)"
+        let fullPrompt = "\(languageInstruction)Extract a cooking lesson from this text. Return the title, ingredients or tools used, and teaching steps: \(rawText)"
         let response = try await session.respond(to: fullPrompt, generating: ParsedLesson.self)
         return response.content
     }

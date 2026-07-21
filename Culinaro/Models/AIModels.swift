@@ -25,8 +25,21 @@ struct ParsedLesson {
     @Guide(description: "The title of the cooking lesson")
     var title: String
 
+    @Guide(description: "Ingredients, tools, or food items used in the lesson")
+    var ingredients: [String]
+
     @Guide(description: "Step-by-step teaching instructions for the lesson")
     var steps: [String]
+}
+
+// MARK: - ParsedShoppingList
+
+/// A structured output model for Apple Intelligence (FoundationModels).
+/// Used when scanning a handwritten or printed shopping list from an image.
+@Generable
+struct ParsedShoppingList {
+    @Guide(description: "Shopping list items or ingredients, including quantities when visible")
+    var items: [String]
 }
 
 // MARK: - CookingTip

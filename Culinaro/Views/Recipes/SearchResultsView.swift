@@ -17,26 +17,26 @@ struct SearchResultsView: View {
     var body: some View {
         List {
             if !matchingRecipes.isEmpty {
-                Section("Rezepte") {
+                Section("recipes") {
                     ForEach(matchingRecipes) { recipe in
                         NavigationLink(recipe.title) { CookModeView(item: recipe) }
                     }
                 }
             }
             if !matchingLessons.isEmpty {
-                Section("Lektionen") {
+                Section("lessons") {
                     ForEach(matchingLessons) { lesson in
                         NavigationLink(lesson.title) { CookModeView(item: lesson) }
                     }
                 }
             }
             if !matchingShoppingItems.isEmpty {
-                Section("Einkauf") {
+                Section("shopping") {
                     ForEach(matchingShoppingItems) { item in
                         VStack(alignment: .leading, spacing: 3) {
                             Text(item.name)
                             if let sourceRecipeTitle = item.sourceRecipeTitle {
-                                Text("aus \(sourceRecipeTitle)")
+                                Text(String.localizedStringWithFormat(String(localized: "from_source"), sourceRecipeTitle))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -50,7 +50,7 @@ struct SearchResultsView: View {
                 ContentUnavailableView.search(text: query)
             }
         }
-        .navigationTitle("Suchen")
-        .searchable(text: $query, prompt: "Rezepte, Lektionen und Einkauf")
+        .navigationTitle("search")
+        .searchable(text: $query, prompt: "search_prompt")
     }
 }
