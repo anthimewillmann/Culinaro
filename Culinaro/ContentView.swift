@@ -25,79 +25,68 @@ struct ContentView: View {
     @State private var lessonPath: [UUID] = []
 
     var body: some View {
-        ZStack {
-            MeadowView()
-                .ignoresSafeArea()
-                .opacity(backgroundMode.mode == .meadow ? 1 : 0)
-                .allowsHitTesting(false)
-
-            CookModeAnimationView()
-                .ignoresSafeArea()
-                .opacity(backgroundMode.mode == .cookMode ? 1 : 0)
-                .allowsHitTesting(false)
-
-            TabView(selection: $selection) {
-                Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
-                    NavigationStack(path: $recipePath) {
-                        RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
-                            .toolbar { addButtonToolbar }
-                            .searchable(text: $recipeSearchText, placement: .toolbar)
-                            .searchToolbarBehavior(.minimize)
-                            .navigationDestination(for: UUID.self) { recipeID in
-                                if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
-                                    CookModeView(item: recipe)
-                                } else {
-                                    ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
-                                }
+        TabView(selection: $selection) {
+            Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
+                NavigationStack(path: $recipePath) {
+                    RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
+                        .toolbar { addButtonToolbar }
+                        .searchable(text: $recipeSearchText, placement: .toolbar)
+                        .searchToolbarBehavior(.minimize)
+                        .navigationDestination(for: UUID.self) { recipeID in
+                            if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
+                                CookModeView(item: recipe)
+                            } else {
+                                ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
                             }
-                    }
-                    .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
-                    .id(recipesStackID)
+                        }
                 }
+                .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
+                .id(recipesStackID)
+            }
 
-                Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
-                    NavigationStack(path: $lessonPath) {
-                        LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
-                            .toolbar { addButtonToolbar }
-                            .searchable(text: $lessonSearchText, placement: .toolbar)
-                            .searchToolbarBehavior(.minimize)
-                            .navigationDestination(for: UUID.self) { lessonID in
-                                if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
-                                    CookModeView(item: lesson)
-                                } else {
-                                    ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
-                                }
+            Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
+                NavigationStack(path: $lessonPath) {
+                    LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
+                        .toolbar { addButtonToolbar }
+                        .searchable(text: $lessonSearchText, placement: .toolbar)
+                        .searchToolbarBehavior(.minimize)
+                        .navigationDestination(for: UUID.self) { lessonID in
+                            if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
+                                CookModeView(item: lesson)
+                            } else {
+                                ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
                             }
-                    }
-                    .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
-                    .id(lessonsStackID)
+                        }
                 }
+                .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
+                .id(lessonsStackID)
+            }
 
-                Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
-                    NavigationStack {
-                        ShoppingListView(searchText: shoppingSearchText)
-                            .toolbar { addButtonToolbar }
-                            .searchable(text: $shoppingSearchText, placement: .toolbar)
-                            .searchToolbarBehavior(.minimize)
-                    }
-                    .id(shoppingStackID)
+            Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
+                NavigationStack {
+                    ShoppingListView(searchText: shoppingSearchText)
+                        .toolbar { addButtonToolbar }
+                        .searchable(text: $shoppingSearchText, placement: .toolbar)
+                        .searchToolbarBehavior(.minimize)
                 }
+                .id(shoppingStackID)
+            }
 
-                Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
-                    NavigationStack {
-                        HealthView()
-                            .toolbar { addButtonToolbar }
-                    }
-                }
-
-                Tab(String(localized: "tab_overview"), systemImage: "chart.bar", value: .stats) {
-                    NavigationStack {
-                        StatsView()
-                    }
+            Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
+                NavigationStack {
+                    HealthView()
+                        .toolbar { addButtonToolbar }
                 }
             }
-            .toolbarBackground(.hidden, for: .tabBar)
+
+            Tab(String(localized: "tab_overview"), systemImage: "chart.bar", value: .stats) {
+                NavigationStack {
+                    StatsView()
+                }
+            }
         }
+        .toolbarBackground(.hidden, for: .tabBar)
+        .background(BackgroundWindowInstaller(backgroundMode: backgroundMode))
         .environment(backgroundMode)
         .onAppear {
             gameCenter.authenticate()

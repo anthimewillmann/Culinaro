@@ -72,6 +72,8 @@ private enum SequenceStep {
 ///    Endlos-Loop, der immer wieder genau dort beginnt, wo er endet:
 ///    blauer Himmel + grüne Fläche.
 struct MeadowView: View {
+    // MARK: - Environment
+    @Environment(\.colorScheme) private var colorScheme
     // MARK: - State
     @State private var skyOpacity: CGFloat = 0
     @State private var hillRise: CGFloat = 0
@@ -115,15 +117,15 @@ struct MeadowView: View {
     private let groundYFraction: CGFloat = 0.80
     private let ballXFraction: CGFloat = 0.28
     private let ballDiameter: CGFloat = 34
-    /// Passt sich automatisch an Light/Dark Mode an (weiß bzw. schwarz) –
-    /// exakt das gleiche Prinzip wie der Basis-Layer in
-    /// `CookModeAnimationView` (`Color(UIColor.systemBackground)`). Wird
-    /// sowohl für den allerersten Frame vor dem Intro als auch für den
-    /// Wisch-Layer beim Herbst→Winter-Übergang verwendet, damit dort im
-    /// Dark Mode kein greller weißer Screen mitten in der Animation
-    /// aufblitzt.
+    /// Passt sich an Light/Dark Mode an (weiß bzw. schwarz) – gleiches
+    /// Prinzip wie der Readability-Overlay in `CookModeView`
+    /// (`colorScheme == .dark ? Color.black : Color.white`). Wird nur für
+    /// den allerersten Frame vor dem Intro verwendet, bevor der Himmel
+    /// einblendet. Der Wisch-Layer beim Herbst→Winter-Übergang ist
+    /// bewusst fest auf `Color.white` gesetzt (nicht vom Farbschema
+    /// abhängig), unabhängig vom Modus.
     private var adaptiveBackground: Color {
-        Color(UIColor.systemBackground)
+        colorScheme == .dark ? .black : .white
     }
     private let flowers: [Flower] = (0..<20).map { _ in
         Flower(
@@ -295,12 +297,20 @@ struct MeadowView: View {
                 // Der Wisch verdeckt die Szene kurz vollständig. Genau in
                 // diesem Moment wird darunter vom Herbst zum Winter gewechselt.
                 Rectangle()
-                    .fill(adaptiveBackground)
+                    .fill(Color.white)
                     .frame(width: geo.size.width, height: geo.size.height)
                     .position(
                         x: geo.size.width / 2,
                         y: -geo.size.height / 2 + whiteWipeProgress * geo.size.height * 2
                     )
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+
+                // Readability overlay adapts to light / dark mode
+                Rectangle()
+                    .fill(colorScheme == .dark
+                          ? Color.black.opacity(0.5)
+                          : Color.white.opacity(0.5))
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
 
