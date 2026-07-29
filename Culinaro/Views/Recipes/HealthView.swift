@@ -3,6 +3,7 @@ import PhotosUI
 
 struct HealthView: View {
     @EnvironmentObject private var nutrition: NutritionStore
+    @Environment(BackgroundModeManager.self) private var backgroundMode
 
     var body: some View {
         Form {
@@ -27,8 +28,10 @@ struct HealthView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .listRowBackground(Color.clear)
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("nutrition")
+        .task { backgroundMode.mode = .meadow }
     }
 
     private func nutritionField(_ title: String, _ value: String) -> some View {

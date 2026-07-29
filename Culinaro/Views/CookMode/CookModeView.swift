@@ -39,6 +39,7 @@ struct CookModeView: View {
     @EnvironmentObject private var nutritionStore: NutritionStore
     @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @EnvironmentObject private var recipeStore: RecipeStore
+    @Environment(BackgroundModeManager.self) private var backgroundMode
 
     /// Total number of phases: ingredients screen + all steps.
     private var totalSteps: Int { item.steps.count + 1 }
@@ -66,14 +67,12 @@ struct CookModeView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Color.clear)
 
             // MARK: – Individual step
             case .step(let index):
                 ZStack {
-                    // Animated background
-                    CookModeAnimationView()
-                        .ignoresSafeArea()
-
                     // Readability overlay adapts to light / dark mode
                     Rectangle()
                         .fill(colorScheme == .dark
@@ -125,6 +124,7 @@ struct CookModeView: View {
         .navigationSubtitle(subtitle)
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
+        .containerBackground(.clear, for: .navigation)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: goBack) {
@@ -145,6 +145,8 @@ struct CookModeView: View {
         }
         // MARK: – Tip loading on phase change
         .onChange(of: phase) { _, newPhase in
+            updateBackgroundMode(for: newPhase)
+
             // Cancel any in-flight tip request before starting a new one
             tipTask?.cancel()
             tipTask = nil
@@ -162,6 +164,12 @@ struct CookModeView: View {
             if case .step(let index) = phase, index < item.steps.count {
                 tipTask = Task { await loadTip(for: index) }
             }
+        }
+        .task {
+            updateBackgroundMode(for: phase)
+        }
+        .onDisappear {
+            backgroundMode.mode = .meadow
         }
     }
 
@@ -295,6 +303,15 @@ struct CookModeView: View {
             shoppingListStore.addIngredients(from: recipe)
         } else if let lesson = item as? Lesson {
             shoppingListStore.addIngredients(from: lesson)
+        }
+    }
+
+    private func updateBackgroundMode(for phase: Phase) {
+        switch phase {
+        case .start:
+            backgroundMode.mode = .meadow
+        case .step:
+            backgroundMode.mode = .cookMode
         }
     }
 

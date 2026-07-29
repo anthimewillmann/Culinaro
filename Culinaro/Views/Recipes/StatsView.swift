@@ -5,6 +5,7 @@ struct StatsView: View {
     @EnvironmentObject private var lessons: LessonStore
     @EnvironmentObject private var stats: StatsStore
     @State private var gameCenter = GameCenterManager.shared
+    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var friendScores: [FriendScore] = []
     @State private var friendsErrorMessage: String?
     @State private var notes: [TextRow] = [TextRow(text: "")]
@@ -25,12 +26,14 @@ struct StatsView: View {
             notesSection
         }
         .scrollContentBackground(.hidden)
+        .listRowBackground(Color.clear)
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("overview")
         .onAppear(perform: loadNotes)
         .task {
             await loadFriendScores()
         }
+        .task { backgroundMode.mode = .meadow }
         .refreshable {
             await loadFriendScores()
         }

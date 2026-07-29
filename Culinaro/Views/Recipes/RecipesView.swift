@@ -9,6 +9,7 @@ struct RecipesView: View {
     @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @EnvironmentObject private var nutritionStore: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
+    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var editingRecipe: Recipe?
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
@@ -87,6 +88,7 @@ struct RecipesView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .listRowBackground(Color.clear)
         .containerBackground(.clear, for: .navigation)
         .overlay { if recipes.isEmpty { ContentUnavailableView("no_recipes", systemImage: "fork.knife") } }
         .navigationTitle("recipes")
@@ -105,6 +107,7 @@ struct RecipesView: View {
         .task(id: categorizationSignature) {
             await categorize()
         }
+        .task { backgroundMode.mode = .meadow }
     }
 
     @ViewBuilder

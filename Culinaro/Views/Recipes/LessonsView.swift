@@ -8,6 +8,7 @@ struct LessonsView: View {
     @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @EnvironmentObject private var nutritionStore: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
+    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var editingLesson: Lesson?
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
@@ -81,6 +82,7 @@ struct LessonsView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .listRowBackground(Color.clear)
         .containerBackground(.clear, for: .navigation)
         .overlay { if lessons.isEmpty { ContentUnavailableView("no_lessons", systemImage: "graduationcap") } }
         .navigationTitle("lessons")
@@ -99,6 +101,7 @@ struct LessonsView: View {
         .task(id: categorizationSignature) {
             await categorize()
         }
+        .task { backgroundMode.mode = .meadow }
     }
 
     @ViewBuilder

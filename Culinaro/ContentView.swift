@@ -6,6 +6,7 @@ struct ContentView: View {
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
     @EnvironmentObject private var stats: StatsStore
+    @State private var backgroundMode = BackgroundModeManager()
     @State private var gameCenter = GameCenterManager.shared
     @State private var selection: AppTab = .recipes
     @State private var showAddItem = false
@@ -24,14 +25,19 @@ struct ContentView: View {
     @State private var lessonPath: [UUID] = []
 
     var body: some View {
-        TabView(selection: $selection) {
-            Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
-                ZStack {
-                    // MeadowView liegt INNERHALB dieses Tab-Inhalts, nicht dahinter —
-                    // nur so überdeckt sie den Standard-Hintergrund des Tab-Containers.
-                    MeadowView()
-                        .ignoresSafeArea()
+        ZStack {
+            MeadowView()
+                .ignoresSafeArea()
+                .opacity(backgroundMode.mode == .meadow ? 1 : 0)
+                .allowsHitTesting(false)
 
+            CookModeAnimationView()
+                .ignoresSafeArea()
+                .opacity(backgroundMode.mode == .cookMode ? 1 : 0)
+                .allowsHitTesting(false)
+
+            TabView(selection: $selection) {
+                Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
                     NavigationStack(path: $recipePath) {
                         RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
                             .toolbar { addButtonToolbar }
@@ -45,16 +51,11 @@ struct ContentView: View {
                                 }
                             }
                     }
+                    .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
+                    .id(recipesStackID)
                 }
-                .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
-                .id(recipesStackID)
-            }
 
-            Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
-                ZStack {
-                    MeadowView()
-                        .ignoresSafeArea()
-
+                Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
                     NavigationStack(path: $lessonPath) {
                         LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
                             .toolbar { addButtonToolbar }
@@ -68,50 +69,36 @@ struct ContentView: View {
                                 }
                             }
                     }
+                    .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
+                    .id(lessonsStackID)
                 }
-                .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
-                .id(lessonsStackID)
-            }
 
-            Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
-                ZStack {
-                    MeadowView()
-                        .ignoresSafeArea()
-
+                Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
                     NavigationStack {
                         ShoppingListView(searchText: shoppingSearchText)
                             .toolbar { addButtonToolbar }
                             .searchable(text: $shoppingSearchText, placement: .toolbar)
                             .searchToolbarBehavior(.minimize)
                     }
+                    .id(shoppingStackID)
                 }
-                .id(shoppingStackID)
-            }
 
-            Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
-                ZStack {
-                    MeadowView()
-                        .ignoresSafeArea()
-
+                Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
                     NavigationStack {
                         HealthView()
                             .toolbar { addButtonToolbar }
                     }
                 }
-            }
 
-            Tab(String(localized: "tab_overview"), systemImage: "chart.bar", value: .stats) {
-                ZStack {
-                    MeadowView()
-                        .ignoresSafeArea()
-
+                Tab(String(localized: "tab_overview"), systemImage: "chart.bar", value: .stats) {
                     NavigationStack {
                         StatsView()
                     }
                 }
             }
+            .toolbarBackground(.hidden, for: .tabBar)
         }
-        .toolbarBackground(.hidden, for: .tabBar)
+        .environment(backgroundMode)
         .onAppear {
             gameCenter.authenticate()
             submitTotalScore()

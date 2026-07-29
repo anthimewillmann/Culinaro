@@ -6,6 +6,7 @@ struct ShoppingListView: View {
 
     @EnvironmentObject private var store: ShoppingListStore
     @Environment(RecipeAIService.self) private var aiService
+    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
     @State private var isCategorizing = false
@@ -65,6 +66,7 @@ struct ShoppingListView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .listRowBackground(Color.clear)
         .containerBackground(.clear, for: .navigation)
         .overlay { if items.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
         .navigationTitle("shopping")
@@ -73,6 +75,7 @@ struct ShoppingListView: View {
         .task(id: categorizationSignature) {
             await categorize()
         }
+        .task { backgroundMode.mode = .meadow }
     }
 
     private var subtitle: String {
