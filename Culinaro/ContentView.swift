@@ -26,64 +26,92 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selection) {
             Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
-                NavigationStack(path: $recipePath) {
-                    RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
-                        .toolbar { addButtonToolbar }
-                        .searchable(text: $recipeSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
-                        .navigationDestination(for: UUID.self) { recipeID in
-                            if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
-                                CookModeView(item: recipe)
-                            } else {
-                                ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
+                ZStack {
+                    // MeadowView liegt INNERHALB dieses Tab-Inhalts, nicht dahinter —
+                    // nur so überdeckt sie den Standard-Hintergrund des Tab-Containers.
+                    MeadowView()
+                        .ignoresSafeArea()
+
+                    NavigationStack(path: $recipePath) {
+                        RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
+                            .toolbar { addButtonToolbar }
+                            .searchable(text: $recipeSearchText, placement: .toolbar)
+                            .searchToolbarBehavior(.minimize)
+                            .navigationDestination(for: UUID.self) { recipeID in
+                                if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
+                                    CookModeView(item: recipe)
+                                } else {
+                                    ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
+                                }
                             }
-                        }
+                    }
                 }
                 .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
                 .id(recipesStackID)
             }
 
             Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
-                NavigationStack(path: $lessonPath) {
-                    LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
-                        .toolbar { addButtonToolbar }
-                        .searchable(text: $lessonSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
-                        .navigationDestination(for: UUID.self) { lessonID in
-                            if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
-                                CookModeView(item: lesson)
-                            } else {
-                                ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
+                ZStack {
+                    MeadowView()
+                        .ignoresSafeArea()
+
+                    NavigationStack(path: $lessonPath) {
+                        LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
+                            .toolbar { addButtonToolbar }
+                            .searchable(text: $lessonSearchText, placement: .toolbar)
+                            .searchToolbarBehavior(.minimize)
+                            .navigationDestination(for: UUID.self) { lessonID in
+                                if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
+                                    CookModeView(item: lesson)
+                                } else {
+                                    ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
+                                }
                             }
-                        }
+                    }
                 }
                 .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
                 .id(lessonsStackID)
             }
 
             Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
-                NavigationStack {
-                    ShoppingListView(searchText: shoppingSearchText)
-                        .toolbar { addButtonToolbar }
-                        .searchable(text: $shoppingSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
+                ZStack {
+                    MeadowView()
+                        .ignoresSafeArea()
+
+                    NavigationStack {
+                        ShoppingListView(searchText: shoppingSearchText)
+                            .toolbar { addButtonToolbar }
+                            .searchable(text: $shoppingSearchText, placement: .toolbar)
+                            .searchToolbarBehavior(.minimize)
+                    }
                 }
                 .id(shoppingStackID)
             }
 
             Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
-                NavigationStack {
-                    HealthView()
-                        .toolbar { addButtonToolbar }
+                ZStack {
+                    MeadowView()
+                        .ignoresSafeArea()
+
+                    NavigationStack {
+                        HealthView()
+                            .toolbar { addButtonToolbar }
+                    }
                 }
             }
 
             Tab(String(localized: "tab_overview"), systemImage: "chart.bar", value: .stats) {
-                NavigationStack {
-                    StatsView()
+                ZStack {
+                    MeadowView()
+                        .ignoresSafeArea()
+
+                    NavigationStack {
+                        StatsView()
+                    }
                 }
             }
         }
+        .toolbarBackground(.hidden, for: .tabBar)
         .onAppear {
             gameCenter.authenticate()
             submitTotalScore()

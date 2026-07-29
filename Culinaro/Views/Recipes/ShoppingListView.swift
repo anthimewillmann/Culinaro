@@ -64,6 +64,8 @@ struct ShoppingListView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .containerBackground(.clear, for: .navigation)
         .overlay { if items.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
         .navigationTitle("shopping")
         .navigationSubtitle(subtitle)

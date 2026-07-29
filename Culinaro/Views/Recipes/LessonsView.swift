@@ -80,6 +80,8 @@ struct LessonsView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .containerBackground(.clear, for: .navigation)
         .overlay { if lessons.isEmpty { ContentUnavailableView("no_lessons", systemImage: "graduationcap") } }
         .navigationTitle("lessons")
         .navigationSubtitle(String.localizedStringWithFormat(String(localized: "created_count"), store.lessons.count))

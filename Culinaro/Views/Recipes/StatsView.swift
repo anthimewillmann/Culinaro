@@ -24,6 +24,8 @@ struct StatsView: View {
             friendsSection
             notesSection
         }
+        .scrollContentBackground(.hidden)
+        .containerBackground(.clear, for: .navigation)
         .navigationTitle("overview")
         .onAppear(perform: loadNotes)
         .task {

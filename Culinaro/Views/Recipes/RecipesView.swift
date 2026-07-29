@@ -86,6 +86,8 @@ struct RecipesView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .containerBackground(.clear, for: .navigation)
         .overlay { if recipes.isEmpty { ContentUnavailableView("no_recipes", systemImage: "fork.knife") } }
         .navigationTitle("recipes")
         .navigationSubtitle(String.localizedStringWithFormat(String(localized: "created_count"), store.recipes.count))

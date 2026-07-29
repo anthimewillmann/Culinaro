@@ -26,6 +26,8 @@ struct HealthView: View {
                 nutritionField(String(localized: "calories"), formattedWholeNumber(average.calories))
             }
         }
+        .scrollContentBackground(.hidden)
+        .containerBackground(.clear, for: .navigation)
         .navigationTitle("nutrition")
     }
 
