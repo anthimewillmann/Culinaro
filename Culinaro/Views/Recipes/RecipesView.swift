@@ -88,7 +88,7 @@ struct RecipesView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .listRowBackground(Color.clear)
+        .keepingOpaqueBackground()
         .containerBackground(.clear, for: .navigation)
         .overlay { if recipes.isEmpty { ContentUnavailableView("no_recipes", systemImage: "fork.knife") } }
         .navigationTitle("recipes")

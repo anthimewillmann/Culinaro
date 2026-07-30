@@ -28,7 +28,7 @@ struct HealthView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .listRowBackground(Color.clear)
+        .keepingOpaqueBackground()
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("nutrition")
         .task { backgroundMode.mode = .meadow }

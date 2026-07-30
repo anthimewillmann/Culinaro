@@ -82,7 +82,7 @@ struct LessonsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .listRowBackground(Color.clear)
+        .keepingOpaqueBackground()
         .containerBackground(.clear, for: .navigation)
         .overlay { if lessons.isEmpty { ContentUnavailableView("no_lessons", systemImage: "graduationcap") } }
         .navigationTitle("lessons")

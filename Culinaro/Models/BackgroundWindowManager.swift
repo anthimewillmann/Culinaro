@@ -1,6 +1,37 @@
 import SwiftUI
 import UIKit
 
+/// Identifier, mit dem Listen/Formulare markiert werden, deren Zeilen ihre
+/// normale, opake Systemfarbe (weiß im Light Mode, schwarz im Dark Mode)
+/// behalten sollen. `clearEntireTree` überspringt jeden Teilbaum, dessen
+/// Wurzel-View diesen Identifier trägt, komplett — keine Farbänderung,
+/// keine Rekursion hinein. Dadurch bleiben die Zeilen unangetastet, egal wie
+/// SwiftUI sie intern rendert (Hosting-Wrapper, direkte Layer-Manipulation
+/// etc.), da der Sweep sie schlicht nie erreicht.
+///
+/// HINWEIS: Bei `List`/`Form` landet dieser Identifier in der Praxis oft
+/// nicht auf einer echten `UIView`-Instanz im `subviews`-Baum, sondern nur
+/// auf einem internen Accessibility-Proxy, den der Sweep nie sieht. Deshalb
+/// gibt es zusätzlich den zuverlässigeren, typbasierten Check auf
+/// `UICollectionView`/`UITableView` weiter unten in `clearEntireTree` — das
+/// ist der eigentliche Mechanismus, der List/Form-Zeilen heute schützt.
+/// Der `accessibilityIdentifier`-Check bleibt als zusätzliche Absicherung
+/// bestehen (z. B. falls einzelne View-Hierarchien den Identifier doch auf
+/// einer echten View tragen).
+enum MeadowOpacityTags {
+    static let opaqueContent = "meadow-opaque-content"
+}
+
+extension View {
+    /// Markiert diese View (typischerweise ein `List` oder `Form`) so, dass
+    /// der Hintergrund-Sweep sie und alle ihre Kind-Views komplett in Ruhe
+    /// lässt — die Zeilen bleiben opak (weiß/schwarz), während alles
+    /// außerhalb weiterhin transparent für die Wiesen-Animation ist.
+    func keepingOpaqueBackground() -> some View {
+        self.accessibilityIdentifier(MeadowOpacityTags.opaqueContent)
+    }
+}
+
 @MainActor
 final class BackgroundWindowManager {
     static let shared = BackgroundWindowManager()
@@ -64,6 +95,17 @@ final class BackgroundWindowManager {
         /// Toolbar-Buttons) bleiben unangetastet, egal in welchem Container sie
         /// stecken — sonst verlieren Buttons kurzzeitig ihren Material-Effekt
         /// und wirken flach-grau.
+        ///
+        /// `List`/`Form` sind intern seit iOS 16 immer ein `UICollectionView`
+        /// (in älteren Fällen ein `UITableView`). Beide werden komplett
+        /// übersprungen — keine Farbänderung, keine Rekursion in ihre Zellen.
+        /// Das ist der zuverlässige Mechanismus, der Listen-/Formularzeilen
+        /// in ihrer normalen, opaken Systemfarbe (weiß/schwarz) hält, egal
+        /// wie SwiftUI sie intern zusammensetzt.
+        ///
+        /// Zusätzlich wird — als weitere Absicherung — jeder Teilbaum
+        /// übersprungen, dessen Wurzel-View `MeadowOpacityTags.opaqueContent`
+        /// als `accessibilityIdentifier` trägt (siehe `keepingOpaqueBackground()`).
         private func clearEntireTree(startingFrom root: UIView, windowBounds: CGRect) {
             if let window = root as? UIWindow {
                 window.backgroundColor = .clear
@@ -71,6 +113,19 @@ final class BackgroundWindowManager {
 
             for subview in root.subviews {
                 if subview is UITabBar {
+                    continue
+                }
+
+                // Zuverlässiger Schutz für List/Form: Beide sind intern immer
+                // ein UICollectionView bzw. UITableView. Dieser Typ-Check ist
+                // die eigentliche Absicherung — anders als der
+                // accessibilityIdentifier weiter unten landet er garantiert
+                // auf einer echten UIView-Instanz im subviews-Baum.
+                if subview is UICollectionView || subview is UITableView {
+                    continue
+                }
+
+                if subview.accessibilityIdentifier == MeadowOpacityTags.opaqueContent {
                     continue
                 }
 
@@ -103,6 +158,13 @@ final class BackgroundWindowManager {
                         effectView.effect = nil
                         effectView.backgroundColor = .clear
                         effectView.contentView.backgroundColor = .clear
+                        // Ohne dies bleibt die jetzt unsichtbare Fläche weiterhin
+                        // interaktiv (Standard: isUserInteractionEnabled = true)
+                        // und fängt Touches ab, bevor sie den darunterliegenden
+                        // Scroll-Gestenerkenner der Liste erreichen — dadurch
+                        // ließ sich nur direkt auf einer Zeile scrollen, nicht
+                        // im Leerraum dazwischen.
+                        effectView.isUserInteractionEnabled = false
                     }
                 } else {
                     let isKnownContainer = className.contains("HostingView") || className.contains("Hosting")

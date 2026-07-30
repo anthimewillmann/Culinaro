@@ -66,7 +66,7 @@ struct ShoppingListView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .listRowBackground(Color.clear)
+        .keepingOpaqueBackground()
         .containerBackground(.clear, for: .navigation)
         .overlay { if items.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
         .navigationTitle("shopping")

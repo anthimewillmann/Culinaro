@@ -26,7 +26,7 @@ struct StatsView: View {
             notesSection
         }
         .scrollContentBackground(.hidden)
-        .listRowBackground(Color.clear)
+        .keepingOpaqueBackground()
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("overview")
         .onAppear(perform: loadNotes)
