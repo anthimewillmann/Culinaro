@@ -18,9 +18,6 @@ struct ContentView: View {
     @State private var isSelectingRecipes = false
     @State private var isSelectingLessons = false
 
-    @State private var recipesStackID = UUID()
-    @State private var lessonsStackID = UUID()
-    @State private var shoppingStackID = UUID()
     @State private var recipePath: [UUID] = []
     @State private var lessonPath: [UUID] = []
 
@@ -41,7 +38,6 @@ struct ContentView: View {
                         }
                 }
                 .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
-                .id(recipesStackID)
             }
 
             Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
@@ -59,7 +55,6 @@ struct ContentView: View {
                         }
                 }
                 .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
-                .id(lessonsStackID)
             }
 
             Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
@@ -69,7 +64,6 @@ struct ContentView: View {
                         .searchable(text: $shoppingSearchText, placement: .toolbar)
                         .searchToolbarBehavior(.minimize)
                 }
-                .id(shoppingStackID)
             }
 
             Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
@@ -86,7 +80,6 @@ struct ContentView: View {
             }
         }
         .toolbarBackground(.hidden, for: .tabBar)
-        .background(BackgroundWindowInstaller(backgroundMode: backgroundMode))
         .environment(backgroundMode)
         .onAppear {
             gameCenter.authenticate()
@@ -101,22 +94,32 @@ struct ContentView: View {
         .onChange(of: stats.completedCookModes) { _, _ in submitTotalScore() }
         .onChange(of: stats.completedLessons) { _, _ in submitTotalScore() }
         .onChange(of: selection) { oldValue, _ in
+            // WICHTIG: Hier wird bewusst NICHT mehr über ein `.id(UUID())`-
+            // Reset der komplette NavigationStack-Inhalt neu aufgebaut.
+            // Früher passierte das, um Suchtext/Navigationspfad beim
+            // Tab-Verlassen zurückzusetzen — als Nebeneffekt wurde dabei
+            // aber auch jede in diesem Screen eingebettete Hintergrund-
+            // Animation (MeadowView) zerstört und beim nächsten Besuch
+            // komplett neu gestartet. Suchtext und Navigationspfad werden
+            // stattdessen direkt über ihre eigenen State-Variablen
+            // zurückgesetzt — das funktioniert unabhängig von `.id()` und
+            // lässt den restlichen View-Baum (inkl. MeadowView) am Leben,
+            // wodurch die Animation nahtlos über Tab-Wechsel hinweg
+            // weiterläuft, genau wie es bei Health/Stats schon immer der
+            // Fall war (die nie ein `.id()`-Reset hatten).
             switch oldValue {
             case .recipes:
                 recipeSearchText = ""
                 recipePath = []
                 isSelectingRecipes = false
-                recipesStackID = UUID()
 
             case .lessons:
                 lessonSearchText = ""
                 lessonPath = []
                 isSelectingLessons = false
-                lessonsStackID = UUID()
 
             case .shoppingList:
                 shoppingSearchText = ""
-                shoppingStackID = UUID()
 
             case .health, .stats:
                 break

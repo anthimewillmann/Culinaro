@@ -3,7 +3,6 @@ import PhotosUI
 
 struct HealthView: View {
     @EnvironmentObject private var nutrition: NutritionStore
-    @Environment(BackgroundModeManager.self) private var backgroundMode
 
     var body: some View {
         Form {
@@ -28,10 +27,13 @@ struct HealthView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .keepingOpaqueBackground()
+        // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
+        // derselben View-Hierarchie — nicht mehr als externes Fenster
+        // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
+        // dass die Wiese selbst jemals Touches abbekommt.
+        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("nutrition")
-        .task { backgroundMode.mode = .meadow }
     }
 
     private func nutritionField(_ title: String, _ value: String) -> some View {

@@ -1,37 +1,38 @@
 import SwiftUI
 
-// MARK: - Änderungen gegenüber der Vorversion
+// MARK: - Architekturänderung: zeitbasierte statt zustandsbasierte Animation
 //
-// 1. SnowfallView zeichnet Flocken jetzt gebündelt nach Deckkraft-Buckets
-//    (statt eines context.fill() pro Flocke) → deutlich weniger Draw-Calls
-//    bei mehreren tausend Flocken.
-// 2. Die Animationssequenzen (Intro + Loop) sind jetzt deklarative
-//    [SequenceStep]-Arrays statt einer langen Kette aus
-//    `try? await Task.sleep` + `withAnimation`.
-// 3. `.onAppear` wurde durch `.task` ersetzt; zusammen mit expliziten
-//    Cancellation-Checks bricht die Sequenz sauber ab, wenn die View aus
-//    der Hierarchie verschwindet, statt unbeobachtet weiterzulaufen.
-// 4. Magic Numbers (Zoomfaktor, Schneemann-Sinkstrecke, Hügelhöhen) stehen
-//    jetzt benannt in `AnimationConstants`.
-// 5. `resetAllStatesForIntro()` und `resetLoopStartStates()` wurden zu
-//    einer gemeinsamen Funktion mit Parameter zusammengeführt.
-// 6. Die Anchor-Preference-Auswertung nutzt statt `DispatchQueue.main.async`
-//    das modernere `Task { @MainActor in ... }`.
+// FRÜHER: Die komplette Animation lief als imperative Sequenz aus
+// `@State`-Variablen, die per `Task.sleep` + `withAnimation` nacheinander
+// gesetzt wurden (`startAnimationSequence()` in einem `.task`).
+//
+// PROBLEM: Sobald `MeadowView` direkt in einzelnen Tab-Screens eingebettet
+// wurde (statt in einem einzigen, dauerhaften Hintergrundfenster), zeigte
+// sich, dass `TabView` die View eines gerade nicht sichtbaren Tabs
+// offenbar entladen und bei Rückkehr neu erzeugen kann — auch ganz ohne
+// eigenes `.id()`-Reset. Jede neu erzeugte Instanz startete ihre
+// `@State`-Sequenz wieder bei Null, was zu doppeltem/unvollständigem
+// Overlap führte (z. B. Strand- und Winterszene gleichzeitig sichtbar).
+//
+// LÖSUNG: Der komplette Render-Zustand wird jetzt bei JEDEM Frame als
+// reine Funktion der seit einem geteilten, für die gesamte App-Laufzeit
+// festen Startzeitpunkt (`sharedAnimationStartDate`, ein `static let` —
+// wird beim allerersten Zugriff einmalig gesetzt und danach von JEDER
+// Instanz von `MeadowView` geteilt) verstrichenen Zeit neu berechnet
+// (`renderState(at:)`). Dadurch zeigen zwei MeadowView-Instanzen zur
+// exakt gleichen Uhrzeit immer exakt denselben Frame — komplett
+// unabhängig davon, wann die jeweilige Instanz selbst erzeugt wurde. Eine
+// neu erzeugte Instanz "springt" nicht mehr an den Anfang, sondern direkt
+// an die korrekte Stelle im Ablauf.
+//
+// Einzige bewusste Einschränkung: `SnowfallView` verwaltet ihre einzelnen
+// Flocken weiterhin in eigenem `@State` (Performance-Gründe, siehe dort).
+// Wird eine `MeadowView`-Instanz mitten in einer aktiven Schneephase neu
+// erzeugt, poppen ihre Flocken beim Neustart etwas abrupter ein, statt
+// gestaffelt von oben hereinzufliegen — ein kleiner kosmetischer
+// Kompromiss, kein funktionaler Rücksprung mehr.
 
-/// Übermittelt die Bildschirmposition eines Markerpunkts (Mitte eines roten
-/// Kuppel-Segments am Sonnenschirm) durch die View-Hierarchie nach oben, damit
-/// `MeadowView` daraus einen exakten, tatsächlich gemessenen Zoom-Ankerpunkt
-/// bestimmen kann – unabhängig von Safe-Area- oder Layout-Eigenheiten.
-private struct RedCanopyAnchorKey: PreferenceKey {
-    static var defaultValue: Anchor<CGPoint>? = nil
-    static func reduce(value: inout Anchor<CGPoint>?, nextValue: () -> Anchor<CGPoint>?) {
-        value = nextValue() ?? value
-    }
-}
-
-/// Benannte Konstanten für Werte, die vorher als "magic numbers" direkt in
-/// der Animationssequenz standen. Erleichtert das Anpassen und Verstehen der
-/// Kernparameter, ohne die Sequenz selbst durchsuchen zu müssen.
+/// Benannte Konstanten für Kernparameter der Animation.
 private enum AnimationConstants {
     /// Ziel-Zoomfaktor beim Hineinzoomen in den roten Schirm-Marker.
     static let umbrellaZoomTargetScale: CGFloat = 45
@@ -41,24 +42,6 @@ private enum AnimationConstants {
     static let initialWinterHillHeightFraction: CGFloat = 0.36
     /// Zielhöhe des Wintergrund-Hügels: identisch zur grünen Anfangsfläche.
     static let summerHillHeightFraction: CGFloat = 0.55
-}
-
-/// Ein einzelner Schritt einer Animationssequenz. Die gesamte Zeitleiste
-/// einer Sequenz lässt sich damit als flaches, gut lesbares Array
-/// beschreiben, anstatt als lange Kette von
-/// `try? await Task.sleep(...)` + `withAnimation { ... }`-Aufrufen, bei der
-/// man die Summe aller Wartezeiten manuell nachzählen muss.
-private enum SequenceStep {
-    /// Wartet die angegebene Anzahl Sekunden, bevor der nächste Schritt beginnt.
-    case wait(Double)
-    /// Führt eine Zustandsänderung mit der angegebenen Animation aus.
-    case animate(Animation, () -> Void)
-    /// Führt eine Zustandsänderung ohne Animation aus (z. B. beim verdeckten
-    /// Szenenwechsel während des weißen Wisches).
-    case instant(() -> Void)
-    /// Führt eine eigene asynchrone Teil-Sequenz aus, z. B. eine schrittweise
-    /// Intensitätsänderung über mehrere Sekunden.
-    case custom(() async -> Void)
 }
 
 /// Eine Wiesen-Szene, die am Ende der Animation in einen Herbstwald und
@@ -71,35 +54,20 @@ private enum SequenceStep {
 ///    Winter, Schneemann versinkt, Fläche wächst & wird grün) als
 ///    Endlos-Loop, der immer wieder genau dort beginnt, wo er endet:
 ///    blauer Himmel + grüne Fläche.
+///
+/// Der gesamte Ablauf ist als reine Funktion der verstrichenen Zeit
+/// implementiert (siehe `renderState(at:)`) — siehe Architekturkommentar
+/// am Dateianfang.
 struct MeadowView: View {
     // MARK: - Environment
     @Environment(\.colorScheme) private var colorScheme
-    // MARK: - State
-    @State private var skyOpacity: CGFloat = 0
-    @State private var hillRise: CGFloat = 0
-    @State private var flowersOpacity: CGFloat = 0
-    @State private var mountainsRise: CGFloat = 0
-    @State private var waveRise: CGFloat = 0
-    @State private var sandOverlayOpacity: CGFloat = 0
-    @State private var deepBlueRise: CGFloat = 0
-    @State private var umbrellaFall: CGFloat = 0
-    @State private var ballFall: CGFloat = 0
-    @State private var zoomScale: CGFloat = 1
-    @State private var zoomOverlayOpacity: CGFloat = 0
-    @State private var zoomAnchor: UnitPoint = .center
 
-    @State private var autumnForestOpacity: CGFloat = 0
-    @State private var snowIntensity: CGFloat = 0
-    @State private var winterSceneOpacity: CGFloat = 0
-    @State private var winterSnowIntensity: CGFloat = 0
-    @State private var whiteWipeProgress: CGFloat = 0
-    @State private var snowCycleID = UUID()
-    @State private var winterSnowEmissionIntensity: CGFloat = 0
-
-    // States für die Fortsetzung nach der Winterszene.
-    @State private var snowmanFallOffset: CGFloat = 0
-    @State private var winterHillHeightFraction: CGFloat = AnimationConstants.initialWinterHillHeightFraction
-    @State private var winterHillColorMix: CGFloat = 0 // 0 = weiß, 1 = grün
+    /// Für die gesamte Prozesslaufzeit fester, von allen Instanzen
+    /// geteilter Referenzzeitpunkt. `static let` wird von Swift garantiert
+    /// nur beim allerersten Zugriff einmalig (thread-sicher) initialisiert
+    /// — jede weitere `MeadowView`-Instanz, egal wann erzeugt, greift auf
+    /// denselben Zeitpunkt zu.
+    private static let sharedAnimationStartDate = Date()
 
     // MARK: - Konstanten
     private let skyColor      = Color(red: 0.65, green: 0.85, blue: 1.00)
@@ -118,12 +86,9 @@ struct MeadowView: View {
     private let ballXFraction: CGFloat = 0.28
     private let ballDiameter: CGFloat = 34
     /// Passt sich an Light/Dark Mode an (weiß bzw. schwarz) – gleiches
-    /// Prinzip wie der Readability-Overlay in `CookModeView`
-    /// (`colorScheme == .dark ? Color.black : Color.white`). Wird nur für
+    /// Prinzip wie der Readability-Overlay in `CookModeView`. Wird nur für
     /// den allerersten Frame vor dem Intro verwendet, bevor der Himmel
-    /// einblendet. Der Wisch-Layer beim Herbst→Winter-Übergang ist
-    /// bewusst fest auf `Color.white` gesetzt (nicht vom Farbschema
-    /// abhängig), unabhängig vom Modus.
+    /// einblendet.
     private var adaptiveBackground: Color {
         colorScheme == .dark ? .black : .white
     }
@@ -147,176 +112,472 @@ struct MeadowView: View {
         return Color(red: r, green: g, blue: b)
     }
 
+    // MARK: - Zeitleiste
+    //
+    // Alle Zeitangaben in Sekunden, exakt aus der ursprünglichen
+    // `SequenceStep`-Kette übernommen (kumulative Summe aus `.wait(...)` +
+    // `.animate(duration:)`-Werten), nur jetzt als benannte, statische
+    // Zeitpunkte statt als sequenziell abgearbeitete Schritte.
+    private enum Timing {
+        static let introSkyStart = 0.4
+        static let introSkyDuration = 2.5
+        static let introHillStart = 4.7
+        static let introHillDuration = 2.2
+        static let introTotalDuration = 8.7
+
+        static let flowersStart = 1.2
+        static let flowersDuration = 1.8
+        static let mountainsRiseStart = 3.8
+        static let mountainsRiseDuration = 2.2
+        static let mountainsFallStart = 9.0
+        static let mountainsFallDuration = 2.0
+        static let waveStart = 12.8
+        static let waveDuration = 2.0
+        static let deepBlueStart = 17.4
+        static let deepBlueDuration = 2.0
+        static let umbrellaStart = 20.8
+        static let umbrellaDuration = 1.3
+        static let ballStart = 23.5
+        static let ballDuration = 1.3
+        static let zoomStart = 26.2
+        static let zoomDuration = 2.8
+        static let zoomOverlayStart = 31.0
+        static let zoomOverlayDuration = 0.6
+        static let autumnStart = 32.8
+        static let autumnDuration = 3.2
+        static let snowIncreaseStart = 38.0
+        static let snowIncreaseDuration = 15.0
+        static let whiteWipe1Start = 58.0
+        static let whiteWipe1Duration = 2.8
+        /// Harter Szenenwechsel Herbst → Winter, während der weiße Wisch
+        /// den Bildschirm komplett verdeckt (entspricht dem ehemaligen
+        /// `.instant { ... }`-Block).
+        static let sceneSwitchTime = 63.6
+        static let whiteWipe2Start = 65.4
+        static let whiteWipe2Duration = 2.8
+        static let snowDecreaseStart = 71.0
+        static let snowDecreaseDuration = 7.0
+        static let winterSnowOffTime = 84.5
+        static let snowmanFallStart = 91.0
+        static let snowmanFallDuration = 2.2
+        static let hillGrowStart = 95.4
+        static let hillGrowDuration = 2.4
+        static let hillColorStart = 100.2
+        static let hillColorDuration = 2.4
+        /// Gesamtlänge eines Loop-Durchlaufs (ohne Intro).
+        static let cycleDuration = 105.4
+    }
+
+    private enum Easing {
+        case linear, easeIn, easeOut, easeInOut
+    }
+
+    /// Berechnet den geklemmten, geglätteten Fortschritt (0...1) für einen
+    /// Zeitpunkt `t` innerhalb eines Fensters `[start, start + duration]`.
+    /// Ersetzt SwiftUIs `withAnimation`-Kurven durch direkt berechnete
+    /// Näherungen — visuell sehr nah an den Originalen, aber als reine,
+    /// synchrone Funktion statt einer laufenden Animation.
+    ///
+    /// `easeIn`/`easeOut` nutzen Sinus-basierte statt quadratische Kurven:
+    /// Die quadratische Variante (`p²` bzw. `1-(1-p)²`) kommt bei `easeOut`
+    /// exakt bei Fortschritt 1 abrupt auf Geschwindigkeit 0 — bei größeren,
+    /// bildschirmfüllenden Bewegungen (z. B. die herunterkommende Welle)
+    /// wirkte dieses harte Abbremsen wie ein kurzes "Hakeln" statt eines
+    /// weichen Ausklingens. Die Sinus-Variante bremst gleichmäßiger ab.
+    private func progress(_ t: Double, start: Double, duration: Double, _ curve: Easing) -> Double {
+        guard duration > 0 else { return t >= start ? 1 : 0 }
+        let raw = (t - start) / duration
+        let clamped = min(max(raw, 0), 1)
+        switch curve {
+        case .linear:
+            return clamped
+        case .easeIn:
+            return 1 - cos(clamped * .pi / 2)
+        case .easeOut:
+            return sin(clamped * .pi / 2)
+        case .easeInOut:
+            return clamped * clamped * (3 - 2 * clamped)
+        }
+    }
+
+    /// Alle für einen Frame benötigten Render-Werte. Wird bei jedem Tick
+    /// von `TimelineView` frisch aus `renderState(at:)` berechnet.
+    private struct RenderState {
+        var skyOpacity: CGFloat = 0
+        var hillRise: CGFloat = 0
+        var flowersOpacity: CGFloat = 0
+        var mountainsRise: CGFloat = 0
+        var waveRise: CGFloat = 0
+        var sandOverlayOpacity: CGFloat = 0
+        var deepBlueRise: CGFloat = 0
+        var umbrellaFall: CGFloat = 0
+        var ballFall: CGFloat = 0
+        var zoomScale: CGFloat = 1
+        var zoomOverlayOpacity: CGFloat = 0
+        var autumnForestOpacity: CGFloat = 0
+        var snowIntensity: CGFloat = 0
+        var winterSceneOpacity: CGFloat = 0
+        var winterSnowIntensity: CGFloat = 0
+        var winterSnowEmissionIntensity: CGFloat = 0
+        var whiteWipeProgress: CGFloat = 0
+        var snowmanFallOffset: CGFloat = 0
+        var winterHillHeightFraction: CGFloat = AnimationConstants.initialWinterHillHeightFraction
+        var winterHillColorMix: CGFloat = 0
+        /// Fortlaufender Loop-Zähler (−1 während des einmaligen Intros).
+        /// Dient als `.id()` für `SnowfallView`, damit deren interner
+        /// Flocken-Zustand einmal pro Loop-Durchlauf frisch beginnt — und
+        /// zwar konsistent über alle gleichzeitig existierenden
+        /// MeadowView-Instanzen hinweg, weil er direkt aus der geteilten
+        /// Zeit berechnet wird, nicht aus einer pro Instanz zufällig
+        /// erzeugten UUID.
+        var loopIndex: Int = -1
+    }
+
+    /// Berechnet den kompletten Render-Zustand als reine Funktion der seit
+    /// `sharedAnimationStartDate` verstrichenen Zeit. Siehe
+    /// Architekturkommentar am Dateianfang.
+    private func renderState(at date: Date) -> RenderState {
+        let elapsed = date.timeIntervalSince(Self.sharedAnimationStartDate)
+        var state = RenderState()
+
+        if elapsed < Timing.introTotalDuration {
+            // Einmaliges Intro läuft noch — der restliche Loop-Zustand
+            // bleibt auf seinen Ruhewerten (0 bzw. Anfangswerte).
+            state.skyOpacity = progress(elapsed, start: Timing.introSkyStart, duration: Timing.introSkyDuration, .easeInOut)
+            state.hillRise = progress(elapsed, start: Timing.introHillStart, duration: Timing.introHillDuration, .easeOut)
+            state.loopIndex = -1
+            return state
+        }
+
+        // Intro abgeschlossen — Himmel/Hügel bleiben dauerhaft eingeblendet
+        // (entspricht: `resetLoopStartStates()` setzt diese beiden im Loop
+        // bewusst NICHT zurück).
+        state.skyOpacity = 1
+        state.hillRise = 1
+
+        let cycleElapsed = elapsed - Timing.introTotalDuration
+        let tCycle = cycleElapsed.truncatingRemainder(dividingBy: Timing.cycleDuration)
+        state.loopIndex = Int(cycleElapsed / Timing.cycleDuration)
+
+        state.flowersOpacity = progress(tCycle, start: Timing.flowersStart, duration: Timing.flowersDuration, .easeIn)
+
+        // Berge: steigen, halten kurz, sinken wieder.
+        if tCycle < Timing.mountainsRiseStart {
+            state.mountainsRise = 0
+        } else if tCycle < Timing.mountainsRiseStart + Timing.mountainsRiseDuration {
+            state.mountainsRise = progress(tCycle, start: Timing.mountainsRiseStart, duration: Timing.mountainsRiseDuration, .easeOut)
+        } else if tCycle < Timing.mountainsFallStart {
+            state.mountainsRise = 1
+        } else {
+            state.mountainsRise = 1 - progress(tCycle, start: Timing.mountainsFallStart, duration: Timing.mountainsFallDuration, .easeIn)
+        }
+
+        state.waveRise = progress(tCycle, start: Timing.waveStart, duration: Timing.waveDuration, .easeOut)
+        state.sandOverlayOpacity = state.waveRise
+        state.deepBlueRise = progress(tCycle, start: Timing.deepBlueStart, duration: Timing.deepBlueDuration, .easeOut)
+        state.umbrellaFall = progress(tCycle, start: Timing.umbrellaStart, duration: Timing.umbrellaDuration, .easeOut)
+        state.ballFall = progress(tCycle, start: Timing.ballStart, duration: Timing.ballDuration, .easeOut)
+        state.zoomScale = 1 + progress(tCycle, start: Timing.zoomStart, duration: Timing.zoomDuration, .easeIn)
+            * (AnimationConstants.umbrellaZoomTargetScale - 1)
+
+        // Zoom-Overlay, Herbstwald & aufbauender Schneefall: aktiv bis zum
+        // harten Szenenwechsel, danach schlagartig aus (entspricht dem
+        // ehemaligen `.instant { ... }`-Block).
+        if tCycle < Timing.sceneSwitchTime {
+            state.zoomOverlayOpacity = progress(tCycle, start: Timing.zoomOverlayStart, duration: Timing.zoomOverlayDuration, .easeIn)
+            state.autumnForestOpacity = progress(tCycle, start: Timing.autumnStart, duration: Timing.autumnDuration, .easeInOut)
+            let snowRaw = progress(tCycle, start: Timing.snowIncreaseStart, duration: Timing.snowIncreaseDuration, .linear)
+            state.snowIntensity = snowRaw * snowRaw * (3 - 2 * snowRaw)
+        } else {
+            state.zoomOverlayOpacity = 0
+            state.autumnForestOpacity = 0
+            state.snowIntensity = 0
+        }
+
+        // Winterszene: erscheint schlagartig beim Szenenwechsel und bleibt
+        // für den Rest des Loops sichtbar.
+        state.winterSceneOpacity = tCycle >= Timing.sceneSwitchTime ? 1 : 0
+
+        // Winter-Schneesturm: schlagartig an beim Szenenwechsel, schlagartig
+        // aus, sobald er ausgelaufen ist.
+        if tCycle < Timing.sceneSwitchTime {
+            state.winterSnowIntensity = 0
+        } else if tCycle < Timing.winterSnowOffTime {
+            state.winterSnowIntensity = 1
+        } else {
+            state.winterSnowIntensity = 0
+        }
+
+        if tCycle < Timing.sceneSwitchTime {
+            state.winterSnowEmissionIntensity = 0
+        } else if tCycle < Timing.snowDecreaseStart {
+            state.winterSnowEmissionIntensity = 1
+        } else if tCycle < Timing.snowDecreaseStart + Timing.snowDecreaseDuration {
+            let raw = progress(tCycle, start: Timing.snowDecreaseStart, duration: Timing.snowDecreaseDuration, .linear)
+            let smooth = raw * raw * (3 - 2 * raw)
+            state.winterSnowEmissionIntensity = 1 - smooth
+        } else {
+            state.winterSnowEmissionIntensity = 0
+        }
+
+        // Weißer Wisch: zwei Segmente (0 → 0.5, kurze Pause, 0.5 → 1).
+        if tCycle < Timing.whiteWipe1Start {
+            state.whiteWipeProgress = 0
+        } else if tCycle < Timing.whiteWipe1Start + Timing.whiteWipe1Duration {
+            state.whiteWipeProgress = progress(tCycle, start: Timing.whiteWipe1Start, duration: Timing.whiteWipe1Duration, .linear) * 0.5
+        } else if tCycle < Timing.whiteWipe2Start {
+            state.whiteWipeProgress = 0.5
+        } else if tCycle < Timing.whiteWipe2Start + Timing.whiteWipe2Duration {
+            state.whiteWipeProgress = 0.5 + progress(tCycle, start: Timing.whiteWipe2Start, duration: Timing.whiteWipe2Duration, .linear) * 0.5
+        } else {
+            state.whiteWipeProgress = 1
+        }
+
+        state.snowmanFallOffset = progress(tCycle, start: Timing.snowmanFallStart, duration: Timing.snowmanFallDuration, .easeIn)
+            * AnimationConstants.snowmanSinkDistance
+
+        let hillHeightProgress = progress(tCycle, start: Timing.hillGrowStart, duration: Timing.hillGrowDuration, .easeInOut)
+        state.winterHillHeightFraction = AnimationConstants.initialWinterHillHeightFraction
+            + hillHeightProgress * (AnimationConstants.summerHillHeightFraction - AnimationConstants.initialWinterHillHeightFraction)
+
+        state.winterHillColorMix = progress(tCycle, start: Timing.hillColorStart, duration: Timing.hillColorDuration, .easeInOut)
+
+        return state
+    }
+
+    /// Berechnet den Zoom-Ankerpunkt (als `UnitPoint` relativ zu `geo.size`)
+    /// analytisch aus der bekannten, festen Geometrie des Sonnenschirms —
+    /// statt ihn dynamisch per `PreferenceKey`-Messung zu bestimmen.
+    ///
+    /// HINTERGRUND: Die vorherige Messung lief über `overlayPreferenceValue`
+    /// + `GeometryReader`, aktualisiert per `Task { @MainActor in ... }`.
+    /// Das Problem: SwiftUI führt für einen gerade nicht sichtbaren Tab
+    /// vermutlich keine (oder nur unregelmäßige) Layout-Durchläufe mehr
+    /// aus — der gemessene Ankerpunkt blieb dadurch auf einem veralteten
+    /// Stand stehen (z. B. noch während der Schirm gerade erst herunterfiel
+    /// und seine Ruheposition noch nicht erreicht hatte, oder schlicht nie
+    /// korrekt gemessen, wenn dieser Tab noch nie aktiv gelayoutet wurde).
+    /// Kehrte man zu einem Tab zurück, während `zoomScale` durch die
+    /// inzwischen verstrichene Zeit bereits stark vergrößert war, wurde um
+    /// diesen falschen Punkt herum gezoomt — sichtbar als stark verzerrter,
+    /// falsch positionierter Ausschnitt ohne erkennbare Wiese.
+    ///
+    /// Diese Funktion ist eine reine, synchrone Berechnung aus `geo.size`
+    /// — unabhängig davon, ob und wie oft zuvor ein Layout-Durchlauf für
+    /// diese View stattgefunden hat. Sie bildet exakt dieselbe Geometrie
+    /// nach, die `BeachUmbrellaView` für Position, Rotation und den roten
+    /// Streifen verwendet (Ruheposition bei `umbrellaFall = 1`).
+    private func analyticZoomAnchor(in geo: GeometryProxy) -> UnitPoint {
+        guard geo.size.width > 0, geo.size.height > 0 else { return .center }
+
+        let canopyWidth = Double(BeachUmbrellaView.canopyWidth)
+        let canopyHeight = Double(BeachUmbrellaView.canopyHeight)
+        let totalHeight = Double(BeachUmbrellaView.totalHeight)
+
+        // Mittelpunkt des Sonnenschirms in Ruhelage (umbrellaFall = 1),
+        // identisch zur Positionierung weiter unten im Body.
+        let centerX = Double(geo.size.width) * Double(umbrellaXFraction)
+        let centerY = Double(umbrellaLandingY(in: geo))
+
+        // Roter Markerpunkt, lokal zur Kuppel — identische Formel wie
+        // `BeachUmbrellaView`s internem Streifen-Layout (7 Streifen,
+        // zweiter Streifen von links ist rot, r = 0.6 vom Kuppelradius
+        // entfernt). Muss bei Änderungen dort synchron gehalten werden.
+        let stripeCount = 7.0
+        let redSegmentIndex = 1.0
+        let step = 180.0 / stripeCount
+        let angleDeg = (redSegmentIndex + 0.5) * step
+        let rad = angleDeg * Double.pi / 180
+        let r = 0.6
+        let radiusX = canopyWidth / 2
+        let radiusY = canopyHeight
+        let localX = radiusX + r * radiusX * cos(rad)
+        let localY = radiusY - r * radiusY * sin(rad)
+
+        // Von Kuppel-lokalen Koordinaten in unrotierte Koordinaten relativ
+        // zum Sonnenschirm-Mittelpunkt: Die Kuppel sitzt oben in der
+        // (canopyWidth x totalHeight) großen Box, deren Mittelpunkt bei
+        // `.position(center)` liegt.
+        let unrotatedX = centerX - canopyWidth / 2 + localX
+        let unrotatedY = centerY - totalHeight / 2 + localY
+
+        // `.rotationEffect(.degrees(umbrellaRestRotation))` dreht um
+        // denselben Mittelpunkt, den auch `.position()` verwendet.
+        let dx = unrotatedX - centerX
+        let dy = unrotatedY - centerY
+        let theta = Double(umbrellaRestRotation) * Double.pi / 180
+        let rotatedX = dx * cos(theta) - dy * sin(theta)
+        let rotatedY = dx * sin(theta) + dy * cos(theta)
+
+        let finalX = centerX + rotatedX
+        let finalY = centerY + rotatedY
+
+        return UnitPoint(x: finalX / Double(geo.size.width), y: finalY / Double(geo.size.height))
+    }
+
     // MARK: - Body
     var body: some View {
         GeometryReader { geo in
             let meadowTopY = geo.size.height * 0.45
-            ZStack {
-                ZStack {
-                    adaptiveBackground.ignoresSafeArea()
-                    skyColor
-                        .ignoresSafeArea()
-                        .opacity(skyOpacity)
-                    ZStack {
-                        MountainView(
-                            width: geo.size.width * 0.85,
-                            height: geo.size.height * 0.36,
-                            color: mountainColor
-                        )
-                        .position(
-                            x: geo.size.width * 0.38,
-                            y: meadowTopY - geo.size.height * 0.36 * 0.10
-                        )
-                        MountainView(
-                            width: geo.size.width * 0.55,
-                            height: geo.size.height * 0.22,
-                            color: mountainColor
-                        )
-                        .position(
-                            x: geo.size.width * 0.68,
-                            y: meadowTopY - geo.size.height * 0.22 * 0.10
-                        )
-                    }
-                    .offset(y: (1 - mountainsRise) * geo.size.height * 1.2)
-                    ZStack {
-                        HillShape()
-                            .fill(grassColor)
-                        ForEach(flowers) { flower in
-                            Circle()
-                                .fill(flower.color)
-                                .frame(width: flower.size, height: flower.size)
-                                .position(
-                                    x: geo.size.width * flower.x,
-                                    y: geo.size.height * 0.55 * flower.y
-                                )
-                        }
-                        .opacity(flowersOpacity)
-                        sandColor
-                            .opacity(sandOverlayOpacity)
-                    }
-                    .frame(height: geo.size.height * 0.55)
-                    .frame(maxHeight: .infinity, alignment: .bottom)
-                    .mask(
-                        HillShape()
-                            .frame(height: geo.size.height * 0.55)
-                            .frame(maxHeight: .infinity, alignment: .bottom)
-                    )
-                    .ignoresSafeArea(edges: .bottom)
-                    .offset(y: (1 - hillRise) * geo.size.height * 0.55)
-                    TimelineView(.animation) { timeline in
-                        // Phase wird direkt aus der verstrichenen Zeit berechnet,
-                        // statt über eine State-Variable mit `.repeatForever()`
-                        // animiert zu werden. Dadurch läuft die Welle immer
-                        // gleichmäßig weiter und es gibt beim Loop-Neustart
-                        // nichts, was "abgebrochen" werden müsste – das war die
-                        // Ursache für das Springen/Spinnen der Welle.
-                        let time = timeline.date.timeIntervalSinceReferenceDate
-                        let phase = CGFloat(time.truncatingRemainder(dividingBy: 1000)) * waveSpeed
+            TimelineView(.animation) { timeline in
+                let state = renderState(at: timeline.date)
+                // Wellenphase bleibt wie zuvor direkt aus der Systemzeit
+                // berechnet — war bereits vor dem Umbau zeitbasiert und
+                // damit von Haus aus resilient gegenüber View-Neuerzeugung.
+                let wavePhase = CGFloat(
+                    timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1000)
+                ) * waveSpeed
 
+                ZStack {
+                    ZStack {
+                        adaptiveBackground.ignoresSafeArea()
+                        skyColor
+                            .ignoresSafeArea()
+                            .opacity(state.skyOpacity)
+                        ZStack {
+                            MountainView(
+                                width: geo.size.width * 0.85,
+                                height: geo.size.height * 0.36,
+                                color: mountainColor
+                            )
+                            .position(
+                                x: geo.size.width * 0.38,
+                                y: meadowTopY - geo.size.height * 0.36 * 0.10
+                            )
+                            MountainView(
+                                width: geo.size.width * 0.55,
+                                height: geo.size.height * 0.22,
+                                color: mountainColor
+                            )
+                            .position(
+                                x: geo.size.width * 0.68,
+                                y: meadowTopY - geo.size.height * 0.22 * 0.10
+                            )
+                        }
+                        .offset(y: (1 - state.mountainsRise) * geo.size.height * 1.2)
+                        ZStack {
+                            HillShape()
+                                .fill(grassColor)
+                            ForEach(flowers) { flower in
+                                Circle()
+                                    .fill(flower.color)
+                                    .frame(width: flower.size, height: flower.size)
+                                    .position(
+                                        x: geo.size.width * flower.x,
+                                        y: geo.size.height * 0.55 * flower.y
+                                    )
+                            }
+                            .opacity(state.flowersOpacity)
+                            sandColor
+                                .opacity(state.sandOverlayOpacity)
+                        }
+                        .frame(height: geo.size.height * 0.55)
+                        .frame(maxHeight: .infinity, alignment: .bottom)
+                        .mask(
+                            HillShape()
+                                .frame(height: geo.size.height * 0.55)
+                                .frame(maxHeight: .infinity, alignment: .bottom)
+                        )
+                        .ignoresSafeArea(edges: .bottom)
+                        .offset(y: (1 - state.hillRise) * geo.size.height * 0.55)
                         MeadowWaveShape(
                             baseHeightFraction: 2.0 / 3.0,
                             amplitude: geo.size.height * 0.06,
                             frequency: 0.3,
-                            phase: phase
+                            phase: wavePhase
                         )
                         .fill(waveTurquoise)
-                    }
-                    .ignoresSafeArea()
-                    .offset(y: -(1 - waveRise) * geo.size.height)
-                    Rectangle()
-                        .fill(skyColor)
-                        .frame(height: geo.size.height * 0.5)
-                        .frame(maxHeight: .infinity, alignment: .top)
-                        .ignoresSafeArea(edges: .top)
-                        .offset(y: -(1 - deepBlueRise) * geo.size.height * 0.5)
-                    BeachUmbrellaView(canopyColor: umbrellaCanopyColor, poleColor: umbrellaPoleColor)
-                        .position(
-                            x: geo.size.width * umbrellaXFraction,
-                            y: umbrellaLandingY(in: geo) - (1 - umbrellaFall) * geo.size.height
-                        )
-                        .rotationEffect(.degrees(umbrellaRestRotation))
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: ballDiameter, height: ballDiameter)
-                        .position(
-                            x: geo.size.width * ballXFraction,
-                            y: ballLandingY(in: geo) - (1 - ballFall) * geo.size.height
-                        )
-                }
-                .overlayPreferenceValue(RedCanopyAnchorKey.self) { anchor in
-                    GeometryReader { proxy -> Color in
-                        if let anchor {
-                            let point = proxy[anchor]
-                            let resolved = UnitPoint(
-                                x: point.x / proxy.size.width,
-                                y: point.y / proxy.size.height
+                        .ignoresSafeArea()
+                        .offset(y: -(1 - state.waveRise) * geo.size.height)
+                        Rectangle()
+                            .fill(skyColor)
+                            .frame(height: geo.size.height * 0.5)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                            .ignoresSafeArea(edges: .top)
+                            .offset(y: -(1 - state.deepBlueRise) * geo.size.height * 0.5)
+                        BeachUmbrellaView(canopyColor: umbrellaCanopyColor, poleColor: umbrellaPoleColor)
+                            .position(
+                                x: geo.size.width * umbrellaXFraction,
+                                y: umbrellaLandingY(in: geo) - (1 - state.umbrellaFall) * geo.size.height
                             )
-                            if zoomAnchor != resolved {
-                                Task { @MainActor in
-                                    zoomAnchor = resolved
-                                }
-                            }
-                        }
-                        return Color.clear
+                            .rotationEffect(.degrees(umbrellaRestRotation))
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: ballDiameter, height: ballDiameter)
+                            .position(
+                                x: geo.size.width * ballXFraction,
+                                y: ballLandingY(in: geo) - (1 - state.ballFall) * geo.size.height
+                            )
                     }
-                }
-                .scaleEffect(zoomScale, anchor: zoomAnchor)
-                umbrellaCanopyColor
-                    .ignoresSafeArea()
-                    .opacity(zoomOverlayOpacity)
-                    .allowsHitTesting(false)
+                    .scaleEffect(state.zoomScale, anchor: analyticZoomAnchor(in: geo))
+                    umbrellaCanopyColor
+                        .ignoresSafeArea()
+                        .opacity(state.zoomOverlayOpacity)
+                        .allowsHitTesting(false)
 
-                AutumnForestView()
-                    .opacity(autumnForestOpacity)
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
+                    AutumnForestView()
+                        .opacity(state.autumnForestOpacity)
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
 
-                WinterMeadowView(
-                    skyColor: skyColor,
-                    hillHeightFraction: winterHillHeightFraction,
-                    hillColor: mixedWinterHillColor(winterHillColorMix),
-                    snowmanFallOffset: snowmanFallOffset
-                )
-                .opacity(winterSceneOpacity)
-                .ignoresSafeArea()
-                .allowsHitTesting(false)
-
-                // Bleibt auch bei Intensität 0 in der Hierarchie. Dadurch
-                // kann jede neu aktivierte Flocke zuverlässig oberhalb des
-                // Bildschirms erzeugt werden.
-                SnowfallView(
-                    intensity: max(snowIntensity, winterSnowIntensity),
-                    emissionIntensity: snowIntensity > 0
-                        ? snowIntensity
-                        : winterSnowEmissionIntensity
-                )
-                    .id(snowCycleID)
+                    WinterMeadowView(
+                        skyColor: skyColor,
+                        hillHeightFraction: state.winterHillHeightFraction,
+                        hillColor: mixedWinterHillColor(state.winterHillColorMix),
+                        snowmanFallOffset: state.snowmanFallOffset
+                    )
+                    .opacity(state.winterSceneOpacity)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
 
-                // Der Wisch verdeckt die Szene kurz vollständig. Genau in
-                // diesem Moment wird darunter vom Herbst zum Winter gewechselt.
-                Rectangle()
-                    .fill(Color.white)
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .position(
-                        x: geo.size.width / 2,
-                        y: -geo.size.height / 2 + whiteWipeProgress * geo.size.height * 2
+                    // `resetToken: state.loopIndex` sorgt dafür, dass
+                    // SnowfallView einmal pro Loop-Durchlauf mit frischem
+                    // internen Zustand beginnt — konsistent über alle
+                    // gleichzeitig existierenden MeadowView-Instanzen, da
+                    // loopIndex direkt aus der geteilten Zeit berechnet
+                    // wird. BEWUSST kein `.id(state.loopIndex)` mehr: das
+                    // hätte SwiftUI gezwungen, die komplette SnowfallView
+                    // bei jedem Loop-Wechsel zu zerstören und neu
+                    // aufzubauen, statt nur ihren internen Zustand
+                    // zurückzusetzen — ein View-Identitätswechsel mitten im
+                    // ZStack konnte dabei eine größere Neu-Layout-Berechnung
+                    // des umgebenden Baums auslösen und kurzzeitig zu
+                    // falscher Geometrie führen (sichtbar als "Wasser/
+                    // Schirm ohne Wiese" genau bei jedem Loop-Neustart).
+                    // Der `resetToken`-Ansatz setzt stattdessen nur den
+                    // internen Zustand zurück, ohne die View-Identität
+                    // anzutasten.
+                    SnowfallView(
+                        intensity: max(state.snowIntensity, state.winterSnowIntensity),
+                        emissionIntensity: state.snowIntensity > 0
+                            ? state.snowIntensity
+                            : state.winterSnowEmissionIntensity,
+                        resetToken: state.loopIndex
                     )
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
 
-                // Readability overlay adapts to light / dark mode
-                Rectangle()
-                    .fill(colorScheme == .dark
-                          ? Color.black.opacity(0.5)
-                          : Color.white.opacity(0.5))
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
+                    // Der Wisch verdeckt die Szene kurz vollständig. Genau in
+                    // diesem Moment wechselt darunter der Herbst zum Winter
+                    // (siehe `sceneSwitchTime` in `renderState(at:)`).
+                    Rectangle()
+                        .fill(Color.white)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .position(
+                            x: geo.size.width / 2,
+                            y: -geo.size.height / 2 + state.whiteWipeProgress * geo.size.height * 2
+                        )
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
 
-            }
-            .task {
-                await startAnimationSequence()
+                    // Readability overlay adapts to light / dark mode
+                    Rectangle()
+                        .fill(colorScheme == .dark
+                              ? Color.black.opacity(0.5)
+                              : Color.white.opacity(0.5))
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
+                }
             }
         }
     }
@@ -327,248 +588,6 @@ struct MeadowView: View {
     private func ballLandingY(in geo: GeometryProxy) -> CGFloat {
         geo.size.height * groundYFraction - ballDiameter / 2
     }
-
-    // MARK: - Animationssequenz
-
-    /// Startet Intro + Endlos-Loop. Läuft als `.task`, wodurch die Task von
-    /// SwiftUI automatisch storniert wird, sobald die View aus der
-    /// Hierarchie verschwindet – dadurch läuft nach einem Verschwinden der
-    /// View nichts mehr unbeobachtet im Hintergrund weiter.
-    @MainActor
-    private func startAnimationSequence() async {
-        await playIntroOnce()
-        while !Task.isCancelled {
-            await runAnimationCycle()
-        }
-    }
-
-    /// Setzt alle Werte zurück, die während eines Loop-Durchlaufs verändert
-    /// werden. Läuft in einer Transaction mit `disablesAnimations = true`,
-    /// damit jede noch laufende Animation aus dem vorherigen Durchlauf
-    /// sauber abgebrochen wird, statt mit neu gestarteten Animationen zu
-    /// kollidieren.
-    ///
-    /// - Parameter includingIntroStates: Wenn `true`, werden zusätzlich
-    ///   `skyOpacity` und `hillRise` zurückgesetzt. Das wird nur einmalig
-    ///   vor dem allerersten Intro benötigt – im normalen Loop bleiben
-    ///   beide bewusst auf 1, da der Loop mit blauem Himmel + grüner
-    ///   Fläche startet.
-    private func resetLoopStartStates(includingIntroStates: Bool = false) {
-        var transaction = Transaction()
-        transaction.disablesAnimations = true
-        withTransaction(transaction) {
-            if includingIntroStates {
-                skyOpacity = 0
-                hillRise = 0
-            }
-            flowersOpacity = 0
-            mountainsRise = 0
-            waveRise = 0
-            sandOverlayOpacity = 0
-            deepBlueRise = 0
-            umbrellaFall = 0
-            ballFall = 0
-            zoomScale = 1
-            zoomOverlayOpacity = 0
-            zoomAnchor = .center
-
-            autumnForestOpacity = 0
-            snowIntensity = 0
-            winterSceneOpacity = 0
-            winterSnowIntensity = 0
-            whiteWipeProgress = 0
-            snowCycleID = UUID()
-            winterSnowEmissionIntensity = 0
-
-            snowmanFallOffset = 0
-            winterHillHeightFraction = AnimationConstants.initialWinterHillHeightFraction
-            winterHillColorMix = 0
-        }
-    }
-
-    /// Führt eine Liste von `SequenceStep`s der Reihe nach aus. Bricht die
-    /// Sequenz sauber ab, sobald die umgebende Task storniert wurde (z. B.
-    /// weil die View verschwunden ist), statt im Hintergrund unbeobachtet
-    /// weiterzulaufen.
-    @MainActor
-    private func run(_ steps: [SequenceStep]) async {
-        for step in steps {
-            if Task.isCancelled { return }
-            switch step {
-            case .wait(let seconds):
-                do {
-                    try await Task.sleep(for: .seconds(seconds))
-                } catch {
-                    return
-                }
-            case .animate(let animation, let action):
-                withAnimation(animation, action)
-            case .instant(let action):
-                action()
-            case .custom(let action):
-                await action()
-            }
-        }
-    }
-
-    /// Einmaliges Intro: Standardhintergrund → Blau, danach fährt die grüne
-    /// Fläche hoch. Läuft genau ein Mal, bevor der Loop beginnt.
-    private func introSteps() -> [SequenceStep] {
-        [
-            .instant { resetLoopStartStates(includingIntroStates: true) },
-            .wait(0.4),
-            .animate(.easeInOut(duration: 2.5)) { skyOpacity = 1 },
-            .wait(1.8),
-            .animate(.easeOut(duration: 2.2)) { hillRise = 1 },
-            .wait(1.8),
-        ]
-    }
-
-    @MainActor
-    private func playIntroOnce() async {
-        await run(introSteps())
-    }
-
-    /// Die eigentliche, endlos wiederholte Sequenz. Startet mit blauem
-    /// Himmel + grüner Fläche (bereits vorhanden) und endet auch wieder
-    /// genau damit. Als flaches Array aus Wartezeiten/Animationen ist die
-    /// gesamte Zeitleiste auf einen Blick nachvollziehbar, statt in einer
-    /// langen Kette aus `sleep`+`withAnimation`-Aufrufen verstreut zu sein.
-    private func animationCycleSteps() -> [SequenceStep] {
-        [
-            .instant { resetLoopStartStates() },
-            .wait(1.2),
-            .animate(.easeIn(duration: 1.8)) { flowersOpacity = 1 },
-            .wait(0.8),
-            .animate(.easeOut(duration: 2.2)) { mountainsRise = 1 },
-            .wait(3.0),
-            .animate(.easeIn(duration: 2.0)) { mountainsRise = 0 },
-            .wait(1.8),
-            .animate(.easeOut(duration: 2.0)) {
-                waveRise = 1
-                sandOverlayOpacity = 1
-            },
-            .wait(2.6),
-            .animate(.easeOut(duration: 2.0)) { deepBlueRise = 1 },
-            .wait(1.4),
-            .animate(.easeOut(duration: 1.3)) { umbrellaFall = 1 },
-            .wait(1.4),
-            .animate(.easeOut(duration: 1.3)) { ballFall = 1 },
-            .wait(1.4),
-            .animate(.easeIn(duration: 2.8)) {
-                zoomScale = AnimationConstants.umbrellaZoomTargetScale
-            },
-            .wait(2.0),
-            .animate(.easeIn(duration: 0.6)) { zoomOverlayOpacity = 1 },
-
-            .wait(1.2),
-            .animate(.easeInOut(duration: 3.2)) { autumnForestOpacity = 1 },
-            .wait(2.0),
-            .custom { await self.increaseSnowfallSmoothly(duration: 15.0) },
-
-            // Bei voller Dichte bleibt der Sturm noch länger sichtbar im
-            // Bild, damit sich vor dem Szenenwechsel deutlich mehr weiße
-            // Punkte sammeln – ähnlich den großzügigen Standzeiten in
-            // CookModeAnimationView (z. B. 8s sichtbare Bubbles).
-            .wait(5.0),
-
-            // Phase 1: Die weiße/schwarze Fläche fährt bis zur
-            // Bildschirmmitte. Dort bedeckt sie den gesamten Bildschirm
-            // vollständig.
-            .animate(.linear(duration: 2.8)) { whiteWipeProgress = 0.5 },
-            .wait(2.8),
-
-            // Während die Fläche den Bildschirm verdeckt, wird die Szene
-            // darunter ausgewechselt. Sie bleibt anschließend bewusst einen
-            // Moment stehen.
-            .instant {
-                autumnForestOpacity = 0
-                snowIntensity = 0
-                zoomOverlayOpacity = 0
-                winterSceneOpacity = 1
-                winterSnowIntensity = 1
-                winterSnowEmissionIntensity = 1
-            },
-            .wait(1.8),
-
-            // Phase 2: Die Fläche fährt weiter nach unten und gibt die
-            // bereits vorbereitete Winter-Szene wieder frei.
-            .animate(.linear(duration: 2.8)) { whiteWipeProgress = 1 },
-            .wait(2.8),
-
-            // Der Rücklauf ist das Gegenstück zum Aufbau: Die Emission wird
-            // in kleinen Schritten reduziert. Immer weniger Flocken
-            // beginnen einen neuen Fall, während die bereits sichtbaren
-            // normal unten ankommen.
-            .custom { await self.decreaseWinterSnowEmissionSmoothly(duration: 7.0) },
-            .wait(6.5),
-            .instant { winterSnowIntensity = 0 },
-
-            // Der Schneemann sinkt nach unten und verschwindet dabei hinter
-            // der weißen Fläche (Zeichenreihenfolge in WinterMeadowView
-            // sorgt für die Verdeckung).
-            .wait(6.5),
-            .animate(.easeIn(duration: 2.2)) {
-                snowmanFallOffset = AnimationConstants.snowmanSinkDistance
-            },
-
-            // Die weiße Fläche wächst auf die Höhe der grünen Anfangsfläche.
-            .wait(2.2),
-            .animate(.easeInOut(duration: 2.4)) {
-                winterHillHeightFraction = AnimationConstants.summerHillHeightFraction
-            },
-
-            // Die weiße Fläche wird grün.
-            .wait(2.4),
-            .animate(.easeInOut(duration: 2.4)) { winterHillColorMix = 1 },
-
-            // Kurze Pause – der Bildschirm zeigt jetzt wieder blauen Himmel
-            // und eine grüne Fläche. An dieser Stelle beginnt der Loop
-            // erneut, ohne erneute Hintergrund-/Hügel-Einblendung.
-            .wait(2.8),
-        ]
-    }
-
-    @MainActor
-    private func runAnimationCycle() async {
-        await run(animationCycleSteps())
-    }
-
-    /// Erhöht die Dichte in kleinen Zeitabständen. Anders als bei einer
-    /// einzelnen Zielanimation erhält SnowfallView so fortlaufend neue Werte
-    /// und kann jede zusätzliche Flocke oberhalb des Bildschirms starten.
-    @MainActor
-    private func increaseSnowfallSmoothly(duration: Double) async {
-        let steps = max(1, Int(duration * 10))
-        for step in 1...steps {
-            do {
-                try await Task.sleep(for: .seconds(duration / Double(steps)))
-            } catch {
-                return
-            }
-            let progress = CGFloat(step) / CGFloat(steps)
-            // Smoothstep: sanfter Start und sanftes Verdichten zum Schluss.
-            snowIntensity = progress * progress * (3 - 2 * progress)
-        }
-    }
-
-    /// Spiegelbild zum Aufbau: reduziert nach und nach die Anzahl der
-    /// Flocken, die noch einen weiteren Fall beginnen dürfen.
-    @MainActor
-    private func decreaseWinterSnowEmissionSmoothly(duration: Double) async {
-        let steps = max(1, Int(duration * 10))
-        for step in 1...steps {
-            do {
-                try await Task.sleep(for: .seconds(duration / Double(steps)))
-            } catch {
-                return
-            }
-            let progress = CGFloat(step) / CGFloat(steps)
-            let smoothProgress = progress * progress * (3 - 2 * progress)
-            winterSnowEmissionIntensity = 1 - smoothProgress
-        }
-    }
-
 }
 
 // MARK: - Winterwiese
@@ -722,14 +741,11 @@ private struct AutumnForestView: View {
         }
     }
 
-    /// Würfelt Bäume und Blätter neu aus. Da diese View bei jedem
-    /// Loop-Durchlauf neu erzeugt wird (`autumnForestOpacity` blendet sie
-    /// ein/aus, die View selbst bleibt aber Teil des Baums – `onAppear`
-    /// feuert dennoch nur beim allerersten Erscheinen, da `leaves`/`trees`
-    /// danach nicht mehr leer sind), ist der generierte Wald über die
-    /// gesamte Lebensdauer der View hinweg stabil und wechselt nicht bei
-    /// jedem Loop-Durchgang. Das ist bewusst so gewählt, damit der Herbst
-    /// nicht bei jedem Zyklus optisch "springt".
+    /// Würfelt Bäume und Blätter neu aus. Läuft einmalig pro View-Instanz
+    /// (`onAppear` mit `leaves.isEmpty`-Check). Wird eine MeadowView-
+    /// Instanz neu erzeugt (z. B. bei Tab-Wechsel), würfelt der Wald sich
+    /// entsprechend neu — visuell nicht wahrnehmbar störend, anders als
+    /// das frühere Rücksprung-/Überlagerungsproblem.
     private func generateForest() {
         var generatedTrees: [Tree] = []
         for i in 0..<treeCount {
@@ -882,6 +898,13 @@ private struct SnowfallView: View {
     /// der Schneefall sanft auslaufend statt abrupt abzubrechen (siehe
     /// `retireFlakesIfNeeded`).
     let emissionIntensity: CGFloat
+    /// Ändert sich einmal pro Loop-Durchlauf (siehe `MeadowView`). Statt
+    /// dies als `.id()` von außen zu verwenden (was die komplette View
+    /// zerstören/neu erzeugen und dadurch potenziell einen größeren
+    /// Neu-Layout-Ripple im umgebenden Baum auslösen würde), wird der
+    /// interne Zustand hier gezielt über `.onChange(of: resetToken)`
+    /// zurückgesetzt — die View-Identität bleibt stabil.
+    let resetToken: Int
 
     // Die Herbstpunkte sind 16 ... 28 pt groß; 22 pt ist ihre mittlere Größe.
     // Die Dichte ist hoch genug für starken Schneefall; die vollständige
@@ -894,21 +917,14 @@ private struct SnowfallView: View {
     /// gekappt werden – dieselbe Flockenzahl verteilt sich dann auf eine
     /// viel größere Fläche, der Schnee wirkt dort spürbar dünner. Ein
     /// höherer Cap für `.pad` hält die Flocken-*Dichte* pro Fläche
-    /// zwischen den Gerätetypen ungefähr konstant. Das Prinzip entspricht
-    /// dem Geräte-Check in `CookModeAnimationView`
-    /// (`UIDevice.current.userInterfaceIdiom == .pad`). Dank der
-    /// gebündelten Canvas-Fills (siehe `opacityBuckets`) bleibt das auch
-    /// bei deutlich mehr Flocken performant genug.
+    /// zwischen den Gerätetypen ungefähr konstant.
     private var maximumFlakeCount: Int {
         UIDevice.current.userInterfaceIdiom == .pad ? 8_000 : 2_800
     }
     /// Anzahl der Deckkraft-Stufen, in die Flocken beim Zeichnen gruppiert
-    /// werden. Statt eines `context.fill()` pro Flocke (bei bis zu 2600
-    /// Flocken potenziell mehrere tausend Draw-Calls pro Frame) werden alle
-    /// Flocken mit ähnlicher Deckkraft in einem gemeinsamen `Path`
-    /// gesammelt und mit einem einzigen Fill pro Bucket gezeichnet. Das
-    /// reduziert die Draw-Calls auf höchstens `opacityBuckets * 2` pro
-    /// Frame und entlastet die Rendering-Performance spürbar.
+    /// werden. Statt eines `context.fill()` pro Flocke werden alle Flocken
+    /// mit ähnlicher Deckkraft in einem gemeinsamen `Path` gesammelt und
+    /// mit einem einzigen Fill pro Bucket gezeichnet.
     private let opacityBuckets = 12
 
     @State private var flakes: [Snowflake] = []
@@ -1010,6 +1026,16 @@ private struct SnowfallView: View {
             }
             .onChange(of: emissionIntensity) { newIntensity in
                 retireFlakesIfNeeded(for: newIntensity)
+            }
+            .onChange(of: resetToken) { _ in
+                // Neuer Loop-Durchlauf: kompletter interner Neustart, aber
+                // ohne die View-Identität zu ändern (siehe Dokumentation
+                // bei `resetToken`).
+                flakes = []
+                scheduledCount = 0
+                retirementTimes = [:]
+                previousEmissionIntensity = 0
+                scheduleNewFlakes()
             }
         }
         .allowsHitTesting(false)
@@ -1194,19 +1220,11 @@ private struct BeachUmbrellaView: View {
     static let canopyHeight: CGFloat = 52
     static let poleHeight: CGFloat   = 95
     static let totalHeight: CGFloat  = canopyHeight + poleHeight
+    // Streifenzahl und roter Segment-Index sind mit
+    // `MeadowView.analyticZoomAnchor(in:)` synchron zu halten — diese
+    // Funktion berechnet die Position des roten Streifens jetzt analytisch
+    // statt sie hier per PreferenceKey zu messen (siehe Begründung dort).
     private let stripeCount = 7
-    private var redMarkerPoint: CGPoint {
-        let radiusX = Self.canopyWidth / 2
-        let radiusY = Self.canopyHeight
-        let redSegmentIndex = 1
-        let step = 180.0 / Double(stripeCount)
-        let angleDeg = (Double(redSegmentIndex) + 0.5) * step
-        let r: CGFloat = 0.6
-        let rad = angleDeg * Double.pi / 180
-        let x = radiusX + r * radiusX * CGFloat(cos(rad))
-        let y = radiusY - r * radiusY * CGFloat(sin(rad))
-        return CGPoint(x: x, y: y)
-    }
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
@@ -1220,10 +1238,6 @@ private struct BeachUmbrellaView: View {
                 }
                 CanopyWedge(startAngleDeg: 0, endAngleDeg: 180)
                     .stroke(Color.black.opacity(0.15), lineWidth: 1)
-                Color.clear
-                    .frame(width: 1, height: 1)
-                    .position(redMarkerPoint)
-                    .anchorPreference(key: RedCanopyAnchorKey.self, value: .center) { $0 }
             }
             .frame(width: Self.canopyWidth, height: Self.canopyHeight)
             Rectangle()

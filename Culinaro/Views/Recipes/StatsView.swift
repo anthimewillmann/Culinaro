@@ -5,7 +5,6 @@ struct StatsView: View {
     @EnvironmentObject private var lessons: LessonStore
     @EnvironmentObject private var stats: StatsStore
     @State private var gameCenter = GameCenterManager.shared
-    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var friendScores: [FriendScore] = []
     @State private var friendsErrorMessage: String?
     @State private var notes: [TextRow] = [TextRow(text: "")]
@@ -26,14 +25,17 @@ struct StatsView: View {
             notesSection
         }
         .scrollContentBackground(.hidden)
-        .keepingOpaqueBackground()
+        // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
+        // derselben View-Hierarchie — nicht mehr als externes Fenster
+        // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
+        // dass die Wiese selbst jemals Touches abbekommt.
+        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("overview")
         .onAppear(perform: loadNotes)
         .task {
             await loadFriendScores()
         }
-        .task { backgroundMode.mode = .meadow }
         .refreshable {
             await loadFriendScores()
         }

@@ -8,7 +8,6 @@ struct LessonsView: View {
     @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @EnvironmentObject private var nutritionStore: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
-    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var editingLesson: Lesson?
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
@@ -82,7 +81,19 @@ struct LessonsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .keepingOpaqueBackground()
+        // Die animierte Wiese sitzt direkt hinter der Liste, innerhalb
+        // derselben View-Hierarchie — nicht mehr als externes Fenster
+        // hinter der ganzen App. Dadurch muss keine private UIKit-
+        // Navigations-Container-View mehr von außen transparent gemacht
+        // werden, was zuvor das Scrollen im Leerraum zwischen Zeilen
+        // dauerhaft gestört hat. `.ignoresSafeArea()` sorgt dafür, dass die
+        // Wiese trotzdem die komplette Bildschirmfläche als Bezugsgröße
+        // bekommt (sonst rechnet ihr GeometryReader nur mit dem Bereich
+        // zwischen Navigationsleiste und Tab-Bar, wodurch alle intern als
+        // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
+        // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
+        // selbst jemals Touches abbekommt.
+        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
         .containerBackground(.clear, for: .navigation)
         .overlay { if lessons.isEmpty { ContentUnavailableView("no_lessons", systemImage: "graduationcap") } }
         .navigationTitle("lessons")
@@ -101,7 +112,6 @@ struct LessonsView: View {
         .task(id: categorizationSignature) {
             await categorize()
         }
-        .task { backgroundMode.mode = .meadow }
     }
 
     @ViewBuilder
