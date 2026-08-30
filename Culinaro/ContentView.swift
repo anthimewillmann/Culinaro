@@ -5,7 +5,10 @@ struct ContentView: View {
 
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
+    @EnvironmentObject private var shoppingList: ShoppingListStore
+    @EnvironmentObject private var nutrition: NutritionStore
     @EnvironmentObject private var stats: StatsStore
+    @Environment(\.scenePhase) private var scenePhase
     @State private var backgroundMode = BackgroundModeManager()
     @State private var gameCenter = GameCenterManager.shared
     @State private var selection: AppTab = .recipes
@@ -20,6 +23,7 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selection) {
+<<<<<<< HEAD
                 Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
                     NavigationStack(path: $recipePath) {
                         RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
@@ -30,11 +34,25 @@ struct ContentView: View {
                                 } else {
                                     ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
                                 }
+=======
+            Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
+                NavigationStack(path: $recipePath) {
+                    RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath, searchText: recipeSearchText)
+                        .toolbar { addButtonToolbar }
+                        .searchable(text: $recipeSearchText, placement: .toolbar)
+                        .searchToolbarBehavior(.minimize)
+                        .navigationDestination(for: UUID.self) { recipeID in
+                            if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
+                                CookModeView(item: recipe)
+                            } else {
+                                ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
+>>>>>>> main
                             }
                     }
                     .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
                 }
 
+<<<<<<< HEAD
                 Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
                     NavigationStack(path: $lessonPath) {
                         LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
@@ -45,6 +63,19 @@ struct ContentView: View {
                                 } else {
                                     ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
                                 }
+=======
+            Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
+                NavigationStack(path: $lessonPath) {
+                    LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath, searchText: lessonSearchText)
+                        .toolbar { addButtonToolbar }
+                        .searchable(text: $lessonSearchText, placement: .toolbar)
+                        .searchToolbarBehavior(.minimize)
+                        .navigationDestination(for: UUID.self) { lessonID in
+                            if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
+                                CookModeView(item: lesson)
+                            } else {
+                                ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
+>>>>>>> main
                             }
                     }
                     .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
@@ -84,6 +115,20 @@ struct ContentView: View {
         .onChange(of: lessons.totalCreatedLessons) { _, _ in submitTotalScore() }
         .onChange(of: stats.completedCookModes) { _, _ in submitTotalScore() }
         .onChange(of: stats.completedLessons) { _, _ in submitTotalScore() }
+        // Jeder Store synct nur einmal beim App-Start (in seinem `init()`).
+        // Ohne diesen Hook würde z. B. ein Wechsel des iCloud-Accounts in den
+        // Einstellungen (App bleibt im Hintergrund am Leben) nie automatisch
+        // nachgeholt — der Nutzer müsste in jedem Tab einzeln manuell
+        // "Pull to Refresh" auslösen.
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task {
+                await recipes.syncFromCloud()
+                await lessons.syncFromCloud()
+                await shoppingList.syncFromCloud()
+                await nutrition.syncFromCloud()
+            }
+        }
         .onChange(of: selection) { oldValue, _ in
             switch oldValue {
             case .recipes:

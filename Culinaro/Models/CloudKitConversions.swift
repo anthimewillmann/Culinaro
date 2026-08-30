@@ -109,7 +109,8 @@ extension ShoppingListItem {
             category: record["category"] as? String,
             sourceRecipeID: sourceRecipeID,
             sourceRecipeTitle: record["sourceRecipeTitle"] as? String,
-            createdAt: createdAt
+            createdAt: createdAt,
+            checkedAt: record["checkedAt"] as? Date
         )
     }
 
@@ -123,6 +124,7 @@ extension ShoppingListItem {
         record["sourceRecipeID"] = sourceRecipeID?.uuidString as CKRecordValue?
         record["sourceRecipeTitle"] = sourceRecipeTitle as CKRecordValue?
         record["createdAt"] = createdAt as CKRecordValue
+        record["checkedAt"] = checkedAt as CKRecordValue?
         return record
     }
 }

@@ -38,6 +38,7 @@ struct AddItemView: View {
     @State private var carbsGrams: String
     @State private var fatGrams: String
     @State private var isGenerating = false
+    @State private var isApplyingGeneratedTitle = false
     @State private var generationTask: Task<Void, Never>?
     @State private var errorMessage: String?
     @State private var showCamera = false
@@ -78,7 +79,16 @@ struct AddItemView: View {
 
                 Section("title") {
                     TextField(kind == .recipe ? String(localized: "recipe_title_placeholder") : String(localized: "lesson_title_placeholder"), text: $title)
-                        .onChange(of: title) { _, _ in cancelGenerationIfNeeded() }
+                        .onChange(of: title) { _, _ in
+                            // `generateContent()` writes the model's own title
+                            // back into this same field once generation
+                            // finishes — without this guard, that write
+                            // triggered this very handler and self-cancelled
+                            // the just-completing generation before its
+                            // nutrition estimate could be applied.
+                            guard !isApplyingGeneratedTitle else { return }
+                            cancelGenerationIfNeeded()
+                        }
                 }
 
                 Section {
@@ -251,12 +261,23 @@ struct AddItemView: View {
             array.append(TextRow(text: ""))
         }
 
-        let trailingPlaceholder = array.last.flatMap { isEmpty($0) ? $0 : nil }
-        var compacted = array.filter { !isEmpty($0) }
-        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
+        // Die aktuell bearbeitete Zeile bleibt erhalten, auch wenn sie im Moment
+        // leer ist (sonst verschwindet sie mitten in der Eingabe und der Fokus
+        // geht verloren), ebenso die ursprünglich letzte Zeile (der Platzhalter
+        // bleibt bestehen, auch wenn gerade eine andere Zeile leer ist). Ein
+        // neuer Platzhalter wird nur angehängt, wenn danach keine leere Zeile
+        // mehr am Ende steht — verhindert doppelte leere Zeilen, falls die
+        // bearbeitete Zeile selbst zur letzten wird.
+        let lastIndex = array.indices.last
+        var compacted = array.enumerated()
+            .filter { index, row in !isEmpty(row) || row.id == id || index == lastIndex }
+            .map(\.element)
+        if compacted.last.map(isEmpty) != true {
+            compacted.append(TextRow(text: ""))
+        }
 
         rows.wrappedValue = compacted
-        focusedField = compacted.contains { $0.id == id } ? id : nil
+        focusedField = id
     }
 
     private func resetDraft() {
@@ -298,14 +319,18 @@ struct AddItemView: View {
                 if kind == .recipe {
                     let parsed = try await aiService.generate(from: prompt, allergies: statsStore.allergies)
                     try Task.checkCancellation()
+                    isApplyingGeneratedTitle = true
                     title = parsed.title
+                    isApplyingGeneratedTitle = false
                     ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                     steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
                     try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
                 } else {
                     let parsed = try await aiService.generateLesson(from: prompt)
                     try Task.checkCancellation()
+                    isApplyingGeneratedTitle = true
                     title = parsed.title
+                    isApplyingGeneratedTitle = false
                     ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                     steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
                     try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
@@ -407,7 +432,7 @@ struct AddItemView: View {
                 isPinned: editingRecipe?.isPinned ?? false,
                 tipsEnabled: tipsEnabled,
                 wasGenerated: generateEnabled,
-                nutrition: nutritionFromFields() ?? retainedNutrition(forTitle: title, ingredients: recipeIngredients),
+                nutrition: nutritionFromFields() ?? retainedNutrition(forIngredients: recipeIngredients),
                 createdAt: editingRecipe?.createdAt ?? Date()
             )
             recipeStore.save(recipe, editing: editingRecipe)
@@ -418,12 +443,9 @@ struct AddItemView: View {
         }
     }
 
-    private func retainedNutrition(forTitle title: String, ingredients: [String]) -> NutritionInfo? {
+    private func retainedNutrition(forIngredients ingredients: [String]) -> NutritionInfo? {
         guard let editingRecipe else { return nil }
-
-        let titleMatches = editingRecipe.title.trimmingCharacters(in: .whitespacesAndNewlines) == title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let ingredientsMatch = editingRecipe.ingredients == ingredients
-        return titleMatches && ingredientsMatch ? editingRecipe.nutrition : nil
+        return editingRecipe.ingredients == ingredients ? editingRecipe.nutrition : nil
     }
 
     private func estimateNutritionInBackground(for recipe: Recipe) {

@@ -15,16 +15,33 @@ struct RecipesView: View {
     @State private var isCategorizing = false
     @Binding var isSelecting: Bool
     @Binding var navigationPath: [UUID]
+    let searchText: String
 
     private let pinnedCategoryID = "__pinnedCategory__"
     private let pendingCategoryID = "__pendingCategory__"
     @State private var selectedRecipeIDs: Set<UUID> = []
 
+<<<<<<< HEAD
     private var sortedRecipes: [Recipe] {
         store.recipes.sorted {
             if $0.isPinned != $1.isPinned { return $0.isPinned }
             return $0.createdAt > $1.createdAt
         }
+=======
+    init(isSelecting: Binding<Bool>, navigationPath: Binding<[UUID]>, searchText: String = "") {
+        self._isSelecting = isSelecting
+        self._navigationPath = navigationPath
+        self.searchText = searchText
+    }
+
+    private var recipes: [Recipe] {
+        store.recipes
+            .filter { searchText.isEmpty || $0.title.localizedCaseInsensitiveContains(searchText) }
+            .sorted {
+                if $0.isPinned != $1.isPinned { return $0.isPinned }
+                return $0.createdAt > $1.createdAt
+            }
+>>>>>>> main
     }
 
     private var recipes: [Recipe] {
@@ -41,10 +58,6 @@ struct RecipesView: View {
 
     private var selectedRecipeExport: PDFExport? {
         PDFExporter.export(selectedRecipes.map { $0 as any Cookable }, filename: "Rezepte")
-    }
-
-    private var recipeExportForToolbar: PDFExport {
-        selectedRecipeExport ?? PDFExport(data: Data(), filename: "Rezepte.pdf")
     }
 
     /// Rezepte gruppiert nach Pin-Status und KI-Kategorie. Angepinnte Rezepte
@@ -106,11 +119,16 @@ struct RecipesView: View {
         // selbst jemals Touches abbekommt.
         .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
+<<<<<<< HEAD
         .overlay {
             if recipes.isEmpty {
                 ContentUnavailableView("no_recipes", systemImage: "fork.knife")
             }
         }
+=======
+        .syncErrorBanner(store.syncError)
+        .overlay { if recipes.isEmpty { ContentUnavailableView("no_recipes", systemImage: "fork.knife") } }
+>>>>>>> main
         .navigationTitle("recipes")
         .navigationSubtitle(String.localizedStringWithFormat(String(localized: "created_count"), store.recipes.count))
         .refreshable { await store.syncFromCloud() }
@@ -119,10 +137,20 @@ struct RecipesView: View {
         .onChange(of: isSelecting) { _, isSelecting in
             if !isSelecting { selectedRecipeIDs.removeAll() }
         }
+<<<<<<< HEAD
         .onChange(of: sortedRecipes) { _, recipes in
             let availableIDs = Set(recipes.map(\.id))
+=======
+        .onChange(of: store.recipes) { _, storeRecipes in
+            // Bewusst gegen die ungefilterte Store-Liste geprüft, nicht gegen
+            // `recipes` (das die aktuelle Sucheingabe berücksichtigt) — sonst
+            // würde Tippen in die Suche während der Auswahl alle gerade nicht
+            // sichtbaren, aber weiterhin ausgewählten Rezepte aus der Auswahl
+            // entfernen, ohne dass der Nutzer das bemerkt.
+            let availableIDs = Set(storeRecipes.map(\.id))
+>>>>>>> main
             selectedRecipeIDs = selectedRecipeIDs.intersection(availableIDs)
-            if recipes.isEmpty { isSelecting = false }
+            if storeRecipes.isEmpty { isSelecting = false }
         }
         .task(id: categorizationSignature) {
             await categorize()
@@ -145,6 +173,7 @@ struct RecipesView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .meadowRowBackground()
         } else {
             Button {
                 navigationPath.append(recipe.id)
@@ -152,6 +181,7 @@ struct RecipesView: View {
                 rowContent(for: recipe)
             }
             .buttonStyle(.plain)
+            .meadowRowBackground()
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) { store.delete(recipe) } label: { Label("delete", systemImage: "trash") }
                 Button { editingRecipe = recipe } label: { Label("edit", systemImage: "pencil") }.tint(.blue)
@@ -198,6 +228,10 @@ struct RecipesView: View {
     @ToolbarContentBuilder
     private var selectionToolbar: some ToolbarContent {
         if isSelecting {
+            // Nur einmal berechnet statt einmal für `.disabled` und einmal
+            // fürs ShareLink-Item — sonst rendert jeder Auswahl-Tap das PDF
+            // zweimal synchron auf dem Main-Actor.
+            let export = selectedRecipeExport
             ToolbarItemGroup(placement: .bottomBar) {
                 Button {
                     addSelectedIngredientsToShoppingList()
@@ -215,10 +249,10 @@ struct RecipesView: View {
                 .disabled(!hasSelectedRecipesWithNutrition)
                 .accessibilityLabel("add_to_nutrition")
 
-                ShareLink(item: recipeExportForToolbar, preview: SharePreview(String(localized: "recipes"), image: Image(systemName: "doc.richtext"))) {
+                ShareLink(item: export ?? PDFExport(data: Data(), filename: "Rezepte.pdf"), preview: SharePreview(String(localized: "recipes"), image: Image(systemName: "doc.richtext"))) {
                     Label("export", systemImage: "square.and.arrow.up")
                 }
-                .disabled(selectedRecipeExport == nil)
+                .disabled(export == nil)
                 .accessibilityLabel("export_selected_recipes")
 
                 Spacer()

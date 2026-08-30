@@ -15,6 +15,8 @@ struct StatsView: View {
         Form {
             streakSection
 
+            animationsSection
+
             Section("statistics") {
                 let statistics = [
                     (String(localized: "created_recipes"), recipes.totalCreatedRecipes),
@@ -63,6 +65,15 @@ struct StatsView: View {
             stat(String(localized: "days"), stats.currentStreak)
                 .listRowBackground(CulinaroFieldBackground())
         }
+        .meadowRowBackground()
+    }
+
+    private var animationsSection: some View {
+        Section("animations") {
+            Toggle("meadow_animation_enabled", isOn: $stats.meadowAnimationEnabled)
+            Toggle("cook_mode_animation_enabled", isOn: $stats.cookModeAnimationEnabled)
+        }
+        .meadowRowBackground()
     }
 
     private var friendsSection: some View {
@@ -91,6 +102,7 @@ struct StatsView: View {
                 }
             }
         }
+        .meadowRowBackground()
     }
 
     private var notesSection: some View {
@@ -104,6 +116,7 @@ struct StatsView: View {
                     .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: notes.count)))
             }
         }
+        .meadowRowBackground()
     }
 
     private var animationSettingsSection: some View {
@@ -137,12 +150,23 @@ struct StatsView: View {
             notes.append(TextRow(text: ""))
         }
 
-        let trailingPlaceholder = notes.last.flatMap { isEmpty($0) ? $0 : nil }
-        var compacted = notes.filter { !isEmpty($0) }
-        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
+        // Die aktuell bearbeitete Zeile bleibt erhalten, auch wenn sie im Moment
+        // leer ist (sonst verschwindet sie mitten in der Eingabe und der Fokus
+        // geht verloren), ebenso die ursprünglich letzte Zeile (der Platzhalter
+        // bleibt bestehen, auch wenn gerade eine andere Zeile leer ist). Ein
+        // neuer Platzhalter wird nur angehängt, wenn danach keine leere Zeile
+        // mehr am Ende steht — verhindert doppelte leere Zeilen, falls die
+        // bearbeitete Zeile selbst zur letzten wird.
+        let lastIndex = notes.indices.last
+        var compacted = notes.enumerated()
+            .filter { index, row in !isEmpty(row) || row.id == id || index == lastIndex }
+            .map(\.element)
+        if compacted.last.map(isEmpty) != true {
+            compacted.append(TextRow(text: ""))
+        }
 
         notes = compacted
-        focusedNote = compacted.contains { $0.id == id } ? id : nil
+        focusedNote = id
         saveNotes()
     }
 

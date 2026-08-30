@@ -10,6 +10,10 @@ struct ShoppingListItem: Identifiable, Codable, Equatable {
     var sourceRecipeID: UUID?
     var sourceRecipeTitle: String?
     let createdAt: Date
+    /// Zeitpunkt, an dem der Eintrag zuletzt abgehakt wurde — `nil`, solange
+    /// er nicht abgehakt ist. Dient der "Verlauf"-Ansicht, die alle in der
+    /// letzten Stunde abgehakten Zutaten anzeigt.
+    var checkedAt: Date?
 
     init(
         id: UUID = UUID(),
@@ -20,7 +24,8 @@ struct ShoppingListItem: Identifiable, Codable, Equatable {
         category: String? = nil,
         sourceRecipeID: UUID? = nil,
         sourceRecipeTitle: String? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        checkedAt: Date? = nil
     ) {
         self.id = id
         self.name = name
@@ -31,5 +36,6 @@ struct ShoppingListItem: Identifiable, Codable, Equatable {
         self.sourceRecipeID = sourceRecipeID
         self.sourceRecipeTitle = sourceRecipeTitle
         self.createdAt = createdAt
+        self.checkedAt = checkedAt
     }
 }

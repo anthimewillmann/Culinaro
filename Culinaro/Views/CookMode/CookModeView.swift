@@ -25,6 +25,7 @@ struct CookModeView: View {
     @State private var estimatedNutrition: NutritionInfo?
     @State private var isEstimatingNutrition = false
     @State private var didAttemptNutritionEstimate = false
+    @State private var hasRecordedCompletion = false
 
     /// In-session cache mapping step index → generated tip string.
     @State private var tipsCache: [Int: String] = [:]
@@ -39,6 +40,7 @@ struct CookModeView: View {
     @EnvironmentObject private var nutritionStore: NutritionStore
     @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @EnvironmentObject private var recipeStore: RecipeStore
+    @EnvironmentObject private var lessonStore: LessonStore
     @Environment(BackgroundModeManager.self) private var backgroundMode
 
     /// Total number of phases: ingredients screen + all steps.
@@ -136,6 +138,14 @@ struct CookModeView: View {
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
         .containerBackground(.clear, for: .navigation)
+        // Passend zur Phase: Wiese während der Zutatenliste, die
+        // Kochmodus-Animation während der einzelnen Schritte — siehe
+        // `updateBackgroundMode(for:)`, die `backgroundMode.mode` bei jedem
+        // Phasenwechsel synchron hält. Vorher gab es hier gar keinen
+        // animierten Hintergrund, obwohl `backgroundMode.mode` bereits
+        // korrekt mitgeführt wurde — dadurch blieb auch der
+        // "Kochmodus-Animation"-Schalter in der Übersicht ohne sichtbaren Effekt.
+        .background(backgroundAnimationView.ignoresSafeArea().allowsHitTesting(false))
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: goBack) {
@@ -185,6 +195,16 @@ struct CookModeView: View {
     }
 
     // MARK: - Nutrition Logging
+
+    @ViewBuilder
+    private var backgroundAnimationView: some View {
+        switch backgroundMode.mode {
+        case .meadow:
+            MeadowView()
+        case .cookMode:
+            CookModeAnimationView()
+        }
+    }
 
     private var nutritionSummarySection: some View {
         Section("food_section") {
@@ -261,6 +281,7 @@ struct CookModeView: View {
     }
 
     private func logMeal(_ recipe: Recipe) {
+        guard !didLogMeal else { return }
         nutritionStore.logMeal(recipe: recipe, servings: servingsEaten)
         withAnimation { didLogMeal = true }
         Task {
@@ -310,6 +331,8 @@ struct CookModeView: View {
                     isEstimatingNutrition = false
                     if let recipe = item as? Recipe {
                         recipeStore.save(recipe.withNutrition(nutrition), editing: recipe)
+                    } else if let lesson = item as? Lesson {
+                        lessonStore.save(lesson.withNutrition(nutrition), editing: lesson)
                     }
                 }
             } catch {
@@ -387,6 +410,11 @@ struct CookModeView: View {
             if index < totalSteps - 1 {
                 phase = .step(index + 1)
             } else {
+                // Verhindert doppeltes Zählen, falls der Button schnell zwei
+                // Mal getippt wird, bevor `dismiss()` die View tatsächlich
+                // entfernt hat.
+                guard !hasRecordedCompletion else { return }
+                hasRecordedCompletion = true
                 statsStore.recordCompletion(item.completionKind)
                 dismiss()
             }
@@ -438,6 +466,22 @@ private extension Recipe {
             isPinned: isPinned,
             tipsEnabled: tipsEnabled,
             wasGenerated: wasGenerated,
+            nutrition: nutrition,
+            createdAt: createdAt
+        )
+    }
+}
+
+private extension Lesson {
+    func withNutrition(_ nutrition: NutritionInfo) -> Lesson {
+        Lesson(
+            id: id,
+            title: title,
+            ingredients: ingredients,
+            steps: steps,
+            isPinned: isPinned,
+            wasGenerated: wasGenerated,
+            tipsEnabled: tipsEnabled,
             nutrition: nutrition,
             createdAt: createdAt
         )

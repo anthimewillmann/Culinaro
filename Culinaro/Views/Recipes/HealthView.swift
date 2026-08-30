@@ -20,6 +20,7 @@ struct HealthView: View {
                         .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
                 }
             }
+            .meadowRowBackground()
 
             Section("average_last_7_days") {
                 let average = nutrition.averageLastSevenDays
@@ -35,6 +36,7 @@ struct HealthView: View {
                         .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
                 }
             }
+            .meadowRowBackground()
 
             Section("average_last_30_days") {
                 let average = nutrition.averageLastThirtyDays
@@ -58,6 +60,16 @@ struct HealthView: View {
                 .buttonStyle(.plain)
                 .listRowBackground(CulinaroFieldBackground())
             }
+            .meadowRowBackground()
+
+            Section {
+                NavigationLink {
+                    HealthHistoryView()
+                } label: {
+                    Label("history", systemImage: "clock.arrow.circlepath")
+                }
+            }
+            .meadowRowBackground()
         }
         .scrollContentBackground(.hidden)
         // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
@@ -66,10 +78,15 @@ struct HealthView: View {
         // dass die Wiese selbst jemals Touches abbekommt.
         .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
+        .syncErrorBanner(nutrition.syncError)
         .navigationTitle("nutrition")
+<<<<<<< HEAD
         .navigationDestination(isPresented: $isShowingHistory) {
             HealthHistoryView()
         }
+=======
+        .refreshable { await nutrition.syncFromCloud() }
+>>>>>>> main
     }
 
     private func nutritionField(_ title: String, _ value: String) -> some View {
@@ -226,6 +243,7 @@ struct AddHealthRecipeSheet: View {
     @Environment(RecipeAIService.self) private var aiService
     @Environment(\.dismiss) private var dismiss
 
+    @State private var selectedDate: Date
     @State private var ingredients = [TextRow(text: "")]
     @State private var generateNutritionWithAI = false
     @State private var calories = ""
@@ -241,8 +259,13 @@ struct AddHealthRecipeSheet: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @FocusState private var focusedField: UUID?
 
+<<<<<<< HEAD
     init(loggedAt: Date = Date()) {
         self.loggedAt = loggedAt
+=======
+    init(initialDate: Date = Date()) {
+        _selectedDate = State(initialValue: initialDate)
+>>>>>>> main
     }
 
     private var recipeTitle: String {
@@ -359,6 +382,7 @@ struct AddHealthRecipeSheet: View {
 
     private var nutritionSection: some View {
         Section("nutrition_facts") {
+            DatePicker("date", selection: $selectedDate, in: ...Date(), displayedComponents: .date)
             nutritionTextField(String(localized: "calories"), text: $calories, keyboardType: .numberPad)
             nutritionTextField(String(localized: "protein"), text: $proteinGrams, keyboardType: .decimalPad)
             nutritionTextField(String(localized: "carbs"), text: $carbsGrams, keyboardType: .decimalPad)
@@ -413,15 +437,26 @@ struct AddHealthRecipeSheet: View {
             array.append(TextRow(text: ""))
         }
 
-        let trailingPlaceholder = array.last.flatMap { isEmpty($0) ? $0 : nil }
-        var compacted = array.filter { !isEmpty($0) }
-        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
+        // Die aktuell bearbeitete Zeile bleibt erhalten, auch wenn sie im Moment
+        // leer ist (sonst verschwindet sie mitten in der Eingabe und der Fokus
+        // geht verloren), ebenso die ursprünglich letzte Zeile (der Platzhalter
+        // bleibt bestehen, auch wenn gerade eine andere Zeile leer ist). Ein
+        // neuer Platzhalter wird nur angehängt, wenn danach keine leere Zeile
+        // mehr am Ende steht — verhindert doppelte leere Zeilen, falls die
+        // bearbeitete Zeile selbst zur letzten wird.
+        let lastIndex = array.indices.last
+        var compacted = array.enumerated()
+            .filter { index, row in !isEmpty(row) || row.id == id || index == lastIndex }
+            .map(\.element)
+        if compacted.last.map(isEmpty) != true {
+            compacted.append(TextRow(text: ""))
+        }
 
         rows.wrappedValue = compacted
         if compacted.allSatisfy({ $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
             generateNutritionWithAI = false
         }
-        focusedField = compacted.contains { $0.id == id } ? id : nil
+        focusedField = id
     }
 
     private func process(_ image: UIImage) {
@@ -435,7 +470,12 @@ struct AddHealthRecipeSheet: View {
                 try Task.checkCancellation()
 
                 let newIngredients = appendGeneratedIngredients(parsed.ingredients)
-                guard !newIngredients.isEmpty else { return }
+                guard !newIngredients.isEmpty else {
+                    isProcessing = false
+                    isScanningFood = false
+                    generationTask = nil
+                    return
+                }
 
                 let estimate = try await aiService.estimateNutrition(
                     title: parsed.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? newIngredients[0] : parsed.title,
@@ -491,7 +531,12 @@ struct AddHealthRecipeSheet: View {
 
     private func fillNutritionFromIngredients() async throws {
         let estimate = try await aiService.estimateNutrition(title: recipeTitle, ingredients: cleanedIngredients)
-        addNutritionEstimate(estimate)
+        // Cancellation must be checked BEFORE writing the estimate back —
+        // otherwise a stale result from an already-cancelled generation
+        // (e.g. the user edited the ingredients while the AI call was still
+        // in flight) still overwrites the fields after the fact.
+        try Task.checkCancellation()
+        setNutritionEstimate(estimate)
     }
 
     private func appendGeneratedIngredients(_ generatedIngredients: [String]) -> [String] {
@@ -506,6 +551,21 @@ struct AddHealthRecipeSheet: View {
         return newValues
     }
 
+    /// Used by the "generate with AI" toggle: replaces the nutrition fields
+    /// outright, since the estimate already covers the full current
+    /// ingredient list. Adding onto whatever was there before would
+    /// double-count every time the toggle is switched off and back on for
+    /// the same ingredients.
+    private func setNutritionEstimate(_ estimate: NutritionEstimate) {
+        calories = String(estimate.calories)
+        proteinGrams = formattedDecimal(estimate.protein)
+        carbsGrams = formattedDecimal(estimate.carbs)
+        fatGrams = formattedDecimal(estimate.fat)
+    }
+
+    /// Used by the photo-scan flow: each scan represents additional food
+    /// items on top of whatever nutrition is already entered, so it
+    /// deliberately accumulates rather than replacing.
     private func addNutritionEstimate(_ estimate: NutritionEstimate) {
         let updatedCalories = (intValue(calories) ?? 0) + estimate.calories
         let updatedProtein = (doubleValue(proteinGrams) ?? 0) + estimate.protein
@@ -585,6 +645,10 @@ struct AddHealthRecipeSheet: View {
             steps: [],
             nutrition: nutritionInfo
         )
+<<<<<<< HEAD
         nutrition.logMeal(recipe: recipe, servings: 1, loggedAt: loggedAt)
+=======
+        nutrition.logMeal(recipe: recipe, servings: 1, loggedAt: selectedDate)
+>>>>>>> main
     }
 }

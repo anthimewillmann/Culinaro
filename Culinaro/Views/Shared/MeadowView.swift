@@ -32,12 +32,22 @@ import SwiftUI
 // Kompromiss, kein funktionaler Rücksprung mehr.
 /// Benannte Konstanten für Kernparameter der Animation.
 private enum AnimationConstants {
+<<<<<<< HEAD
     /// Mindest-Zielzoom für kleinere Displays.
     static let umbrellaZoomTargetScale: CGFloat = 45
     /// Auf größeren Displays wächst der Ziel-Zoom proportional zur Breite.
     /// Der Wert 8 stellt sicher, dass das rote Mittelsegment auch auf dem iPad
     /// über alle Bildschirmränder hinaus vergrößert wird.
     static let umbrellaZoomWidthDivisor: CGFloat = 8
+=======
+    /// Sicherheitsspanne über die exakt bildschirmfüllende Zoomstufe hinaus,
+    /// damit der rote Streifen auf jedem Gerät zuverlässig über die
+    /// Bildschirmkanten hinausragt, bevor das Zoom-Overlay ihn endgültig
+    /// vollflächig einfärbt (siehe `zoomTargetScale(for:)`).
+    static let umbrellaZoomMarginFactor: CGFloat = 1.3
+    /// Fallback-Zoomfaktor, falls die Bildschirmgröße (noch) nicht bekannt ist.
+    static let umbrellaZoomFallbackScale: CGFloat = 45
+>>>>>>> main
     /// Strecke, um die der Schneemann am Ende der Winterszene nach unten sinkt.
     static let snowmanSinkDistance: CGFloat = 260
     /// Hügelhöhe der Winterszene direkt nach dem weißen Wisch (vor dem Wachsen).
@@ -62,12 +72,31 @@ private enum AnimationConstants {
 struct MeadowView: View {
     // MARK: - Environment
     @Environment(\.colorScheme) private var colorScheme
+<<<<<<< HEAD
     /// Reference date shared by the app-level background manager. Updating it
     /// restarts the animation for every visible `MeadowView` instance.
     let animationStartDate: Date
     init(animationStartDate: Date = Date()) {
         self.animationStartDate = animationStartDate
     }
+=======
+    @EnvironmentObject private var stats: StatsStore
+
+    /// Für die gesamte Prozesslaufzeit fester, von allen Instanzen
+    /// geteilter Referenzzeitpunkt. Wird von jeder `MeadowView`-Instanz
+    /// geteilt gelesen — jetzt `var` statt `let`, damit das Deaktivieren/
+    /// Wiederaktivieren der Animation (siehe `stats.meadowAnimationEnabled`)
+    /// ihn zurücksetzen kann, wodurch die Animation für alle gleichzeitig
+    /// gemounteten Instanzen (alle Tabs) wieder von vorne beginnt.
+    private static var sharedAnimationStartDate = Date()
+
+    /// Zeitpunkt, an dem die Animation zuletzt deaktiviert wurde — dient als
+    /// eingefrorener Anzeige-Zeitpunkt, solange `stats.meadowAnimationEnabled`
+    /// `false` ist, damit kein `TimelineView`-Tick mehr läuft (echtes Stoppen,
+    /// nicht nur unsichtbares Weiterlaufen).
+    @State private var freezeDate: Date?
+
+>>>>>>> main
     // MARK: - Konstanten
     private let skyColor      = Color(red: 0.65, green: 0.85, blue: 1.00)
     private let grassColor    = Color(red: 0.62, green: 0.85, blue: 0.45)
@@ -233,10 +262,17 @@ struct MeadowView: View {
         var loopIndex: Int = -1
     }
     /// Berechnet den kompletten Render-Zustand als reine Funktion der seit
-    /// `sharedAnimationStartDate` verstrichenen Zeit. Siehe
+    /// `sharedAnimationStartDate` verstrichenen Zeit. `size` fließt nur in
+    /// die Zoom-Zielgröße ein (siehe `zoomTargetScale(for:)`) — die übrige
+    /// Berechnung bleibt unabhängig von der Bildschirmgröße. Siehe
     /// Architekturkommentar am Dateianfang.
+<<<<<<< HEAD
     private func renderState(at date: Date) -> RenderState {
         let elapsed = date.timeIntervalSince(animationStartDate)
+=======
+    private func renderState(at date: Date, size: CGSize) -> RenderState {
+        let elapsed = date.timeIntervalSince(Self.sharedAnimationStartDate)
+>>>>>>> main
         var state = RenderState()
         if elapsed < Timing.introTotalDuration {
             // Einmaliges Intro läuft noch — der restliche Loop-Zustand
@@ -281,6 +317,7 @@ struct MeadowView: View {
         state.deepBlueRise = progress(tCycle, start: Timing.deepBlueStart, duration: Timing.deepBlueDuration, .easeOut)
         state.umbrellaFall = progress(tCycle, start: Timing.umbrellaStart, duration: Timing.umbrellaDuration, .easeOut)
         state.ballFall = progress(tCycle, start: Timing.ballStart, duration: Timing.ballDuration, .easeOut)
+<<<<<<< HEAD
         // Eine einzige quadratische Kurve: Der Zoom beschleunigt vom ersten
         // Frame an kontinuierlich und wird bis zum Ende immer schneller.
         let zoomLinearProgress = progress(
@@ -293,6 +330,14 @@ struct MeadowView: View {
         // Direkt nach dem Zoom wird der Bildschirm ohne Übergangsanimation
         // vollständig rot. Danach wird der Herbstwald wie bisher eingeblendet.
         // Beim harten Szenenwechsel werden beide Ebenen zurückgesetzt.
+=======
+        state.zoomScale = 1 + progress(tCycle, start: Timing.zoomStart, duration: Timing.zoomDuration, .easeIn)
+            * (zoomTargetScale(for: size) - 1)
+
+        // Zoom-Overlay, Herbstwald & aufbauender Schneefall: aktiv bis zum
+        // harten Szenenwechsel, danach schlagartig aus (entspricht dem
+        // ehemaligen `.instant { ... }`-Block).
+>>>>>>> main
         if tCycle < Timing.sceneSwitchTime {
             state.zoomOverlayOpacity = tCycle >= Timing.zoomEnd ? 1 : 0
             state.autumnForestOpacity = progress(tCycle, start: Timing.autumnStart, duration: Timing.autumnDuration, .easeInOut)
@@ -346,6 +391,44 @@ struct MeadowView: View {
         state.winterHillColorMix = progress(tCycle, start: Timing.hillColorStart, duration: Timing.hillColorDuration, .easeInOut)
         return state
     }
+<<<<<<< HEAD
+=======
+
+    /// Berechnet den nötigen Zoomfaktor, damit der rote Schirm-Streifen am
+    /// Ende des Zooms den Bildschirm auf JEDEM Gerät vollständig überdeckt.
+    ///
+    /// HINTERGRUND: Der Schirm hat eine feste, gerätunabhängige Pixelgröße
+    /// (`BeachUmbrellaView.canopyWidth`/`canopyHeight`), belegt dadurch aber
+    /// auf einem kleinen iPhone einen viel größeren Bildschirmanteil als auf
+    /// einem großen iPad. Ein einzelner fester Skalierungsfaktor (früher:
+    /// `umbrellaZoomTargetScale = 45`) reichte deshalb auf manchen Geräten
+    /// nicht aus, um am Ende des Zooms wirklich den gesamten Bildschirm rot
+    /// einzufärben — man zoomte im Ergebnis am Schirm "vorbei", ohne dass
+    /// seine Position oder der Zoom-Anker (`analyticZoomAnchor`, bleibt
+    /// unverändert) selbst falsch gewesen wären.
+    ///
+    /// Diese Funktion berechnet stattdessen den Zoomfaktor, der nötig wäre,
+    /// um den (näherungsweise rechteckigen) roten Streifen exakt auf Breite
+    /// bzw. Höhe des Bildschirms zu strecken, nimmt davon das Maximum (damit
+    /// beide Bildschirmkanten überdeckt werden, unabhängig vom
+    /// Seitenverhältnis) und addiert eine Sicherheitsspanne
+    /// (`umbrellaZoomMarginFactor`). Das rote Zoom-Overlay am Ende (siehe
+    /// `zoomOverlayOpacity`) bleibt unverändert als letzter Schliff für die
+    /// verbleibenden Prozent bestehen.
+    private func zoomTargetScale(for size: CGSize) -> CGFloat {
+        guard size.width > 0, size.height > 0 else {
+            return AnimationConstants.umbrellaZoomFallbackScale
+        }
+
+        let redStripeWidth = BeachUmbrellaView.canopyWidth / 7.0
+        let redStripeHeight = BeachUmbrellaView.canopyHeight
+        let requiredScaleForWidth = size.width / redStripeWidth
+        let requiredScaleForHeight = size.height / redStripeHeight
+
+        return max(requiredScaleForWidth, requiredScaleForHeight) * AnimationConstants.umbrellaZoomMarginFactor
+    }
+
+>>>>>>> main
     /// Berechnet den Zoom-Ankerpunkt (als `UnitPoint` relativ zu `geo.size`)
     /// analytisch aus der bekannten, festen Geometrie des Sonnenschirms —
     /// statt ihn dynamisch per `PreferenceKey`-Messung zu bestimmen.
@@ -370,13 +453,18 @@ struct MeadowView: View {
     /// Streifen verwendet (Ruheposition bei `umbrellaFall = 1`).
     private func analyticZoomAnchor(in geo: GeometryProxy) -> UnitPoint {
         guard geo.size.width > 0, geo.size.height > 0 else { return .center }
+<<<<<<< HEAD
         let canopyWidth = Double(BeachUmbrellaView.canopyWidth)
         let canopyHeight = Double(BeachUmbrellaView.canopyHeight)
         let totalHeight = Double(BeachUmbrellaView.totalHeight)
+=======
+
+>>>>>>> main
         // Mittelpunkt des Sonnenschirms in Ruhelage (umbrellaFall = 1),
         // identisch zur Positionierung weiter unten im Body.
         let centerX = Double(geo.size.width) * Double(umbrellaXFraction)
         let centerY = Double(umbrellaLandingY(in: geo))
+<<<<<<< HEAD
         // Roter Markerpunkt, lokal zur Kuppel — identische Formel wie
         // `BeachUmbrellaView`s internem Streifen-Layout (7 Streifen,
         // mittlerer Streifen ist rot, r = 0.6 vom Kuppelradius
@@ -409,12 +497,49 @@ struct MeadowView: View {
         let rotatedY = dx * sin(theta) + dy * cos(theta)
         let finalX = rotationCenterX + rotatedX
         let finalY = rotationCenterY + rotatedY
+=======
+
+        // Zielpunkt im roten Streifen, als fester Punkt-Versatz vom
+        // Schirm-Mittelpunkt — empirisch kalibriert (siehe unten), NICHT über
+        // die Kuppel-Rotation/-Winkel-Trigonometrie hergeleitet.
+        //
+        // HINTERGRUND: Eine vorherige Version berechnete diesen Punkt
+        // analytisch aus Kuppelradius, Streifen-Winkel und der 15°-Rotation
+        // (Kuppel-lokale Polarkoordinaten → Rotation um den Mittelpunkt).
+        // Diese Herleitung war in sich konsistent (von Hand nachgerechnet,
+        // deckte sich exakt mit dem tatsächlich berechneten Punkt), landete
+        // im gerenderten Bild aber zuverlässig außerhalb der Kuppel, oft
+        // sogar außerhalb des Sonnenschirms komplett. Per Debug-Marker
+        // (ein an dieser Stelle temporär eingefügter, sichtbarer Kreis)
+        // bestätigt: Der berechnete `centerX`/`centerY` selbst ist korrekt
+        // (deckt sich exakt mit der tatsächlichen Position des Schirms) —
+        // der Fehler lag ausschließlich in der Winkel-/Rotationsformel für
+        // den Versatz vom Mittelpunkt zum roten Streifen, dessen genaue
+        // Ursache trotz mehrfacher Herleitung nicht gefunden wurde.
+        //
+        // Da eine korrekte analytische Herleitung nicht gelang, wurde dieser
+        // Versatz statt dessen empirisch bestimmt: Per Debug-Marker wurde
+        // direkt im Simulator gemessen, welcher feste Punkt-Versatz vom
+        // Mittelpunkt zuverlässig auf eine rote Kuppel-Fläche trifft (mit
+        // Sicherheitsabstand zu den Rand-Übergängen zu Weiß). Da die Kuppel
+        // eine feste, geräteunabhängige Punktgröße hat (`canopyWidth`/
+        // `canopyHeight` ändern sich nie), bleibt ein fester Punkt-Versatz
+        // vom Mittelpunkt auf jeder Bildschirmgröße relativ zur Kuppel an
+        // derselben Stelle — unabhängig von `geo.size`.
+        let offsetXPt = -18.0
+        let offsetYPt = 0.0
+
+        let finalX = centerX + offsetXPt
+        let finalY = centerY + offsetYPt
+
+>>>>>>> main
         return UnitPoint(x: finalX / Double(geo.size.width), y: finalY / Double(geo.size.height))
     }
     // MARK: - Body
     var body: some View {
         GeometryReader { geo in
             let meadowTopY = geo.size.height * 0.45
+<<<<<<< HEAD
             TimelineView(.animation) { timeline in
                 let state = renderState(at: timeline.date)
                 let responsiveZoomTarget = max(
@@ -423,6 +548,60 @@ struct MeadowView: View {
                 )
                 let responsiveZoomScale = 1
                     + state.zoomProgress * (responsiveZoomTarget - 1)
+=======
+            if stats.meadowAnimationEnabled {
+                TimelineView(.animation) { timeline in
+                    let state = renderState(at: timeline.date, size: geo.size)
+                    // Wellenphase bleibt wie zuvor direkt aus der Systemzeit
+                    // berechnet — war bereits vor dem Umbau zeitbasiert und
+                    // damit von Haus aus resilient gegenüber View-Neuerzeugung.
+                    // Bewusst OHNE `.truncatingRemainder(dividingBy: 1000)`:
+                    // 1000s ist kein exaktes Vielfaches der Wellenperiode
+                    // (2π/waveSpeed ≈ 3.5s), wodurch beim Wrap alle ~1000s ein
+                    // echter Phasensprung entstand. `Double` hat für diese
+                    // Größenordnung (Jahre in Sekunden × waveSpeed) mehr als
+                    // genug Präzision, ein Wrap ist schlicht nicht nötig.
+                    let wavePhase = CGFloat(timeline.date.timeIntervalSinceReferenceDate) * waveSpeed
+                    sceneContent(state: state, geo: geo, meadowTopY: meadowTopY, wavePhase: wavePhase)
+                }
+            } else {
+                // Deaktiviert: kein `TimelineView` mehr, damit wirklich kein
+                // weiterer Frame mehr berechnet wird — stattdessen ein
+                // einzelner eingefrorener Frame. Fallback ist bewusst
+                // `Self.sharedAnimationStartDate` (nicht `Date()`): `onChange`
+                // feuert nur bei einem tatsächlichen Wechsel des Toggle-Werts,
+                // nicht beim allerersten Erscheinen einer Instanz, die den
+                // Zustand bereits deaktiviert vorfindet (z. B. nach App-Neustart
+                // mit zuvor deaktivierter Animation, oder wenn `TabView` diese
+                // Instanz neu erzeugt während die Animation bereits aus ist).
+                // In diesem Fall bliebe `freezeDate` `nil`, und ein Fallback auf
+                // die live fortschreitende `Date()` würde bei jedem Re-Render
+                // (ausgelöst durch IRGENDEINE `@Published`-Änderung auf dem
+                // geteilten `StatsStore`, z. B. Tippen im Notizen-Feld) einen
+                // neuen, sich weiter bewegenden Frame zeigen — die Animation
+                // wäre in Wahrheit nicht gestoppt. Der feste Startzeitpunkt
+                // liefert dagegen garantiert immer denselben (Ruhe-)Frame.
+                let state = renderState(at: freezeDate ?? Self.sharedAnimationStartDate, size: geo.size)
+                sceneContent(state: state, geo: geo, meadowTopY: meadowTopY, wavePhase: 0)
+            }
+        }
+        .onChange(of: stats.meadowAnimationEnabled) { _, isEnabled in
+            if isEnabled {
+                // Wieder aktiviert: geteilter Startzeitpunkt wird neu
+                // gesetzt, wodurch die Animation für ALLE gleichzeitig
+                // gemounteten MeadowView-Instanzen (alle Tabs) von vorne
+                // beginnt.
+                Self.sharedAnimationStartDate = Date()
+                freezeDate = nil
+            } else if freezeDate == nil {
+                freezeDate = Date()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func sceneContent(state: RenderState, geo: GeometryProxy, meadowTopY: CGFloat, wavePhase: CGFloat) -> some View {
+>>>>>>> main
                 ZStack {
                     ZStack {
                         adaptiveBackground.ignoresSafeArea()
@@ -516,6 +695,7 @@ struct MeadowView: View {
                         .ignoresSafeArea()
                         .opacity(state.zoomOverlayOpacity)
                         .allowsHitTesting(false)
+<<<<<<< HEAD
                     AutumnForestView()
                         .opacity(state.autumnForestOpacity)
                         .ignoresSafeArea()
@@ -529,6 +709,55 @@ struct MeadowView: View {
                     .opacity(state.winterSceneOpacity)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
+=======
+
+                    // WinterMeadowView: nur gemountet, solange sichtbar
+                    // (Opazität > 0) — reduziert das dauerhafte Re-Diffing
+                    // dieses großen Subtrees (Schneemann + Hügel) bei jedem
+                    // TimelineView-Tick über den gesamten Zyklus. Sicher, weil
+                    // die View kein eigenes `@State` besitzt (reine Funktion
+                    // ihrer Parameter) — ein erneutes Mounten sieht exakt
+                    // gleich aus wie ein dauerhaft eingeblendetes Exemplar.
+                    // AutumnForestView bekommt stattdessen unten ein eigenes
+                    // `isVisible`-Flag statt eines äußeren `if`, weil sie ihre
+                    // Bäume/Blätter in `@State` hält — ein äußeres `if` würde
+                    // sie bei jedem Loop neu mounten und damit neu auswürfeln
+                    // (sichtbares "Pop"), siehe Kommentar dort.
+                    if state.winterSceneOpacity > 0 {
+                        WinterMeadowView(
+                            skyColor: skyColor,
+                            hillHeightFraction: state.winterHillHeightFraction,
+                            hillColor: mixedWinterHillColor(state.winterHillColorMix),
+                            snowmanFallOffset: state.snowmanFallOffset
+                        )
+                        .opacity(state.winterSceneOpacity)
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
+                    }
+
+                    AutumnForestView(isVisible: state.autumnForestOpacity > 0)
+                        .opacity(state.autumnForestOpacity)
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
+
+                    // `resetToken: state.loopIndex` sorgt dafür, dass
+                    // SnowfallView einmal pro Loop-Durchlauf mit frischem
+                    // internen Zustand beginnt — konsistent über alle
+                    // gleichzeitig existierenden MeadowView-Instanzen, da
+                    // loopIndex direkt aus der geteilten Zeit berechnet
+                    // wird. BEWUSST kein `.id(state.loopIndex)` mehr: das
+                    // hätte SwiftUI gezwungen, die komplette SnowfallView
+                    // bei jedem Loop-Wechsel zu zerstören und neu
+                    // aufzubauen, statt nur ihren internen Zustand
+                    // zurückzusetzen — ein View-Identitätswechsel mitten im
+                    // ZStack konnte dabei eine größere Neu-Layout-Berechnung
+                    // des umgebenden Baums auslösen und kurzzeitig zu
+                    // falscher Geometrie führen (sichtbar als "Wasser/
+                    // Schirm ohne Wiese" genau bei jedem Loop-Neustart).
+                    // Der `resetToken`-Ansatz setzt stattdessen nur den
+                    // internen Zustand zurück, ohne die View-Identität
+                    // anzutasten.
+>>>>>>> main
                     SnowfallView(
                         intensity: max(state.snowIntensity, state.winterSnowIntensity),
                         emissionIntensity: state.snowIntensity > 0
@@ -562,8 +791,6 @@ struct MeadowView: View {
                         .ignoresSafeArea()
                         .allowsHitTesting(false)
                 }
-            }
-        }
     }
     private func umbrellaLandingY(in geo: GeometryProxy) -> CGFloat {
         geo.size.height * groundYFraction - BeachUmbrellaView.totalHeight / 2
@@ -672,6 +899,7 @@ private struct SmileShape: Shape {
 }
 // MARK: - Herbstwald
 private struct AutumnForestView: View {
+<<<<<<< HEAD
     private static let sharedForest = makeForest()
     private let leaves = Self.sharedForest.leaves
     private let trees = Self.sharedForest.trees
@@ -697,6 +925,52 @@ private struct AutumnForestView: View {
                             x: geo.size.width * leaf.xFraction,
                             y: geo.size.height * leaf.yFraction
                         )
+=======
+    /// Steuert die Sichtbarkeit von INNEN statt über ein äußeres `if` beim
+    /// Aufrufer: `leaves`/`trees` werden einmalig zufällig erzeugt und sollen
+    /// über den gesamten MeadowView-Zyklus stabil bleiben. Ein äußeres `if`
+    /// hätte diese View bei jedem Ein-/Ausblenden (~alle 105s) neu gemountet
+    /// und damit `@State` verloren — sichtbar als ständig neu gewürfelter
+    /// Wald. Mit dem Flag hier bleibt die View (und ihr `@State`) durchgehend
+    /// gemountet; nur der teure `ForEach`-Inhalt wird bei Unsichtbarkeit
+    /// durch ein leeres `EmptyView()` ersetzt, was den ursprünglich
+    /// gewünschten Perf-Vorteil (kein Re-Diffing von ~900 Blatt-Views
+    /// außerhalb des sichtbaren Fensters) ohne die Neu-Würfel-Regression behält.
+    let isVisible: Bool
+
+    @State private var leaves: [Leaf] = []
+    @State private var trees: [Tree] = []
+
+    private let treeCount = 7 // Mehr Stämme für einen dichteren Look
+
+    var body: some View {
+        GeometryReader { geo in
+            Group {
+                if isVisible {
+                    ZStack {
+                        // 1) Baumstämme mit individueller Länge und Position
+                        ForEach(trees) { tree in
+                            Rectangle()
+                                .fill(Color(red: 0.35, green: 0.22, blue: 0.10)) // braun
+                                .frame(width: tree.width, height: geo.size.height * tree.heightFraction)
+                                .position(
+                                    x: geo.size.width * tree.xFraction,
+                                    y: geo.size.height * tree.yCenterFraction
+                                )
+                        }
+
+                        // 2) Blätter (Punkte)
+                        ForEach(leaves) { leaf in
+                            Circle()
+                                .fill(leaf.color)
+                                .frame(width: leaf.size, height: leaf.size)
+                                .position(
+                                    x: geo.size.width * leaf.xFraction,
+                                    y: geo.size.height * leaf.yFraction
+                                )
+                        }
+                    }
+>>>>>>> main
                 }
             }
         }
@@ -1015,7 +1289,13 @@ struct MeadowWaveShape: Shape {
         var path = Path()
         path.move(to: CGPoint(x: 0, y: 0))
         path.addLine(to: CGPoint(x: 0, y: baseY))
-        let step = max(width / 180, 1)
+        // War zuvor `width / 180` (≈180 Punkte, mit `sin()`-Aufruf und
+        // `addLine` pro Punkt, JEDEN Frame neu aufgebaut). Bei `frequency =
+        // 0.3` (weniger als eine volle Wellenlänge über die Bildschirmbreite)
+        // reichen deutlich weniger Stützpunkte für ein optisch identisches
+        // Ergebnis — reduziert die pro-Frame-Kosten dieser (bei jedem
+        // TimelineView-Tick neu konstruierten) Form um ca. das 3,75-Fache.
+        let step = max(width / 48, 1)
         var x: CGFloat = 0
         while x <= width {
             let relativeX = x / width
@@ -1086,4 +1366,5 @@ private struct BeachUmbrellaView: View {
 }
 #Preview {
     MeadowView()
+        .environmentObject(StatsStore())
 }

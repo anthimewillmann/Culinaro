@@ -70,9 +70,22 @@ struct ShoppingListView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
                 }
+<<<<<<< HEAD
                 .buttonStyle(.plain)
                 .listRowBackground(CulinaroFieldBackground())
+=======
+                .meadowRowBackground()
+>>>>>>> main
             }
+
+            Section {
+                NavigationLink {
+                    ShoppingHistoryView()
+                } label: {
+                    Label("history", systemImage: "clock.arrow.circlepath")
+                }
+            }
+            .meadowRowBackground()
         }
         .scrollContentBackground(.hidden)
         // Die animierte Wiese sitzt direkt hinter der Liste, innerhalb
@@ -89,7 +102,12 @@ struct ShoppingListView: View {
         // selbst jemals Touches abbekommt.
         .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
+<<<<<<< HEAD
         .overlay { if items.isEmpty && store.recentHistory.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
+=======
+        .syncErrorBanner(store.syncError)
+        .overlay { if items.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
+>>>>>>> main
         .navigationTitle("shopping")
         .navigationSubtitle(subtitle)
         .navigationDestination(isPresented: $isShowingHistory) {
@@ -126,35 +144,47 @@ struct ShoppingListView: View {
     }
 
     private func row(for item: ShoppingListItem) -> some View {
+<<<<<<< HEAD
         HStack(alignment: .top, spacing: 12) {
             Button {
                 store.toggleChecked(item)
             } label: {
                 Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
+=======
+        Button {
+            store.toggleChecked(item)
+        } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(item.isChecked ? .blue : .secondary)
+>>>>>>> main
                     .contentTransition(.symbolEffect(.replace))
-            }
-            .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(item.name)
-                        .strikethrough(item.isChecked)
-                        .foregroundStyle(item.isChecked ? .secondary : .primary)
-                    Spacer()
-                    if let quantity = item.quantity, !quantity.isEmpty {
-                        Text(quantity)
-                            .font(.subheadline)
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(item.name)
+                            .strikethrough(item.isChecked)
+                            .foregroundStyle(item.isChecked ? .secondary : .primary)
+                        Spacer()
+                        if let quantity = item.quantity, !quantity.isEmpty {
+                            Text(quantity)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    if let sourceRecipeTitle = item.sourceRecipeTitle {
+                        Text(String.localizedStringWithFormat(String(localized: "from_source"), sourceRecipeTitle))
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                if let sourceRecipeTitle = item.sourceRecipeTitle {
-                    Text(String.localizedStringWithFormat(String(localized: "from_source"), sourceRecipeTitle))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Spacer(minLength: 0)
             }
         }
+        .buttonStyle(.plain)
+        .meadowRowBackground()
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) { store.delete(item) } label: { Label("delete", systemImage: "trash") }
         }
@@ -396,12 +426,23 @@ struct AddShoppingListItemSheet: View {
             array.append(TextRow(text: ""))
         }
 
-        let trailingPlaceholder = array.last.flatMap { isEmpty($0) ? $0 : nil }
-        var compacted = array.filter { !isEmpty($0) }
-        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
+        // Die aktuell bearbeitete Zeile bleibt erhalten, auch wenn sie im Moment
+        // leer ist (sonst verschwindet sie mitten in der Eingabe und der Fokus
+        // geht verloren), ebenso die ursprünglich letzte Zeile (der Platzhalter
+        // bleibt bestehen, auch wenn gerade eine andere Zeile leer ist). Ein
+        // neuer Platzhalter wird nur angehängt, wenn danach keine leere Zeile
+        // mehr am Ende steht — verhindert doppelte leere Zeilen, falls die
+        // bearbeitete Zeile selbst zur letzten wird.
+        let lastIndex = array.indices.last
+        var compacted = array.enumerated()
+            .filter { index, row in !isEmpty(row) || row.id == id || index == lastIndex }
+            .map(\.element)
+        if compacted.last.map(isEmpty) != true {
+            compacted.append(TextRow(text: ""))
+        }
 
         rows.wrappedValue = compacted
-        focusedField = compacted.contains { $0.id == id } ? id : nil
+        focusedField = id
     }
 
     private func cancelGenerationIfNeeded() {
@@ -419,10 +460,9 @@ struct AddShoppingListItemSheet: View {
             do {
                 let parsed = try await aiService.scanShoppingList(image: image)
                 try Task.checkCancellation()
-                if appendGeneratedIngredients(parsed.items) {
-                    isProcessing = false
-                    generationTask = nil
-                }
+                _ = appendGeneratedIngredients(parsed.items)
+                isProcessing = false
+                generationTask = nil
             } catch is CancellationError {
                 isProcessing = false
                 generationTask = nil

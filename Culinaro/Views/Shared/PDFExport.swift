@@ -43,8 +43,19 @@ enum PDFExporter {
     }
 
     private static func sanitized(_ name: String) -> String {
+        // Titles can come from AI-scanned/generated text (which may contain
+        // newlines the model didn't fully clean up), so control characters
+        // and whitespace runs must be collapsed too, not just filesystem
+        // punctuation — otherwise a raw newline/tab survives into the
+        // suggested filename and some share targets reject or mangle it.
         let invalid = CharacterSet(charactersIn: "/:\\?%*|\"<>")
-        return name.components(separatedBy: invalid).joined(separator: "-")
+            .union(.newlines)
+            .union(.controlCharacters)
+        let collapsed = name.components(separatedBy: invalid).joined(separator: "-")
+        return collapsed
+            .components(separatedBy: .whitespaces)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
     }
 }
 

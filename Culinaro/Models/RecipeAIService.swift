@@ -184,7 +184,15 @@ final class RecipeAIService {
             request.recognitionLevel = .accurate
             request.recognitionLanguages = ["de", "en"]
             request.usesLanguageCorrection = true
-            try? VNImageRequestHandler(cgImage: cgImage, options: [:]).perform([request])
+            do {
+                try VNImageRequestHandler(cgImage: cgImage, options: [:]).perform([request])
+            } catch {
+                // Ohne dies würde `perform` bei einem synchronen Fehler
+                // (z. B. nicht unterstütztes Bildformat) nie den
+                // Completion-Handler aufrufen — die Continuation bliebe
+                // für immer unresumed und der Aufruf würde ewig hängen.
+                continuation.resume(throwing: error)
+            }
         }
     }
 }

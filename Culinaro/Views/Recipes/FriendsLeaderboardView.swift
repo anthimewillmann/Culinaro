@@ -52,6 +52,11 @@ struct FriendsLeaderboardView: View {
         .refreshable {
             await loadScores()
         }
+        .onChange(of: gameCenter.isAuthenticated) { _, isAuthenticated in
+            if isAuthenticated {
+                Task { await loadScores() }
+            }
+        }
     }
 
     private func scoreRow(_ score: FriendScore) -> some View {
