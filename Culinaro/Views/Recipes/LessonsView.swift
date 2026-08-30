@@ -19,15 +19,19 @@ struct LessonsView: View {
     private let pendingCategoryID = "__pendingCategory__"
     @State private var selectedLessonIDs: Set<UUID> = []
 
-    private var lessons: [Lesson] {
+    private var sortedLessons: [Lesson] {
         store.lessons.sorted {
             if $0.isPinned != $1.isPinned { return $0.isPinned }
             return $0.createdAt > $1.createdAt
         }
     }
 
+    private var lessons: [Lesson] {
+        sortedLessons
+    }
+
     private var selectedLessons: [Lesson] {
-        lessons.filter { selectedLessonIDs.contains($0.id) }
+        sortedLessons.filter { selectedLessonIDs.contains($0.id) }
     }
 
     private var selectedLessonExport: PDFExport? {
@@ -72,8 +76,9 @@ struct LessonsView: View {
         List {
             ForEach(groupedLessons, id: \.category) { group in
                 Section {
-                    ForEach(group.lessons) { lesson in
+                    ForEach(Array(group.lessons.enumerated()), id: \.element.id) { index, lesson in
                         row(for: lesson)
+                            .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: group.lessons.count)))
                     }
                 } header: {
                     categoryHeader(for: group.category)
@@ -93,9 +98,13 @@ struct LessonsView: View {
         // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
         // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
         // selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
-        .overlay { if lessons.isEmpty { ContentUnavailableView("no_lessons", systemImage: "graduationcap") } }
+        .overlay {
+            if lessons.isEmpty {
+                ContentUnavailableView("no_lessons", systemImage: "graduationcap")
+            }
+        }
         .navigationTitle("lessons")
         .navigationSubtitle(String.localizedStringWithFormat(String(localized: "created_count"), store.lessons.count))
         .refreshable { await store.syncFromCloud() }
@@ -104,7 +113,7 @@ struct LessonsView: View {
         .onChange(of: isSelecting) { _, isSelecting in
             if !isSelecting { selectedLessonIDs.removeAll() }
         }
-        .onChange(of: lessons) { _, lessons in
+        .onChange(of: sortedLessons) { _, lessons in
             let availableIDs = Set(lessons.map(\.id))
             selectedLessonIDs = selectedLessonIDs.intersection(availableIDs)
             if lessons.isEmpty { isSelecting = false }
@@ -126,6 +135,8 @@ struct LessonsView: View {
                         .imageScale(.large)
                     rowContent(for: lesson)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         } else {
@@ -174,6 +185,8 @@ struct LessonsView: View {
             }
             Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 
     @ToolbarContentBuilder
@@ -303,7 +316,7 @@ struct LessonsView: View {
     }
 
     private func categorize() async {
-        guard !lessons.isEmpty else {
+        guard !sortedLessons.isEmpty else {
             categoriesByID = [:]
             categoryOrder = []
             isCategorizing = false
@@ -314,12 +327,12 @@ struct LessonsView: View {
         categoriesByID = [:]
         categoryOrder = []
 
-        let items = lessons.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
+        let items = sortedLessons.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
         do {
             let assignments = try await aiService.categorize(items, contextHint: "Diese Einträge sind Koch-Lektionen, die eine Technik Schritt für Schritt lehren")
             var byID: [UUID: String] = [:]
             var order: [String] = []
-            for lesson in lessons {
+            for lesson in sortedLessons {
                 if let category = assignments[lesson.id.uuidString] {
                     byID[lesson.id] = category
                     if !order.contains(category) { order.append(category) }

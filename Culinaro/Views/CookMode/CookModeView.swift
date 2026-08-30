@@ -53,7 +53,10 @@ struct CookModeView: View {
                 List {
                     if !item.ingredients.isEmpty {
                         Section("ingredients") {
-                            ForEach(item.ingredients, id: \.self) { ingredient in Text(ingredient) }
+                            ForEach(Array(item.ingredients.enumerated()), id: \.offset) { index, ingredient in
+                                Text(ingredient)
+                                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: item.ingredients.count)))
+                            }
                         }
 
                         nutritionSummarySection
@@ -64,15 +67,23 @@ struct CookModeView: View {
                             } label: {
                                 Text("add_ingredients_to_shopping")
                             }
+                            .listRowBackground(CulinaroFieldBackground())
                         }
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Color.clear)
+                .culinaroMeadowBackground()
 
             // MARK: – Individual step
             case .step(let index):
                 ZStack {
+                    if backgroundMode.cookModeAnimationsEnabled {
+                        CookModeAnimationView()
+                            .id(backgroundMode.cookModeAnimationRestartID)
+                            .ignoresSafeArea()
+                            .allowsHitTesting(false)
+                    }
+
                     // Readability overlay adapts to light / dark mode
                     Rectangle()
                         .fill(colorScheme == .dark
@@ -177,15 +188,25 @@ struct CookModeView: View {
 
     private var nutritionSummarySection: some View {
         Section("food_section") {
-            nutritionField(String(localized: "calories"), nutritionValue?.calories.map { "\($0)" })
-            nutritionField(String(localized: "protein"), nutritionValue?.proteinGrams.map(gramsText))
-            nutritionField(String(localized: "carbs"), nutritionValue?.carbsGrams.map(gramsText))
-            nutritionField(String(localized: "fat"), nutritionValue?.fatGrams.map(gramsText))
+            let fields = [
+                (String(localized: "calories"), nutritionValue?.calories.map { "\($0)" }),
+                (String(localized: "protein"), nutritionValue?.proteinGrams.map(gramsText)),
+                (String(localized: "carbs"), nutritionValue?.carbsGrams.map(gramsText)),
+                (String(localized: "fat"), nutritionValue?.fatGrams.map(gramsText))
+            ]
+            let canLogRecipe = item is Recipe && nutritionValue != nil
+            let rowCount = fields.count + (canLogRecipe ? 2 : 0)
+
+            ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
+                nutritionField(field.0, field.1)
+                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: rowCount)))
+            }
 
             if let recipe = item as? Recipe, let nutrition = nutritionValue {
                 Stepper(value: $servingsEaten, in: 0.5...10, step: 0.5) {
                     Text(String.localizedStringWithFormat(String(localized: "servings_count"), servingsEaten.formatted(.number.precision(.fractionLength(0...1)))))
                 }
+                .listRowBackground(CulinaroFieldBackground(position: .forIndex(fields.count, count: rowCount)))
 
                 Button {
                     logMeal(recipe.withNutrition(nutrition))
@@ -194,6 +215,7 @@ struct CookModeView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .listRowBackground(CulinaroFieldBackground(position: .forIndex(fields.count + 1, count: rowCount)))
             }
         }
     }

@@ -4,6 +4,7 @@ struct StatsView: View {
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
     @EnvironmentObject private var stats: StatsStore
+    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var gameCenter = GameCenterManager.shared
     @State private var friendScores: [FriendScore] = []
     @State private var friendsErrorMessage: String?
@@ -15,21 +16,29 @@ struct StatsView: View {
             streakSection
 
             Section("statistics") {
-                stat(String(localized: "created_recipes"), recipes.totalCreatedRecipes)
-                stat(String(localized: "created_lessons"), lessons.totalCreatedLessons)
-                stat(String(localized: "completed_cook_modes"), stats.completedCookModes)
-                stat(String(localized: "completed_lessons"), stats.completedLessons)
+                let statistics = [
+                    (String(localized: "created_recipes"), recipes.totalCreatedRecipes),
+                    (String(localized: "created_lessons"), lessons.totalCreatedLessons),
+                    (String(localized: "completed_cook_modes"), stats.completedCookModes),
+                    (String(localized: "completed_lessons"), stats.completedLessons)
+                ]
+
+                ForEach(Array(statistics.enumerated()), id: \.offset) { index, item in
+                    stat(item.0, item.1)
+                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: statistics.count)))
+                }
             }
 
             friendsSection
             notesSection
+            animationSettingsSection
         }
         .scrollContentBackground(.hidden)
         // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
         // derselben View-Hierarchie — nicht mehr als externes Fenster
         // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
         // dass die Wiese selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("overview")
         .onAppear(perform: loadNotes)
@@ -52,6 +61,7 @@ struct StatsView: View {
     private var streakSection: some View {
         Section("streak") {
             stat(String(localized: "days"), stats.currentStreak)
+                .listRowBackground(CulinaroFieldBackground())
         }
     }
 
@@ -61,19 +71,23 @@ struct StatsView: View {
                 Button("sign_in") {
                     gameCenter.authenticate()
                 }
+                .listRowBackground(CulinaroFieldBackground())
             } else if let friendsErrorMessage {
                 LabeledContent("error", value: friendsErrorMessage)
+                    .listRowBackground(CulinaroFieldBackground())
             } else if friendScores.isEmpty {
                 Text("no_entries")
                     .foregroundStyle(.secondary)
+                    .listRowBackground(CulinaroFieldBackground())
             } else {
-                ForEach(friendScores) { score in
+                ForEach(Array(friendScores.enumerated()), id: \.element.id) { index, score in
                     LabeledContent {
                         Text(score.score, format: .number)
                             .fontWeight(.semibold)
                     } label: {
                         Text(score.displayName)
                     }
+                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: friendScores.count)))
                 }
             }
         }
@@ -87,7 +101,19 @@ struct StatsView: View {
                     .onChange(of: notes[index].text) { _, value in
                         updateNotes(index: index, value: value, id: note.id)
                     }
+                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: notes.count)))
             }
+        }
+    }
+
+    private var animationSettingsSection: some View {
+        @Bindable var backgroundMode = backgroundMode
+
+        return Section("animation_settings") {
+            Toggle("meadow_animation", isOn: $backgroundMode.meadowAnimationsEnabled)
+                .listRowBackground(CulinaroFieldBackground(position: .first))
+            Toggle("cook_mode_animation", isOn: $backgroundMode.cookModeAnimationsEnabled)
+                .listRowBackground(CulinaroFieldBackground(position: .last))
         }
     }
 

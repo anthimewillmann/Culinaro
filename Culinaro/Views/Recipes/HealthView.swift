@@ -3,27 +3,60 @@ import PhotosUI
 
 struct HealthView: View {
     @EnvironmentObject private var nutrition: NutritionStore
+    @State private var isShowingHistory = false
 
     var body: some View {
         Form {
             Section("today") {
-                nutritionField(String(localized: "calories"), formattedWholeNumber(Double(nutrition.caloriesToday)))
-                nutritionField(String(localized: "protein"), formattedDecimal(nutrition.proteinToday))
-                nutritionField(String(localized: "carbs"), formattedDecimal(nutrition.carbsToday))
-                nutritionField(String(localized: "fat"), formattedDecimal(nutrition.fatToday))
+                let fields = [
+                    (String(localized: "calories"), formattedWholeNumber(Double(nutrition.caloriesToday))),
+                    (String(localized: "protein"), formattedDecimal(nutrition.proteinToday)),
+                    (String(localized: "carbs"), formattedDecimal(nutrition.carbsToday)),
+                    (String(localized: "fat"), formattedDecimal(nutrition.fatToday))
+                ]
+
+                ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
+                    nutritionField(field.0, field.1)
+                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
+                }
             }
 
             Section("average_last_7_days") {
                 let average = nutrition.averageLastSevenDays
-                nutritionField(String(localized: "calories"), formattedWholeNumber(average.calories))
-                nutritionField(String(localized: "protein"), formattedDecimal(average.proteinGrams))
-                nutritionField(String(localized: "carbs"), formattedDecimal(average.carbsGrams))
-                nutritionField(String(localized: "fat"), formattedDecimal(average.fatGrams))
+                let fields = [
+                    (String(localized: "calories"), formattedWholeNumber(average.calories)),
+                    (String(localized: "protein"), formattedDecimal(average.proteinGrams)),
+                    (String(localized: "carbs"), formattedDecimal(average.carbsGrams)),
+                    (String(localized: "fat"), formattedDecimal(average.fatGrams))
+                ]
+
+                ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
+                    nutritionField(field.0, field.1)
+                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
+                }
             }
 
             Section("average_last_30_days") {
                 let average = nutrition.averageLastThirtyDays
                 nutritionField(String(localized: "calories"), formattedWholeNumber(average.calories))
+                    .listRowBackground(CulinaroFieldBackground())
+            }
+
+            Section("history") {
+                Button {
+                    isShowingHistory = true
+                } label: {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("health_history")
+                        Text(historyCountText(nutrition.recentLoggedMeals.count))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(CulinaroFieldBackground())
             }
         }
         .scrollContentBackground(.hidden)
@@ -31,9 +64,12 @@ struct HealthView: View {
         // derselben View-Hierarchie — nicht mehr als externes Fenster
         // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
         // dass die Wiese selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("nutrition")
+        .navigationDestination(isPresented: $isShowingHistory) {
+            HealthHistoryView()
+        }
     }
 
     private func nutritionField(_ title: String, _ value: String) -> some View {
@@ -46,6 +82,14 @@ struct HealthView: View {
         }
     }
 
+    private func historyCountText(_ count: Int) -> String {
+        if count == 1 {
+            String(localized: "one_history_entry")
+        } else {
+            String.localizedStringWithFormat(String(localized: "history_entries_count"), count)
+        }
+    }
+
     private func formattedWholeNumber(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(0)))
     }
@@ -55,7 +99,129 @@ struct HealthView: View {
     }
 }
 
+private struct HealthHistoryView: View {
+    @EnvironmentObject private var nutrition: NutritionStore
+    @State private var addMealDaysAgo: Int?
+
+    private var groups: [(daysAgo: Int, meals: [LoggedMeal])] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let grouped = Dictionary(grouping: nutrition.recentLoggedMeals) { meal in
+            let mealDay = calendar.startOfDay(for: meal.loggedAt)
+            return calendar.dateComponents([.day], from: mealDay, to: today).day ?? 0
+        }
+
+        return grouped.keys.sorted().map { daysAgo in
+            (daysAgo, grouped[daysAgo, default: []].sorted { $0.loggedAt > $1.loggedAt })
+        }
+    }
+
+    var body: some View {
+        List {
+            ForEach(groups, id: \.daysAgo) { group in
+                Section {
+                    let rowCount = group.meals.count + 1
+                    ForEach(Array(group.meals.enumerated()), id: \.element.id) { index, meal in
+                        NavigationLink {
+                            MealNutritionDetailView(meal: meal)
+                        } label: {
+                            mealRow(for: meal)
+                        }
+                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: rowCount)))
+                    }
+
+                    Button {
+                        addMealDaysAgo = group.daysAgo
+                    } label: {
+                        Label("add_food", systemImage: "plus")
+                    }
+                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(rowCount - 1, count: rowCount)))
+                } header: {
+                    Text(dayHeader(for: group.daysAgo))
+                }
+            }
+        }
+        .overlay {
+            if groups.isEmpty {
+                ContentUnavailableView("no_recent_meals", systemImage: "clock.arrow.circlepath")
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .culinaroMeadowBackground()
+        .containerBackground(.clear, for: .navigation)
+        .navigationTitle("health_history")
+        .sheet(isPresented: Binding(
+            get: { addMealDaysAgo != nil },
+            set: { isPresented in
+                if !isPresented { addMealDaysAgo = nil }
+            }
+        )) {
+            AddHealthRecipeSheet(loggedAt: logDate(for: addMealDaysAgo ?? 0))
+        }
+    }
+
+    private func logDate(for daysAgo: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
+    }
+
+    private func dayHeader(for daysAgo: Int) -> String {
+        if daysAgo == 1 {
+            String(localized: "one_day_ago")
+        } else {
+            String.localizedStringWithFormat(String(localized: "days_ago"), daysAgo)
+        }
+    }
+
+    private func mealRow(for meal: LoggedMeal) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(meal.recipeTitle)
+                    .fontWeight(.semibold)
+                Text(meal.loggedAt, style: .time)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(meal.calories, format: .number)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct MealNutritionDetailView: View {
+    let meal: LoggedMeal
+
+    var body: some View {
+        Form {
+            Section("nutrition_facts") {
+                let fields = [
+                    (String(localized: "calories"), meal.calories.formatted(.number)),
+                    (String(localized: "protein"), gramsText(meal.proteinGrams)),
+                    (String(localized: "carbs"), gramsText(meal.carbsGrams)),
+                    (String(localized: "fat"), gramsText(meal.fatGrams))
+                ]
+
+                ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
+                    LabeledContent(field.0, value: field.1)
+                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
+                }
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .culinaroMeadowBackground()
+        .containerBackground(.clear, for: .navigation)
+        .navigationTitle(meal.recipeTitle)
+    }
+
+    private func gramsText(_ value: Double) -> String {
+        "\(value.formatted(.number.precision(.fractionLength(0...1)))) g"
+    }
+}
+
 struct AddHealthRecipeSheet: View {
+    let loggedAt: Date
+
     @EnvironmentObject private var nutrition: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
     @Environment(\.dismiss) private var dismiss
@@ -74,6 +240,10 @@ struct AddHealthRecipeSheet: View {
     @State private var showGallery = false
     @State private var selectedPhoto: PhotosPickerItem?
     @FocusState private var focusedField: UUID?
+
+    init(loggedAt: Date = Date()) {
+        self.loggedAt = loggedAt
+    }
 
     private var recipeTitle: String {
         cleanedIngredients.first ?? String(localized: "food")
@@ -415,6 +585,6 @@ struct AddHealthRecipeSheet: View {
             steps: [],
             nutrition: nutritionInfo
         )
-        nutrition.logMeal(recipe: recipe, servings: 1)
+        nutrition.logMeal(recipe: recipe, servings: 1, loggedAt: loggedAt)
     }
 }

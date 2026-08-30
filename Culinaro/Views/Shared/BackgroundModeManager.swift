@@ -1,6 +1,7 @@
+import Foundation
 import Observation
 
-/// Controls which permanently mounted animated background is visible.
+/// Controls which animated backgrounds are visible across the app.
 @Observable
 final class BackgroundModeManager {
     enum BackgroundMode: Equatable {
@@ -9,4 +10,20 @@ final class BackgroundModeManager {
     }
 
     var mode: BackgroundMode = .meadow
+    var meadowAnimationsEnabled = true {
+        didSet {
+            if meadowAnimationsEnabled && !oldValue {
+                meadowAnimationStartDate = Date()
+            }
+        }
+    }
+    var cookModeAnimationsEnabled = true {
+        didSet {
+            if cookModeAnimationsEnabled && !oldValue {
+                cookModeAnimationRestartID = UUID()
+            }
+        }
+    }
+    var meadowAnimationStartDate = Date()
+    var cookModeAnimationRestartID = UUID()
 }

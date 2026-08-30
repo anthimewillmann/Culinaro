@@ -105,6 +105,7 @@ extension ShoppingListItem {
             name: name,
             quantity: record["quantity"] as? String,
             isChecked: isChecked,
+            checkedAt: record["checkedAt"] as? Date,
             category: record["category"] as? String,
             sourceRecipeID: sourceRecipeID,
             sourceRecipeTitle: record["sourceRecipeTitle"] as? String,
@@ -117,6 +118,7 @@ extension ShoppingListItem {
         record["name"] = name as CKRecordValue
         record["quantity"] = quantity as CKRecordValue?
         record["isChecked"] = isChecked as CKRecordValue
+        record["checkedAt"] = checkedAt as CKRecordValue?
         record["category"] = category as CKRecordValue?
         record["sourceRecipeID"] = sourceRecipeID?.uuidString as CKRecordValue?
         record["sourceRecipeTitle"] = sourceRecipeTitle as CKRecordValue?

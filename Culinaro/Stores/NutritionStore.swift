@@ -28,6 +28,18 @@ final class NutritionStore: ObservableObject {
         averageNutrition(forLast: 30)
     }
 
+    var recentLoggedMeals: [LoggedMeal] {
+        let today = calendar.startOfDay(for: Date())
+        guard let startDate = calendar.date(byAdding: .day, value: -6, to: today),
+              let endDate = calendar.date(byAdding: .day, value: 1, to: today) else {
+            return []
+        }
+
+        return loggedMeals
+            .filter { $0.loggedAt >= startDate && $0.loggedAt < endDate }
+            .sorted { $0.loggedAt > $1.loggedAt }
+    }
+
     init(cloud: CloudKitManager? = nil, calendar: Calendar = .current) {
         self.cloud = cloud ?? .shared
         self.calendar = calendar
@@ -35,7 +47,7 @@ final class NutritionStore: ObservableObject {
         Task { await syncFromCloud() }
     }
 
-    func logMeal(recipe: Recipe, servings: Double) {
+    func logMeal(recipe: Recipe, servings: Double, loggedAt: Date = Date()) {
         guard servings > 0, let nutrition = recipe.nutrition else { return }
 
         let loggedMeal = LoggedMeal(
@@ -45,7 +57,8 @@ final class NutritionStore: ObservableObject {
             calories: Int(Double(nutrition.calories ?? 0) * servings),
             proteinGrams: (nutrition.proteinGrams ?? 0) * servings,
             carbsGrams: (nutrition.carbsGrams ?? 0) * servings,
-            fatGrams: (nutrition.fatGrams ?? 0) * servings
+            fatGrams: (nutrition.fatGrams ?? 0) * servings,
+            loggedAt: loggedAt
         )
         loggedMeals.append(loggedMeal)
         persistCache()

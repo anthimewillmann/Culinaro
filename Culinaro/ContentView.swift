@@ -12,9 +12,6 @@ struct ContentView: View {
     @State private var showAddItem = false
     @State private var showAddShoppingItem = false
     @State private var showAddHealthRecipe = false
-    @State private var recipeSearchText = ""
-    @State private var lessonSearchText = ""
-    @State private var shoppingSearchText = ""
     @State private var isSelectingRecipes = false
     @State private var isSelectingLessons = false
 
@@ -23,61 +20,55 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selection) {
-            Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
-                NavigationStack(path: $recipePath) {
-                    RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
-                        .toolbar { addButtonToolbar }
-                        .searchable(text: $recipeSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
-                        .navigationDestination(for: UUID.self) { recipeID in
-                            if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
-                                CookModeView(item: recipe)
-                            } else {
-                                ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
+                Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
+                    NavigationStack(path: $recipePath) {
+                        RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
+                            .toolbar { addButtonToolbar(for: .recipes) }
+                            .navigationDestination(for: UUID.self) { recipeID in
+                                if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
+                                    CookModeView(item: recipe)
+                                } else {
+                                    ContentUnavailableView("recipe_not_found", systemImage: "fork.knife")
+                                }
                             }
-                        }
+                    }
+                    .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
                 }
-                .toolbar(recipePath.isEmpty && !isSelectingRecipes ? .visible : .hidden, for: .tabBar)
-            }
 
-            Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
-                NavigationStack(path: $lessonPath) {
-                    LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
-                        .toolbar { addButtonToolbar }
-                        .searchable(text: $lessonSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
-                        .navigationDestination(for: UUID.self) { lessonID in
-                            if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
-                                CookModeView(item: lesson)
-                            } else {
-                                ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
+                Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
+                    NavigationStack(path: $lessonPath) {
+                        LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
+                            .toolbar { addButtonToolbar(for: .lessons) }
+                            .navigationDestination(for: UUID.self) { lessonID in
+                                if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
+                                    CookModeView(item: lesson)
+                                } else {
+                                    ContentUnavailableView("lesson_not_found", systemImage: "graduationcap")
+                                }
                             }
-                        }
+                    }
+                    .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
                 }
-                .toolbar(lessonPath.isEmpty && !isSelectingLessons ? .visible : .hidden, for: .tabBar)
-            }
 
-            Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
-                NavigationStack {
-                    ShoppingListView(searchText: shoppingSearchText)
-                        .toolbar { addButtonToolbar }
-                        .searchable(text: $shoppingSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
+                Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
+                    NavigationStack {
+                        ShoppingListView()
+                            .toolbar { addButtonToolbar(for: .shoppingList) }
+                    }
                 }
-            }
 
-            Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
-                NavigationStack {
-                    HealthView()
-                        .toolbar { addButtonToolbar }
+                Tab(String(localized: "tab_nutrition"), systemImage: "heart.text.square", value: .health) {
+                    NavigationStack {
+                        HealthView()
+                            .toolbar { addButtonToolbar(for: .health) }
+                    }
                 }
-            }
 
-            Tab(String(localized: "tab_overview"), systemImage: "chart.bar", value: .stats) {
-                NavigationStack {
-                    StatsView()
+                Tab(String(localized: "tab_overview"), systemImage: "chart.bar", value: .stats) {
+                    NavigationStack {
+                        StatsView()
+                    }
                 }
-            }
         }
         .toolbarBackground(.hidden, for: .tabBar)
         .environment(backgroundMode)
@@ -94,34 +85,16 @@ struct ContentView: View {
         .onChange(of: stats.completedCookModes) { _, _ in submitTotalScore() }
         .onChange(of: stats.completedLessons) { _, _ in submitTotalScore() }
         .onChange(of: selection) { oldValue, _ in
-            // WICHTIG: Hier wird bewusst NICHT mehr über ein `.id(UUID())`-
-            // Reset der komplette NavigationStack-Inhalt neu aufgebaut.
-            // Früher passierte das, um Suchtext/Navigationspfad beim
-            // Tab-Verlassen zurückzusetzen — als Nebeneffekt wurde dabei
-            // aber auch jede in diesem Screen eingebettete Hintergrund-
-            // Animation (MeadowView) zerstört und beim nächsten Besuch
-            // komplett neu gestartet. Suchtext und Navigationspfad werden
-            // stattdessen direkt über ihre eigenen State-Variablen
-            // zurückgesetzt — das funktioniert unabhängig von `.id()` und
-            // lässt den restlichen View-Baum (inkl. MeadowView) am Leben,
-            // wodurch die Animation nahtlos über Tab-Wechsel hinweg
-            // weiterläuft, genau wie es bei Health/Stats schon immer der
-            // Fall war (die nie ein `.id()`-Reset hatten).
             switch oldValue {
             case .recipes:
-                recipeSearchText = ""
                 recipePath = []
                 isSelectingRecipes = false
 
             case .lessons:
-                lessonSearchText = ""
                 lessonPath = []
                 isSelectingLessons = false
 
-            case .shoppingList:
-                shoppingSearchText = ""
-
-            case .health, .stats:
+            case .shoppingList, .health, .stats:
                 break
             }
         }
@@ -146,8 +119,8 @@ struct ContentView: View {
         }
     }
 
-    private var addButtonAccessibilityLabel: String {
-        switch selection {
+    private func addButtonAccessibilityLabel(for tab: AppTab) -> String {
+        switch tab {
         case .shoppingList:
             return String(localized: "add_ingredient")
         case .health:
@@ -157,8 +130,8 @@ struct ContentView: View {
         }
     }
 
-    private var isSelectionModeActive: Bool {
-        switch selection {
+    private func isSelectionModeActive(for tab: AppTab) -> Bool {
+        switch tab {
         case .recipes:
             return isSelectingRecipes
         case .lessons:
@@ -168,8 +141,8 @@ struct ContentView: View {
         }
     }
 
-    private var isSelectionButtonDisabled: Bool {
-        switch selection {
+    private func isSelectionButtonDisabled(for tab: AppTab) -> Bool {
+        switch tab {
         case .recipes:
             return recipes.recipes.isEmpty
         case .lessons:
@@ -179,20 +152,35 @@ struct ContentView: View {
         }
     }
 
+    private func setSelectionMode(_ isSelecting: Bool, for tab: AppTab) {
+        switch tab {
+        case .recipes:
+            isSelectingRecipes = isSelecting
+        case .lessons:
+            isSelectingLessons = isSelecting
+        case .shoppingList, .health, .stats:
+            break
+        }
+    }
+
+    private func showAddSheet(for tab: AppTab) {
+        switch tab {
+        case .shoppingList:
+            showAddShoppingItem = true
+        case .health:
+            showAddHealthRecipe = true
+        case .recipes, .lessons, .stats:
+            showAddItem = true
+        }
+    }
+
     @ToolbarContentBuilder
-    private var addButtonToolbar: some ToolbarContent {
+    private func addButtonToolbar(for tab: AppTab) -> some ToolbarContent {
         ToolbarItemGroup(placement: .topBarTrailing) {
-            if isSelectionModeActive {
+            if isSelectionModeActive(for: tab) {
                 Button {
                     withAnimation {
-                        switch selection {
-                        case .recipes:
-                            isSelectingRecipes = false
-                        case .lessons:
-                            isSelectingLessons = false
-                        case .shoppingList, .health, .stats:
-                            break
-                        }
+                        setSelectionMode(false, for: tab)
                     }
                 } label: {
                     Image(systemName: "checkmark")
@@ -205,44 +193,25 @@ struct ContentView: View {
                 .tint(.blue)
                 .accessibilityLabel("finish_selection")
             } else {
-                if selection == .recipes || selection == .lessons {
+                if tab == .recipes || tab == .lessons {
                     Button {
                         withAnimation {
-                            switch selection {
-                            case .recipes:
-                                isSelectingRecipes = true
-                            case .lessons:
-                                isSelectingLessons = true
-                            case .shoppingList, .health, .stats:
-                                break
-                            }
+                            setSelectionMode(true, for: tab)
                         }
                     } label: {
                         Image(systemName: "checkmark.circle")
                     }
-                    .disabled(isSelectionButtonDisabled)
+                    .disabled(isSelectionButtonDisabled(for: tab))
                     .accessibilityLabel("select")
                 }
 
                 Button {
-                    switch selection {
-                    case .shoppingList:
-                        showAddShoppingItem = true
-                    case .health:
-                        showAddHealthRecipe = true
-                    case .recipes, .lessons, .stats:
-                        showAddItem = true
-                    }
+                    showAddSheet(for: tab)
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel(addButtonAccessibilityLabel)
+                .accessibilityLabel(addButtonAccessibilityLabel(for: tab))
             }
-        }
-
-        if selection != .health && !isSelectionModeActive {
-            ToolbarSpacer(.flexible, placement: .topBarTrailing)
-            DefaultToolbarItem(kind: .search, placement: .topBarTrailing)
         }
     }
 }

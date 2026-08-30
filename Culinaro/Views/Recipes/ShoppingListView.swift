@@ -2,26 +2,17 @@ import SwiftUI
 import PhotosUI
 
 struct ShoppingListView: View {
-    let searchText: String
-
     @EnvironmentObject private var store: ShoppingListStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
     @State private var isCategorizing = false
+    @State private var isShowingHistory = false
 
     private let pendingCategoryID = "__pendingCategory__"
 
-    init(searchText: String = "") {
-        self.searchText = searchText
-    }
-
     private var items: [ShoppingListItem] {
-        store.items
-            .filter { item in
-                searchText.isEmpty || item.name.localizedCaseInsensitiveContains(searchText) || item.sourceRecipeTitle?.localizedCaseInsensitiveContains(searchText) == true
-            }
-            .sorted { $0.createdAt > $1.createdAt }
+        store.items.sorted { $0.createdAt > $1.createdAt }
     }
 
     private var groupedItems: [(category: String, items: [ShoppingListItem])] {
@@ -46,8 +37,9 @@ struct ShoppingListView: View {
         List {
             ForEach(groupedItems, id: \.category) { group in
                 Section {
-                    ForEach(group.items) { item in
+                    ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
                         row(for: item)
+                            .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: group.items.count)))
                     }
                 } header: {
                     categoryHeader(for: group.category)
@@ -61,7 +53,25 @@ struct ShoppingListView: View {
                     } label: {
                         Text("delete_completed")
                     }
+                    .listRowBackground(CulinaroFieldBackground())
                 }
+            }
+
+            Section("history") {
+                Button {
+                    isShowingHistory = true
+                } label: {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("shopping_history")
+                        Text(historyCountText(store.recentHistory.count))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(CulinaroFieldBackground())
             }
         }
         .scrollContentBackground(.hidden)
@@ -77,11 +87,14 @@ struct ShoppingListView: View {
         // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
         // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
         // selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
-        .overlay { if items.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
+        .overlay { if items.isEmpty && store.recentHistory.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
         .navigationTitle("shopping")
         .navigationSubtitle(subtitle)
+        .navigationDestination(isPresented: $isShowingHistory) {
+            ShoppingHistoryView()
+        }
         .refreshable { await store.syncFromCloud() }
         .task(id: categorizationSignature) {
             await categorize()
@@ -92,6 +105,14 @@ struct ShoppingListView: View {
         let countText = String.localizedStringWithFormat(String(localized: "items_count"), store.items.count)
         guard store.plannedCalories > 0 else { return countText }
         return String.localizedStringWithFormat(String(localized: "planned_calories_subtitle"), countText, store.plannedCalories)
+    }
+
+    private func historyCountText(_ count: Int) -> String {
+        if count == 1 {
+            String(localized: "one_history_entry")
+        } else {
+            String.localizedStringWithFormat(String(localized: "history_entries_count"), count)
+        }
     }
 
     @ViewBuilder
@@ -107,9 +128,9 @@ struct ShoppingListView: View {
     private func row(for item: ShoppingListItem) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Button {
-                store.delete(item)
+                store.toggleChecked(item)
             } label: {
-                Image(systemName: "circle")
+                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
                     .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)
@@ -168,6 +189,72 @@ struct ShoppingListView: View {
             store.applyCategories(byID)
         } catch {
             // Bleibt im Ladezustand, damit kein unkategorisierter Text-Fallback erscheint.
+        }
+    }
+}
+
+private struct ShoppingHistoryView: View {
+    @EnvironmentObject private var store: ShoppingListStore
+
+    private var groups: [(minutesAgo: Int, entries: [ShoppingListHistoryEntry])] {
+        let now = Date()
+        let grouped = Dictionary(grouping: store.recentHistory) { entry in
+            max(0, min(59, Int(now.timeIntervalSince(entry.checkedAt) / 60)))
+        }
+        return grouped.keys.sorted().map { minutesAgo in
+            (minutesAgo, grouped[minutesAgo, default: []].sorted { $0.checkedAt > $1.checkedAt })
+        }
+    }
+
+    var body: some View {
+        List {
+            ForEach(groups, id: \.minutesAgo) { group in
+                Section {
+                    ForEach(Array(group.entries.enumerated()), id: \.element.id) { index, entry in
+                        historyRow(for: entry)
+                            .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: group.entries.count)))
+                    }
+                } header: {
+                    Text(minutesHeader(for: group.minutesAgo))
+                }
+            }
+        }
+        .overlay {
+            if groups.isEmpty {
+                ContentUnavailableView("no_recent_history", systemImage: "clock.arrow.circlepath")
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .culinaroMeadowBackground()
+        .containerBackground(.clear, for: .navigation)
+        .navigationTitle("shopping_history")
+    }
+
+    private func minutesHeader(for minutesAgo: Int) -> String {
+        if minutesAgo == 1 {
+            String(localized: "one_minute_ago")
+        } else {
+            String.localizedStringWithFormat(String(localized: "minutes_ago"), minutesAgo)
+        }
+    }
+
+    private func historyRow(for entry: ShoppingListHistoryEntry) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(entry.name)
+                Spacer()
+                if let quantity = entry.quantity, !quantity.isEmpty {
+                    Text(quantity)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if let sourceRecipeTitle = entry.sourceRecipeTitle {
+                Text(String.localizedStringWithFormat(String(localized: "from_source"), sourceRecipeTitle))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }

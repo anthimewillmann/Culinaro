@@ -4,9 +4,11 @@ import Combine
 @MainActor
 final class ShoppingListStore: ObservableObject {
     @Published private(set) var items: [ShoppingListItem] = []
+    @Published private(set) var history: [ShoppingListHistoryEntry] = []
     @Published private(set) var syncError: String?
 
     private let storageKey = "culinaro.shoppingList.items"
+    private let historyStorageKey = "culinaro.shoppingList.history"
     private let cloud: CloudKitManager
     private let recipeLookup: @MainActor (UUID) -> Recipe?
 
@@ -17,10 +19,30 @@ final class ShoppingListStore: ObservableObject {
         }
     }
 
+    var recentHistory: [ShoppingListHistoryEntry] {
+        let cutoff = Date().addingTimeInterval(-3600)
+        var values = Dictionary(uniqueKeysWithValues: history.map { ($0.id, $0) })
+        for item in items where item.isChecked {
+            let checkedAt = item.checkedAt ?? item.createdAt
+            values[item.id] = ShoppingListHistoryEntry(
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+                sourceRecipeTitle: item.sourceRecipeTitle,
+                checkedAt: checkedAt
+            )
+        }
+        return values.values
+            .filter { $0.checkedAt >= cutoff }
+            .sorted { $0.checkedAt > $1.checkedAt }
+    }
+
     init(cloud: CloudKitManager? = nil, recipeLookup: @escaping @MainActor (UUID) -> Recipe? = { _ in nil }) {
         self.cloud = cloud ?? .shared
         self.recipeLookup = recipeLookup
         loadCache()
+        loadHistory()
+        pruneHistory()
         Task { await syncFromCloud() }
     }
 
@@ -49,12 +71,23 @@ final class ShoppingListStore: ObservableObject {
     func toggleChecked(_ item: ShoppingListItem) {
         guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
         items[index].isChecked.toggle()
+        if items[index].isChecked {
+            let checkedAt = Date()
+            items[index].checkedAt = checkedAt
+            addHistoryEntry(for: items[index], checkedAt: checkedAt)
+        } else {
+            items[index].checkedAt = nil
+            removeHistoryEntry(for: items[index])
+        }
         let updated = items[index]
         persistCache()
         Task { await upload(updated) }
     }
 
     func delete(_ item: ShoppingListItem) {
+        if item.isChecked {
+            addHistoryEntry(for: item, checkedAt: item.checkedAt ?? Date())
+        }
         items.removeAll { $0.id == item.id }
         persistCache()
         Task { try? await cloud.delete(id: item.id) }
@@ -63,6 +96,9 @@ final class ShoppingListStore: ObservableObject {
     func deleteAllChecked() {
         let checked = items.filter(\.isChecked)
         guard !checked.isEmpty else { return }
+        for item in checked {
+            addHistoryEntry(for: item, checkedAt: item.checkedAt ?? Date())
+        }
         items.removeAll { $0.isChecked }
         persistCache()
         Task {
@@ -121,6 +157,24 @@ final class ShoppingListStore: ObservableObject {
         }
     }
 
+    private func addHistoryEntry(for item: ShoppingListItem, checkedAt: Date) {
+        history.removeAll { $0.id == item.id }
+        history.append(ShoppingListHistoryEntry(
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            sourceRecipeTitle: item.sourceRecipeTitle,
+            checkedAt: checkedAt
+        ))
+        pruneHistory()
+        persistHistory()
+    }
+
+    private func removeHistoryEntry(for item: ShoppingListItem) {
+        history.removeAll { $0.id == item.id }
+        persistHistory()
+    }
+
     private func upload(_ item: ShoppingListItem) async {
         do { try await cloud.save(item); syncError = nil }
         catch { syncError = error.localizedDescription }
@@ -137,9 +191,25 @@ final class ShoppingListStore: ObservableObject {
         UserDefaults.standard.set(data, forKey: storageKey)
     }
 
+    private func persistHistory() {
+        guard let data = try? JSONEncoder().encode(history) else { return }
+        UserDefaults.standard.set(data, forKey: historyStorageKey)
+    }
+
     private func loadCache() {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode([ShoppingListItem].self, from: data) else { return }
         items = decoded
+    }
+
+    private func loadHistory() {
+        guard let data = UserDefaults.standard.data(forKey: historyStorageKey),
+              let decoded = try? JSONDecoder().decode([ShoppingListHistoryEntry].self, from: data) else { return }
+        history = decoded
+    }
+
+    private func pruneHistory() {
+        let cutoff = Date().addingTimeInterval(-3600)
+        history.removeAll { $0.checkedAt < cutoff }
     }
 }

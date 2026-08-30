@@ -20,15 +20,19 @@ struct RecipesView: View {
     private let pendingCategoryID = "__pendingCategory__"
     @State private var selectedRecipeIDs: Set<UUID> = []
 
-    private var recipes: [Recipe] {
+    private var sortedRecipes: [Recipe] {
         store.recipes.sorted {
             if $0.isPinned != $1.isPinned { return $0.isPinned }
             return $0.createdAt > $1.createdAt
         }
     }
 
+    private var recipes: [Recipe] {
+        sortedRecipes
+    }
+
     private var selectedRecipes: [Recipe] {
-        recipes.filter { selectedRecipeIDs.contains($0.id) }
+        sortedRecipes.filter { selectedRecipeIDs.contains($0.id) }
     }
 
     private var hasSelectedRecipesWithNutrition: Bool {
@@ -78,8 +82,9 @@ struct RecipesView: View {
         List {
             ForEach(groupedRecipes, id: \.category) { group in
                 Section {
-                    ForEach(group.recipes) { recipe in
+                    ForEach(Array(group.recipes.enumerated()), id: \.element.id) { index, recipe in
                         row(for: recipe)
+                            .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: group.recipes.count)))
                     }
                 } header: {
                     categoryHeader(for: group.category)
@@ -99,9 +104,13 @@ struct RecipesView: View {
         // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
         // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
         // selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .culinaroMeadowBackground()
         .containerBackground(.clear, for: .navigation)
-        .overlay { if recipes.isEmpty { ContentUnavailableView("no_recipes", systemImage: "fork.knife") } }
+        .overlay {
+            if recipes.isEmpty {
+                ContentUnavailableView("no_recipes", systemImage: "fork.knife")
+            }
+        }
         .navigationTitle("recipes")
         .navigationSubtitle(String.localizedStringWithFormat(String(localized: "created_count"), store.recipes.count))
         .refreshable { await store.syncFromCloud() }
@@ -110,7 +119,7 @@ struct RecipesView: View {
         .onChange(of: isSelecting) { _, isSelecting in
             if !isSelecting { selectedRecipeIDs.removeAll() }
         }
-        .onChange(of: recipes) { _, recipes in
+        .onChange(of: sortedRecipes) { _, recipes in
             let availableIDs = Set(recipes.map(\.id))
             selectedRecipeIDs = selectedRecipeIDs.intersection(availableIDs)
             if recipes.isEmpty { isSelecting = false }
@@ -132,6 +141,8 @@ struct RecipesView: View {
                         .imageScale(.large)
                     rowContent(for: recipe)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         } else {
@@ -180,6 +191,8 @@ struct RecipesView: View {
             }
             Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 
     @ToolbarContentBuilder
@@ -284,7 +297,7 @@ struct RecipesView: View {
     /// einteilen. Schlägt die Einteilung fehl (z. B. Modell nicht verfügbar),
     /// bleibt die Ladeanzeige sichtbar — kein harter Fehlerzustand in der UI.
     private func categorize() async {
-        guard !recipes.isEmpty else {
+        guard !sortedRecipes.isEmpty else {
             categoriesByID = [:]
             categoryOrder = []
             isCategorizing = false
@@ -295,12 +308,12 @@ struct RecipesView: View {
         categoriesByID = [:]
         categoryOrder = []
 
-        let items = recipes.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
+        let items = sortedRecipes.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
         do {
             let assignments = try await aiService.categorize(items, contextHint: "Diese Einträge sind Kochrezepte")
             var byID: [UUID: String] = [:]
             var order: [String] = []
-            for recipe in recipes {
+            for recipe in sortedRecipes {
                 if let category = assignments[recipe.id.uuidString] {
                     byID[recipe.id] = category
                     if !order.contains(category) { order.append(category) }
