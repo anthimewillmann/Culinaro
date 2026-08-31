@@ -59,6 +59,77 @@ struct ManagedAnimationBackgroundView: View {
 
 // MARK: - View Extension
 
+struct CulinaroFieldBackground: View {
+    enum Position {
+        case single
+        case first
+        case middle
+        case last
+
+        static func forIndex(_ index: Int, count: Int) -> Position {
+            if count <= 1 { return .single }
+            if index == 0 { return .first }
+            if index == count - 1 { return .last }
+            return .middle
+        }
+    }
+
+    let position: Position
+
+    init(position: Position = .single) {
+        self.position = position
+    }
+
+    var body: some View {
+        let shape = UnevenRoundedRectangle(
+            topLeadingRadius: topRadius,
+            bottomLeadingRadius: bottomRadius,
+            bottomTrailingRadius: bottomRadius,
+            topTrailingRadius: topRadius,
+            style: .continuous
+        )
+
+        shape.fill(Color(uiColor: .secondarySystemGroupedBackground))
+    }
+
+    private var topRadius: CGFloat {
+        switch position {
+        case .single, .first:
+            12
+        case .middle, .last:
+            0
+        }
+    }
+
+    private var bottomRadius: CGFloat {
+        switch position {
+        case .single, .last:
+            12
+        case .first, .middle:
+            0
+        }
+    }
+}
+
+private struct MeadowBackgroundModifier: ViewModifier {
+    @Environment(BackgroundModeManager.self) private var backgroundMode
+
+    func body(content: Content) -> some View {
+        content.background {
+            ZStack {
+                Color(uiColor: .systemGroupedBackground)
+                    .ignoresSafeArea()
+
+                if backgroundMode.meadowAnimationsEnabled {
+                    MeadowView(animationStartDate: backgroundMode.meadowAnimationStartDate)
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
+                }
+            }
+        }
+    }
+}
+
 extension View {
     /// Applies a subtle, randomised floating animation to the view.
     /// - Parameters:
@@ -67,5 +138,9 @@ extension View {
     ///   - duration: Half-period of one oscillation in seconds. Default: `1.2`.
     func wiggle(x: CGFloat = 6, y: CGFloat = 6, duration: Double = 1.2) -> some View {
         modifier(WiggleModifier(xAmount: x, yAmount: y, duration: duration))
+    }
+
+    func culinaroMeadowBackground() -> some View {
+        modifier(MeadowBackgroundModifier())
     }
 }

@@ -25,6 +25,7 @@ struct CookModeView: View {
     @State private var estimatedNutrition: NutritionInfo?
     @State private var isEstimatingNutrition = false
     @State private var didAttemptNutritionEstimate = false
+    @State private var hasRecordedCompletion = false
 
     /// In-session cache mapping step index → generated tip string.
     @State private var tipsCache: [Int: String] = [:]
@@ -39,6 +40,7 @@ struct CookModeView: View {
     @EnvironmentObject private var nutritionStore: NutritionStore
     @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @EnvironmentObject private var recipeStore: RecipeStore
+    @EnvironmentObject private var lessonStore: LessonStore
     @Environment(BackgroundModeManager.self) private var backgroundMode
 
     /// Total number of phases: ingredients screen + all steps.
@@ -53,7 +55,10 @@ struct CookModeView: View {
                 List {
                     if !item.ingredients.isEmpty {
                         Section("ingredients") {
-                            ForEach(item.ingredients, id: \.self) { ingredient in Text(ingredient) }
+                            ForEach(Array(item.ingredients.enumerated()), id: \.offset) { index, ingredient in
+                                Text(ingredient)
+                                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: item.ingredients.count)))
+                            }
                         }
 
                         nutritionSummarySection
@@ -64,15 +69,23 @@ struct CookModeView: View {
                             } label: {
                                 Text("add_ingredients_to_shopping")
                             }
+                            .listRowBackground(CulinaroFieldBackground())
                         }
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Color.clear)
+                .culinaroMeadowBackground()
 
             // MARK: – Individual step
             case .step(let index):
                 ZStack {
+                    if backgroundMode.cookModeAnimationsEnabled {
+                        CookModeAnimationView()
+                            .id(backgroundMode.cookModeAnimationRestartID)
+                            .ignoresSafeArea()
+                            .allowsHitTesting(false)
+                    }
+
                     // Readability overlay adapts to light / dark mode
                     Rectangle()
                         .fill(colorScheme == .dark
@@ -126,6 +139,14 @@ struct CookModeView: View {
         .navigationBarBackButtonHidden(true)
         .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
+        // Passend zur Phase: Wiese während der Zutatenliste, die
+        // Kochmodus-Animation während der einzelnen Schritte — siehe
+        // `updateBackgroundMode(for:)`, die `backgroundMode.mode` bei jedem
+        // Phasenwechsel synchron hält. Vorher gab es hier gar keinen
+        // animierten Hintergrund, obwohl `backgroundMode.mode` bereits
+        // korrekt mitgeführt wurde — dadurch blieb auch der
+        // "Kochmodus-Animation"-Schalter in der Übersicht ohne sichtbaren Effekt.
+        .background(backgroundAnimationView.ignoresSafeArea().allowsHitTesting(false))
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: goBack) {
@@ -176,17 +197,37 @@ struct CookModeView: View {
 
     // MARK: - Nutrition Logging
 
+    @ViewBuilder
+    private var backgroundAnimationView: some View {
+        switch backgroundMode.mode {
+        case .meadow:
+            MeadowView()
+        case .cookMode:
+            CookModeAnimationView()
+        }
+    }
+
     private var nutritionSummarySection: some View {
         Section("food_section") {
-            nutritionField(String(localized: "calories"), nutritionValue?.calories.map { "\($0)" })
-            nutritionField(String(localized: "protein"), nutritionValue?.proteinGrams.map(gramsText))
-            nutritionField(String(localized: "carbs"), nutritionValue?.carbsGrams.map(gramsText))
-            nutritionField(String(localized: "fat"), nutritionValue?.fatGrams.map(gramsText))
+            let fields = [
+                (String(localized: "calories"), nutritionValue?.calories.map { "\($0)" }),
+                (String(localized: "protein"), nutritionValue?.proteinGrams.map(gramsText)),
+                (String(localized: "carbs"), nutritionValue?.carbsGrams.map(gramsText)),
+                (String(localized: "fat"), nutritionValue?.fatGrams.map(gramsText))
+            ]
+            let canLogRecipe = item is Recipe && nutritionValue != nil
+            let rowCount = fields.count + (canLogRecipe ? 2 : 0)
+
+            ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
+                nutritionField(field.0, field.1)
+                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: rowCount)))
+            }
 
             if let recipe = item as? Recipe, let nutrition = nutritionValue {
                 Stepper(value: $servingsEaten, in: 0.5...10, step: 0.5) {
                     Text(String.localizedStringWithFormat(String(localized: "servings_count"), servingsEaten.formatted(.number.precision(.fractionLength(0...1)))))
                 }
+                .listRowBackground(CulinaroFieldBackground(position: .forIndex(fields.count, count: rowCount)))
 
                 Button {
                     logMeal(recipe.withNutrition(nutrition))
@@ -195,6 +236,7 @@ struct CookModeView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .listRowBackground(CulinaroFieldBackground(position: .forIndex(fields.count + 1, count: rowCount)))
             }
         }
     }
@@ -240,6 +282,7 @@ struct CookModeView: View {
     }
 
     private func logMeal(_ recipe: Recipe) {
+        guard !didLogMeal else { return }
         nutritionStore.logMeal(recipe: recipe, servings: servingsEaten)
         withAnimation { didLogMeal = true }
         Task {
@@ -289,6 +332,8 @@ struct CookModeView: View {
                     isEstimatingNutrition = false
                     if let recipe = item as? Recipe {
                         recipeStore.save(recipe.withNutrition(nutrition), editing: recipe)
+                    } else if let lesson = item as? Lesson {
+                        lessonStore.save(lesson.withNutrition(nutrition), editing: lesson)
                     }
                 }
             } catch {
@@ -366,6 +411,11 @@ struct CookModeView: View {
             if index < totalSteps - 1 {
                 phase = .step(index + 1)
             } else {
+                // Verhindert doppeltes Zählen, falls der Button schnell zwei
+                // Mal getippt wird, bevor `dismiss()` die View tatsächlich
+                // entfernt hat.
+                guard !hasRecordedCompletion else { return }
+                hasRecordedCompletion = true
                 statsStore.recordCompletion(item.completionKind)
                 backgroundMode.mode = .meadow
                 dismiss()
@@ -418,6 +468,22 @@ private extension Recipe {
             isPinned: isPinned,
             tipsEnabled: tipsEnabled,
             wasGenerated: wasGenerated,
+            nutrition: nutrition,
+            createdAt: createdAt
+        )
+    }
+}
+
+private extension Lesson {
+    func withNutrition(_ nutrition: NutritionInfo) -> Lesson {
+        Lesson(
+            id: id,
+            title: title,
+            ingredients: ingredients,
+            steps: steps,
+            isPinned: isPinned,
+            wasGenerated: wasGenerated,
+            tipsEnabled: tipsEnabled,
             nutrition: nutrition,
             createdAt: createdAt
         )

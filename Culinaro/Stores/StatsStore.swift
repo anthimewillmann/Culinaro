@@ -8,6 +8,8 @@ final class StatsStore: ObservableObject {
     @Published var allergies: String { didSet { save() } }
     @Published var calorieGoal: Int { didSet { save() } }
     @Published private var completionDates: [Date] { didSet { save() } }
+    @Published var meadowAnimationEnabled: Bool { didSet { save() } }
+    @Published var cookModeAnimationEnabled: Bool { didSet { save() } }
 
     private let defaults: UserDefaults
     private let calendar: Calendar
@@ -38,6 +40,11 @@ final class StatsStore: ObservableObject {
         allergies = defaults.string(forKey: "culinaro.stats.allergies") ?? ""
         calorieGoal = defaults.integer(forKey: "culinaro.stats.calorieGoal")
         completionDates = defaults.array(forKey: "culinaro.stats.completionDates") as? [Date] ?? []
+        // `.bool(forKey:)` würde für einen nie gesetzten Key `false`
+        // liefern — die Animationen sollen aber standardmäßig aktiviert
+        // sein, deshalb explizit über `.object(forKey:)` mit Fallback `true`.
+        meadowAnimationEnabled = defaults.object(forKey: "culinaro.stats.meadowAnimationEnabled") as? Bool ?? true
+        cookModeAnimationEnabled = defaults.object(forKey: "culinaro.stats.cookModeAnimationEnabled") as? Bool ?? true
     }
 
     func recordCompletion(_ kind: CompletionKind) {
@@ -55,5 +62,7 @@ final class StatsStore: ObservableObject {
         defaults.set(allergies, forKey: "culinaro.stats.allergies")
         defaults.set(calorieGoal, forKey: "culinaro.stats.calorieGoal")
         defaults.set(completionDates, forKey: "culinaro.stats.completionDates")
+        defaults.set(meadowAnimationEnabled, forKey: "culinaro.stats.meadowAnimationEnabled")
+        defaults.set(cookModeAnimationEnabled, forKey: "culinaro.stats.cookModeAnimationEnabled")
     }
 }

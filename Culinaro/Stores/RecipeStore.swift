@@ -10,6 +10,21 @@ final class RecipeStore: ObservableObject {
     private let storageKey = "culinaro.recipes"
     private let totalCreatedKey = "culinaro.recipes.totalCreated"
     private let cloud: CloudKitManager
+    /// IDs deleted locally whose CloudKit deletion may not have propagated
+    /// yet. Filtered out of every `merge(local:remote:)` so a `syncFromCloud()`
+    /// (e.g. pull-to-refresh) racing ahead of the in-flight cloud delete can't
+    /// resurrect an item the user just removed.
+    private var pendingDeletionIDs: Set<UUID> = []
+    /// IDs with a local edit whose upload may not have landed on the server
+    /// yet. While pending, `merge(local:remote:)` keeps the LOCAL value for
+    /// these IDs instead of the (possibly stale, pre-edit) remote one — same
+    /// race as `pendingDeletionIDs`, but for edits/creates instead of deletes.
+    private var pendingUploadIDs: Set<UUID> = []
+    /// Laufende Upload-Tasks pro ID, damit `delete()` einen Upload, der zum
+    /// Löschzeitpunkt noch nicht gesendet wurde, abbrechen kann — sonst
+    /// könnte ein Upload, der nach dem `cloud.delete`-Aufruf beim Server
+    /// ankommt, den gerade gelöschten Datensatz wiederauferstehen lassen.
+    private var pendingUploadTasks: [UUID: Task<Void, Never>] = [:]
 
     init(cloud: CloudKitManager? = nil) {
         self.cloud = cloud ?? .shared
@@ -38,13 +53,23 @@ final class RecipeStore: ObservableObject {
             persistTotalCreatedCount()
         }
         persistCache()
-        Task { await upload(cleaned) }
+        pendingUploadIDs.insert(cleaned.id)
+        pendingUploadTasks[cleaned.id] = Task {
+            await upload(cleaned)
+            pendingUploadIDs.remove(cleaned.id)
+            pendingUploadTasks.removeValue(forKey: cleaned.id)
+        }
     }
 
     func delete(_ recipe: Recipe) {
         recipes.removeAll { $0.id == recipe.id }
+        pendingDeletionIDs.insert(recipe.id)
+        pendingUploadTasks[recipe.id]?.cancel()
         persistCache()
-        Task { try? await cloud.delete(id: recipe.id) }
+        Task {
+            try? await cloud.delete(id: recipe.id)
+            pendingDeletionIDs.remove(recipe.id)
+        }
     }
 
     func togglePin(_ recipe: Recipe) {
@@ -52,7 +77,12 @@ final class RecipeStore: ObservableObject {
         recipes[index].isPinned.toggle()
         let updated = recipes[index]
         persistCache()
-        Task { await upload(updated) }
+        pendingUploadIDs.insert(updated.id)
+        pendingUploadTasks[updated.id] = Task {
+            await upload(updated)
+            pendingUploadIDs.remove(updated.id)
+            pendingUploadTasks.removeValue(forKey: updated.id)
+        }
     }
 
     func syncFromCloud() async {
@@ -68,13 +98,17 @@ final class RecipeStore: ObservableObject {
     }
 
     private func upload(_ recipe: Recipe) async {
+        guard !Task.isCancelled else { return }
         do { try await cloud.save(recipe); syncError = nil }
         catch { syncError = error.localizedDescription }
     }
 
     private func merge(local: [Recipe], remote: [Recipe]) -> [Recipe] {
         var values = Dictionary(uniqueKeysWithValues: local.map { ($0.id, $0) })
-        remote.forEach { values[$0.id] = $0 }
+        for item in remote where !pendingUploadIDs.contains(item.id) {
+            values[item.id] = item
+        }
+        pendingDeletionIDs.forEach { values.removeValue(forKey: $0) }
         return Array(values.values)
     }
 

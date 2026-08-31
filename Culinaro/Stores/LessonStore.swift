@@ -10,6 +10,16 @@ final class LessonStore: ObservableObject {
     private let storageKey = "culinaro.lessons"
     private let totalCreatedKey = "culinaro.lessons.totalCreated"
     private let cloud: CloudKitManager
+    /// IDs deleted locally whose CloudKit deletion may not have propagated
+    /// yet — siehe RecipeStore für die ausführliche Begründung.
+    private var pendingDeletionIDs: Set<UUID> = []
+    /// IDs mit einer lokalen Änderung, deren Upload noch nicht bestätigt ist
+    /// — siehe RecipeStore für die ausführliche Begründung.
+    private var pendingUploadIDs: Set<UUID> = []
+    /// Laufende Upload-Tasks pro ID — siehe RecipeStore für die ausführliche
+    /// Begründung (verhindert, dass ein Upload einen gelöschten Datensatz
+    /// wiederauferstehen lässt).
+    private var pendingUploadTasks: [UUID: Task<Void, Never>] = [:]
 
     init(cloud: CloudKitManager? = nil) {
         self.cloud = cloud ?? .shared
@@ -38,13 +48,23 @@ final class LessonStore: ObservableObject {
             persistTotalCreatedCount()
         }
         persistCache()
-        Task { await upload(cleaned) }
+        pendingUploadIDs.insert(cleaned.id)
+        pendingUploadTasks[cleaned.id] = Task {
+            await upload(cleaned)
+            pendingUploadIDs.remove(cleaned.id)
+            pendingUploadTasks.removeValue(forKey: cleaned.id)
+        }
     }
 
     func delete(_ lesson: Lesson) {
         lessons.removeAll { $0.id == lesson.id }
+        pendingDeletionIDs.insert(lesson.id)
+        pendingUploadTasks[lesson.id]?.cancel()
         persistCache()
-        Task { try? await cloud.delete(id: lesson.id) }
+        Task {
+            try? await cloud.delete(id: lesson.id)
+            pendingDeletionIDs.remove(lesson.id)
+        }
     }
 
     func togglePin(_ lesson: Lesson) {
@@ -52,7 +72,12 @@ final class LessonStore: ObservableObject {
         lessons[index].isPinned.toggle()
         let updated = lessons[index]
         persistCache()
-        Task { await upload(updated) }
+        pendingUploadIDs.insert(updated.id)
+        pendingUploadTasks[updated.id] = Task {
+            await upload(updated)
+            pendingUploadIDs.remove(updated.id)
+            pendingUploadTasks.removeValue(forKey: updated.id)
+        }
     }
 
     func syncFromCloud() async {
@@ -66,13 +91,17 @@ final class LessonStore: ObservableObject {
     }
 
     private func upload(_ lesson: Lesson) async {
+        guard !Task.isCancelled else { return }
         do { try await cloud.save(lesson); syncError = nil }
         catch { syncError = error.localizedDescription }
     }
 
     private func merge(local: [Lesson], remote: [Lesson]) -> [Lesson] {
         var values = Dictionary(uniqueKeysWithValues: local.map { ($0.id, $0) })
-        remote.forEach { values[$0.id] = $0 }
+        for item in remote where !pendingUploadIDs.contains(item.id) {
+            values[item.id] = item
+        }
+        pendingDeletionIDs.forEach { values.removeValue(forKey: $0) }
         return Array(values.values)
     }
 
