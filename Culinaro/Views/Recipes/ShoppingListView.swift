@@ -2,8 +2,6 @@ import SwiftUI
 import PhotosUI
 
 struct ShoppingListView: View {
-    let searchText: String
-
     @EnvironmentObject private var store: ShoppingListStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var categoriesByID: [UUID: String] = [:]
@@ -12,16 +10,8 @@ struct ShoppingListView: View {
 
     private let pendingCategoryID = "__pendingCategory__"
 
-    init(searchText: String = "") {
-        self.searchText = searchText
-    }
-
     private var items: [ShoppingListItem] {
-        store.items
-            .filter { item in
-                searchText.isEmpty || item.name.localizedCaseInsensitiveContains(searchText) || item.sourceRecipeTitle?.localizedCaseInsensitiveContains(searchText) == true
-            }
-            .sorted { $0.createdAt > $1.createdAt }
+        store.items.sorted { $0.createdAt > $1.createdAt }
     }
 
     private var groupedItems: [(category: String, items: [ShoppingListItem])] {
@@ -65,19 +55,7 @@ struct ShoppingListView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter der Liste, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. Dadurch muss keine private UIKit-
-        // Navigations-Container-View mehr von außen transparent gemacht
-        // werden, was zuvor das Scrollen im Leerraum zwischen Zeilen
-        // dauerhaft gestört hat. `.ignoresSafeArea()` sorgt dafür, dass die
-        // Wiese trotzdem die komplette Bildschirmfläche als Bezugsgröße
-        // bekommt (sonst rechnet ihr GeometryReader nur mit dem Bereich
-        // zwischen Navigationsleiste und Tab-Bar, wodurch alle intern als
-        // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
-        // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
-        // selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
         .overlay { if items.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
         .navigationTitle("shopping")

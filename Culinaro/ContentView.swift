@@ -12,9 +12,6 @@ struct ContentView: View {
     @State private var showAddItem = false
     @State private var showAddShoppingItem = false
     @State private var showAddHealthRecipe = false
-    @State private var recipeSearchText = ""
-    @State private var lessonSearchText = ""
-    @State private var shoppingSearchText = ""
     @State private var isSelectingRecipes = false
     @State private var isSelectingLessons = false
 
@@ -27,8 +24,6 @@ struct ContentView: View {
                 NavigationStack(path: $recipePath) {
                     RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
                         .toolbar { addButtonToolbar }
-                        .searchable(text: $recipeSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
                         .navigationDestination(for: UUID.self) { recipeID in
                             if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
                                 CookModeView(item: recipe)
@@ -44,8 +39,6 @@ struct ContentView: View {
                 NavigationStack(path: $lessonPath) {
                     LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
                         .toolbar { addButtonToolbar }
-                        .searchable(text: $lessonSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
                         .navigationDestination(for: UUID.self) { lessonID in
                             if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
                                 CookModeView(item: lesson)
@@ -59,10 +52,8 @@ struct ContentView: View {
 
             Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
                 NavigationStack {
-                    ShoppingListView(searchText: shoppingSearchText)
+                    ShoppingListView()
                         .toolbar { addButtonToolbar }
-                        .searchable(text: $shoppingSearchText, placement: .toolbar)
-                        .searchToolbarBehavior(.minimize)
                 }
             }
 
@@ -94,34 +85,18 @@ struct ContentView: View {
         .onChange(of: stats.completedCookModes) { _, _ in submitTotalScore() }
         .onChange(of: stats.completedLessons) { _, _ in submitTotalScore() }
         .onChange(of: selection) { oldValue, _ in
-            // WICHTIG: Hier wird bewusst NICHT mehr über ein `.id(UUID())`-
-            // Reset der komplette NavigationStack-Inhalt neu aufgebaut.
-            // Früher passierte das, um Suchtext/Navigationspfad beim
-            // Tab-Verlassen zurückzusetzen — als Nebeneffekt wurde dabei
-            // aber auch jede in diesem Screen eingebettete Hintergrund-
-            // Animation (MeadowView) zerstört und beim nächsten Besuch
-            // komplett neu gestartet. Suchtext und Navigationspfad werden
-            // stattdessen direkt über ihre eigenen State-Variablen
-            // zurückgesetzt — das funktioniert unabhängig von `.id()` und
-            // lässt den restlichen View-Baum (inkl. MeadowView) am Leben,
-            // wodurch die Animation nahtlos über Tab-Wechsel hinweg
-            // weiterläuft, genau wie es bei Health/Stats schon immer der
-            // Fall war (die nie ein `.id()`-Reset hatten).
+            // Reset only tab-specific navigation and selection state so the
+            // animated background remains mounted across tab changes.
             switch oldValue {
             case .recipes:
-                recipeSearchText = ""
                 recipePath = []
                 isSelectingRecipes = false
 
             case .lessons:
-                lessonSearchText = ""
                 lessonPath = []
                 isSelectingLessons = false
 
-            case .shoppingList:
-                shoppingSearchText = ""
-
-            case .health, .stats:
+            case .shoppingList, .health, .stats:
                 break
             }
         }
@@ -240,9 +215,5 @@ struct ContentView: View {
             }
         }
 
-        if selection != .health && !isSelectionModeActive {
-            ToolbarSpacer(.flexible, placement: .topBarTrailing)
-            DefaultToolbarItem(kind: .search, placement: .topBarTrailing)
-        }
     }
 }

@@ -962,6 +962,17 @@
         }
       }
     },
+    "animation_settings" : {
+      "comment" : "Section header for app-wide animation controls.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Animationen"
+          }
+        }
+      }
+    },
     "average_last_7_days" : {
       "localizations" : {
         "ar" : {
@@ -1366,6 +1377,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "返回"
+          }
+        }
+      }
+    },
+    "background_animation" : {
+      "comment" : "Toggle that enables the animated scenic background throughout the app.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Hintergrundanimation"
           }
         }
       }
@@ -2182,6 +2204,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請享用！"
+          }
+        }
+      }
+    },
+    "cooking_animation" : {
+      "comment" : "Toggle that enables the animated background shown during cooking steps.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "machine_translated",
+            "value" : "Kochanimation"
           }
         }
       }
@@ -11445,8 +11478,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel"
+            "state" : "machine_translated",
+            "value" : "Rezepttitel"
           }
         },
         "en" : {
@@ -12910,6 +12943,7 @@
       }
     },
     "search" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13046,6 +13080,7 @@
       }
     },
     "search_prompt" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -16293,5 +16328,5 @@
       }
     }
   },
-  "version" : "1.1"
+  "version" : "1.3"
 }

@@ -27,11 +27,7 @@ struct HealthView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
-        // dass die Wiese selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("nutrition")
     }

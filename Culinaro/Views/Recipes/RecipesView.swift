@@ -87,19 +87,7 @@ struct RecipesView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter der Liste, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. Dadurch muss keine private UIKit-
-        // Navigations-Container-View mehr von außen transparent gemacht
-        // werden, was zuvor das Scrollen im Leerraum zwischen Zeilen
-        // dauerhaft gestört hat. `.ignoresSafeArea()` sorgt dafür, dass die
-        // Wiese trotzdem die komplette Bildschirmfläche als Bezugsgröße
-        // bekommt (sonst rechnet ihr GeometryReader nur mit dem Bereich
-        // zwischen Navigationsleiste und Tab-Bar, wodurch alle intern als
-        // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
-        // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
-        // selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
         .overlay { if recipes.isEmpty { ContentUnavailableView("no_recipes", systemImage: "fork.knife") } }
         .navigationTitle("recipes")
@@ -132,6 +120,8 @@ struct RecipesView: View {
                         .imageScale(.large)
                     rowContent(for: recipe)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(.rect)
             }
             .buttonStyle(.plain)
         } else {
@@ -180,6 +170,8 @@ struct RecipesView: View {
             }
             Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(.rect)
     }
 
     @ToolbarContentBuilder

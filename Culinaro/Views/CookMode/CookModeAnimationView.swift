@@ -68,6 +68,7 @@ struct CookModeAnimationView: View {
     @State private var beigeTransitionOffset: CGFloat = 0
     @State private var grayRise2: CGFloat = 0
     @State private var herbsDropOpacity2: CGFloat = 1
+    @State private var animationTask: Task<Void, Never>?
 
     // MARK: - Constants
 
@@ -155,6 +156,10 @@ struct CookModeAnimationView: View {
                             .ignoresSafeArea()
                             .opacity(waveRise > 0 ? 1 : 0)
                             .onAppear { startAnimationSequence(geo: geo) }
+                            .onDisappear {
+                                animationTask?.cancel()
+                                animationTask = nil
+                            }
 
                         // Grey base panel
                         let restY        = geo.size.height * 0.52
@@ -359,16 +364,19 @@ struct CookModeAnimationView: View {
         // Step 1: Grey panel rises immediately on appear
         withAnimation(.easeOut(duration: 2.5)) { grayRise = 1 }
 
-        Task { @MainActor in
-            while true {
+        animationTask?.cancel()
+        animationTask = Task { @MainActor in
+            while !Task.isCancelled {
 
                 // Step 2: Blue wave appears and begins oscillating
                 try? await Task.sleep(for: .seconds(2.0))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeOut(duration: 4.0)) { waveRise = 1 }
                 withAnimation(.easeInOut(duration: 3.25).repeatForever(autoreverses: true)) { t = 1 }
 
                 // Step 3: Wave expands horizontally
                 try? await Task.sleep(for: .seconds(7.5))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeInOut(duration: 2.5)) { expand = 1 }
 
                 // Step 4: Small bubbles appear
@@ -377,10 +385,12 @@ struct CookModeAnimationView: View {
 
                 // Step 5: Small bubbles fade out
                 try? await Task.sleep(for: .seconds(8.0))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeOut(duration: 1.0)) { hideBubbles = true }
 
                 // Step 6: Large tomato bubble grows from centre
                 try? await Task.sleep(for: .seconds(2.5))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeIn(duration: 3.7)) { finalBubbleOpacity = 1 }
                 withAnimation(.easeInOut(duration: 1.5)) { finalBubbleScale = finalBubbleSize }
                 withAnimation(.easeInOut(duration: 6.0)) {
@@ -389,12 +399,14 @@ struct CookModeAnimationView: View {
 
                 // Step 7: Black-hole mask contracts to tomato size
                 try? await Task.sleep(for: .seconds(3.5))
+                guard !Task.isCancelled else { return }
                 blackHoleScale = max(geo.size.width, geo.size.height) * 2.5
                 withAnimation(.easeIn(duration: 0.2)) { blackOverlayOpacity = 1 }
                 withAnimation(.easeInOut(duration: 3.5)) { blackHoleScale = finalBubbleSize - 10 }
 
                 // Step 8: Tomato grows → beige transition begins
                 try? await Task.sleep(for: .seconds(4.0))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeInOut(duration: 2.5)) { blackHoleScale = finalBubbleSize * 1.5 - 20 }
                 withAnimation(.easeInOut(duration: 2.5)) { finalBubbleScale = finalBubbleSize * 1.5 }
 
@@ -449,6 +461,7 @@ struct CookModeAnimationView: View {
                 // Step 12: Soup ingredients scene fades in
                 let soupDelay: Double = UIDevice.current.userInterfaceIdiom == .pad ? 4.0 : 3.0
                 try? await Task.sleep(for: .seconds(soupDelay))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeIn(duration: 2.0)) { soupIngredientsOpacity = 1 }
 
                 // Step 13: Zoom into cucumber slice
@@ -465,18 +478,21 @@ struct CookModeAnimationView: View {
                 // Step 14: Beige overlay + herb scene fade in
                 let herbDelay: Double = UIDevice.current.userInterfaceIdiom == .pad ? 1.3 : 0.3
                 try? await Task.sleep(for: .seconds(herbDelay))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeInOut(duration: 3.5)) { beigeTransitionOpacity = 1.0 }
                 showHerbsScene = true
                 withAnimation(.easeIn(duration: 3.0).delay(0.5)) { herbsOpacity = 1.0 }
 
                 // Step 15: Clean up behind the overlay; show only herbs
                 try? await Task.sleep(for: .seconds(3.7))
+                guard !Task.isCancelled else { return }
                 slideUpOffset     = -geo.size.height
                 showOnlyHerbs     = true
                 backgroundIsBeige = false
 
                 // Step 16: Slide beige overlay upward and off screen
                 try? await Task.sleep(for: .seconds(1.5))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeInOut(duration: 2.5)) { beigeTransitionOffset = -geo.size.height }
                 try? await Task.sleep(for: .seconds(2.5))
                 beigeTransitionOpacity = 0
@@ -492,9 +508,11 @@ struct CookModeAnimationView: View {
 
                 // ── Loop reset ─────────────────────────────────────────────
                 try? await Task.sleep(for: .seconds(1.8))
+                guard !Task.isCancelled else { return }
                 resetState()
 
                 try? await Task.sleep(for: .seconds(0.1))
+                guard !Task.isCancelled else { return }
                 // → Loop restarts from Step 2
             }
         }

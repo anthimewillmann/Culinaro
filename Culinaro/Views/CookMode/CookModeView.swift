@@ -77,7 +77,7 @@ struct CookModeView: View {
                     Rectangle()
                         .fill(colorScheme == .dark
                               ? Color.black.opacity(0.5)
-                              : Color.white.opacity(0.5))
+                              : Color(uiColor: .systemGroupedBackground).opacity(0.65))
                         .ignoresSafeArea()
 
                     // Step content
@@ -124,6 +124,7 @@ struct CookModeView: View {
         .navigationSubtitle(subtitle)
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -366,6 +367,7 @@ struct CookModeView: View {
                 phase = .step(index + 1)
             } else {
                 statsStore.recordCompletion(item.completionKind)
+                backgroundMode.mode = .meadow
                 dismiss()
             }
         }

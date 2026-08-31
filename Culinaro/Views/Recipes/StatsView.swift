@@ -4,6 +4,7 @@ struct StatsView: View {
     @EnvironmentObject private var recipes: RecipeStore
     @EnvironmentObject private var lessons: LessonStore
     @EnvironmentObject private var stats: StatsStore
+    @Environment(BackgroundModeManager.self) private var backgroundMode
     @State private var gameCenter = GameCenterManager.shared
     @State private var friendScores: [FriendScore] = []
     @State private var friendsErrorMessage: String?
@@ -11,6 +12,8 @@ struct StatsView: View {
     @FocusState private var focusedNote: UUID?
 
     var body: some View {
+        @Bindable var backgroundMode = backgroundMode
+
         Form {
             streakSection
 
@@ -23,13 +26,21 @@ struct StatsView: View {
 
             friendsSection
             notesSection
+
+            Section {
+                Toggle(isOn: $backgroundMode.isMeadowAnimationEnabled) {
+                    Text("background_animation", comment: "Toggle that enables the animated scenic background throughout the app.")
+                }
+
+                Toggle(isOn: $backgroundMode.isCookModeAnimationEnabled) {
+                    Text("cooking_animation", comment: "Toggle that enables the animated background shown during cooking steps.")
+                }
+            } header: {
+                Text("animation_settings", comment: "Section header for app-wide animation controls.")
+            }
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
-        // dass die Wiese selbst jemals Touches abbekommt.
-        .background(MeadowView().ignoresSafeArea().allowsHitTesting(false))
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("overview")
         .onAppear(perform: loadNotes)

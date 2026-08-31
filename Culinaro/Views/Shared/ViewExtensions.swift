@@ -27,6 +27,36 @@ struct WiggleModifier: ViewModifier {
     }
 }
 
+// MARK: - Managed app background
+
+struct ManagedAnimationBackgroundView: View {
+    @Environment(BackgroundModeManager.self) private var backgroundMode
+
+    var body: some View {
+        Group {
+            switch backgroundMode.mode {
+            case .meadow:
+                if backgroundMode.isMeadowAnimationEnabled {
+                    MeadowView(animationStartDate: backgroundMode.meadowAnimationStartDate)
+                        .id(backgroundMode.meadowAnimationStartDate)
+                } else {
+                    Color(uiColor: .systemGroupedBackground)
+                }
+
+            case .cookMode:
+                if backgroundMode.isCookModeAnimationEnabled {
+                    CookModeAnimationView()
+                        .id(backgroundMode.cookModeAnimationRestartID)
+                } else {
+                    Color(uiColor: .systemGroupedBackground)
+                }
+            }
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+}
+
 // MARK: - View Extension
 
 extension View {
