@@ -5,7 +5,6 @@ struct ShoppingListItem: Identifiable, Codable, Equatable {
     var name: String
     var quantity: String?
     var isChecked: Bool
-    var checkedAt: Date?
     var category: String?
     var sourceRecipeID: UUID?
     var sourceRecipeTitle: String?
@@ -20,7 +19,6 @@ struct ShoppingListItem: Identifiable, Codable, Equatable {
         name: String,
         quantity: String? = nil,
         isChecked: Bool = false,
-        checkedAt: Date? = nil,
         category: String? = nil,
         sourceRecipeID: UUID? = nil,
         sourceRecipeTitle: String? = nil,
@@ -31,7 +29,6 @@ struct ShoppingListItem: Identifiable, Codable, Equatable {
         self.name = name
         self.quantity = quantity
         self.isChecked = isChecked
-        self.checkedAt = checkedAt
         self.category = category
         self.sourceRecipeID = sourceRecipeID
         self.sourceRecipeTitle = sourceRecipeTitle

@@ -56,6 +56,8 @@ struct AddHealthRecipeSheet: View {
     @Environment(RecipeAIService.self) private var aiService
     @Environment(\.dismiss) private var dismiss
 
+    var initialDate: Date = Date()
+
     @State private var ingredients = [TextRow(text: "")]
     @State private var generateNutritionWithAI = false
     @State private var calories = ""
@@ -411,6 +413,6 @@ struct AddHealthRecipeSheet: View {
             steps: [],
             nutrition: nutritionInfo
         )
-        nutrition.logMeal(recipe: recipe, servings: 1)
+        nutrition.logMeal(recipe: recipe, servings: 1, loggedAt: initialDate)
     }
 }

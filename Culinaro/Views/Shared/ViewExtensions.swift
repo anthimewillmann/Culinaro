@@ -120,7 +120,7 @@ private struct MeadowBackgroundModifier: ViewModifier {
                 Color(uiColor: .systemGroupedBackground)
                     .ignoresSafeArea()
 
-                if backgroundMode.meadowAnimationsEnabled {
+                if backgroundMode.isMeadowAnimationEnabled {
                     MeadowView(animationStartDate: backgroundMode.meadowAnimationStartDate)
                         .ignoresSafeArea()
                         .allowsHitTesting(false)

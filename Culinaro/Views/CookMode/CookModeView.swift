@@ -79,7 +79,7 @@ struct CookModeView: View {
             // MARK: – Individual step
             case .step(let index):
                 ZStack {
-                    if backgroundMode.cookModeAnimationsEnabled {
+                    if backgroundMode.isCookModeAnimationEnabled {
                         CookModeAnimationView()
                             .id(backgroundMode.cookModeAnimationRestartID)
                             .ignoresSafeArea()

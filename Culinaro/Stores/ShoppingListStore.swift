@@ -4,7 +4,6 @@ import Combine
 @MainActor
 final class ShoppingListStore: ObservableObject {
     @Published private(set) var items: [ShoppingListItem] = []
-    @Published private(set) var history: [ShoppingListHistoryEntry] = []
     @Published private(set) var syncError: String?
     /// Eigenständiges, append-only Protokoll aller Abhak-Vorgänge — bewusst
     /// unabhängig vom Lebenszyklus der Einträge in `items`, damit "Erledigte
@@ -15,26 +14,15 @@ final class ShoppingListStore: ObservableObject {
     @Published private(set) var checkedHistory: [ShoppingHistoryEntry] = []
 
     private let storageKey = "culinaro.shoppingList.items"
-<<<<<<< HEAD
-    private let historyStorageKey = "culinaro.shoppingList.history"
-=======
     private let historyStorageKey = "culinaro.shoppingList.checkedHistory"
     /// Deutlich großzügiger als das 1-Stunden-Fenster, das die History-Ansicht
     /// anzeigt — verhindert unbegrenztes Wachstum, ohne dass das Aufräumen
     /// selbst zeitkritisch wäre.
     private let historyRetention: TimeInterval = 24 * 3600
->>>>>>> main
     private let cloud: CloudKitManager
     private let recipeLookup: @MainActor (UUID) -> Recipe?
-    /// IDs deleted locally whose CloudKit deletion may not have propagated
-    /// yet — siehe RecipeStore für die ausführliche Begründung.
     private var pendingDeletionIDs: Set<UUID> = []
-    /// IDs mit einer lokalen Änderung, deren Upload noch nicht bestätigt ist
-    /// — siehe RecipeStore für die ausführliche Begründung.
     private var pendingUploadIDs: Set<UUID> = []
-    /// Laufende Upload-Tasks pro ID — siehe RecipeStore für die ausführliche
-    /// Begründung (verhindert, dass ein Upload einen gelöschten Datensatz
-    /// wiederauferstehen lässt).
     private var pendingUploadTasks: [UUID: Task<Void, Never>] = [:]
 
     var plannedCalories: Int {
@@ -44,34 +32,11 @@ final class ShoppingListStore: ObservableObject {
         }
     }
 
-    var recentHistory: [ShoppingListHistoryEntry] {
-        let cutoff = Date().addingTimeInterval(-3600)
-        var values = Dictionary(uniqueKeysWithValues: history.map { ($0.id, $0) })
-        for item in items where item.isChecked {
-            let checkedAt = item.checkedAt ?? item.createdAt
-            values[item.id] = ShoppingListHistoryEntry(
-                id: item.id,
-                name: item.name,
-                quantity: item.quantity,
-                sourceRecipeTitle: item.sourceRecipeTitle,
-                checkedAt: checkedAt
-            )
-        }
-        return values.values
-            .filter { $0.checkedAt >= cutoff }
-            .sorted { $0.checkedAt > $1.checkedAt }
-    }
-
     init(cloud: CloudKitManager? = nil, recipeLookup: @escaping @MainActor (UUID) -> Recipe? = { _ in nil }) {
         self.cloud = cloud ?? .shared
         self.recipeLookup = recipeLookup
         loadCache()
-<<<<<<< HEAD
-        loadHistory()
-        pruneHistory()
-=======
         loadHistoryCache()
->>>>>>> main
         Task { await syncFromCloud() }
     }
 
@@ -105,19 +70,8 @@ final class ShoppingListStore: ObservableObject {
     func toggleChecked(_ item: ShoppingListItem) {
         guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
         items[index].isChecked.toggle()
-<<<<<<< HEAD
-        if items[index].isChecked {
-            let checkedAt = Date()
-            items[index].checkedAt = checkedAt
-            addHistoryEntry(for: items[index], checkedAt: checkedAt)
-        } else {
-            items[index].checkedAt = nil
-            removeHistoryEntry(for: items[index])
-        }
-=======
         let checkedAt = items[index].isChecked ? Date() : nil
         items[index].checkedAt = checkedAt
->>>>>>> main
         let updated = items[index]
         persistCache()
         pendingUploadIDs.insert(updated.id)
@@ -140,9 +94,6 @@ final class ShoppingListStore: ObservableObject {
     }
 
     func delete(_ item: ShoppingListItem) {
-        if item.isChecked {
-            addHistoryEntry(for: item, checkedAt: item.checkedAt ?? Date())
-        }
         items.removeAll { $0.id == item.id }
         pendingDeletionIDs.insert(item.id)
         pendingUploadTasks[item.id]?.cancel()
@@ -156,9 +107,6 @@ final class ShoppingListStore: ObservableObject {
     func deleteAllChecked() {
         let checked = items.filter(\.isChecked)
         guard !checked.isEmpty else { return }
-        for item in checked {
-            addHistoryEntry(for: item, checkedAt: item.checkedAt ?? Date())
-        }
         items.removeAll { $0.isChecked }
         let checkedIDs = Set(checked.map(\.id))
         pendingDeletionIDs.formUnion(checkedIDs)
@@ -227,24 +175,6 @@ final class ShoppingListStore: ObservableObject {
         }
     }
 
-    private func addHistoryEntry(for item: ShoppingListItem, checkedAt: Date) {
-        history.removeAll { $0.id == item.id }
-        history.append(ShoppingListHistoryEntry(
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity,
-            sourceRecipeTitle: item.sourceRecipeTitle,
-            checkedAt: checkedAt
-        ))
-        pruneHistory()
-        persistHistory()
-    }
-
-    private func removeHistoryEntry(for item: ShoppingListItem) {
-        history.removeAll { $0.id == item.id }
-        persistHistory()
-    }
-
     private func upload(_ item: ShoppingListItem) async {
         guard !Task.isCancelled else { return }
         do { try await cloud.save(item); syncError = nil }
@@ -265,28 +195,12 @@ final class ShoppingListStore: ObservableObject {
         UserDefaults.standard.set(data, forKey: storageKey)
     }
 
-    private func persistHistory() {
-        guard let data = try? JSONEncoder().encode(history) else { return }
-        UserDefaults.standard.set(data, forKey: historyStorageKey)
-    }
-
     private func loadCache() {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode([ShoppingListItem].self, from: data) else { return }
         items = decoded
     }
 
-<<<<<<< HEAD
-    private func loadHistory() {
-        guard let data = UserDefaults.standard.data(forKey: historyStorageKey),
-              let decoded = try? JSONDecoder().decode([ShoppingListHistoryEntry].self, from: data) else { return }
-        history = decoded
-    }
-
-    private func pruneHistory() {
-        let cutoff = Date().addingTimeInterval(-3600)
-        history.removeAll { $0.checkedAt < cutoff }
-=======
     private func pruneHistory() {
         let cutoff = Date().addingTimeInterval(-historyRetention)
         checkedHistory.removeAll { $0.checkedAt < cutoff }
@@ -320,6 +234,5 @@ struct ShoppingHistoryEntry: Identifiable, Codable, Equatable {
         self.quantity = quantity
         self.sourceRecipeTitle = sourceRecipeTitle
         self.checkedAt = checkedAt
->>>>>>> main
     }
 }
