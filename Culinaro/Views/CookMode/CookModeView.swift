@@ -90,7 +90,7 @@ struct CookModeView: View {
                     Rectangle()
                         .fill(colorScheme == .dark
                               ? Color.black.opacity(0.5)
-                              : Color.white.opacity(0.5))
+                              : Color(uiColor: .systemGroupedBackground).opacity(0.65))
                         .ignoresSafeArea()
 
                     // Step content
@@ -137,6 +137,7 @@ struct CookModeView: View {
         .navigationSubtitle(subtitle)
         .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
         // Passend zur Phase: Wiese während der Zutatenliste, die
         // Kochmodus-Animation während der einzelnen Schritte — siehe
@@ -416,6 +417,7 @@ struct CookModeView: View {
                 guard !hasRecordedCompletion else { return }
                 hasRecordedCompletion = true
                 statsStore.recordCompletion(item.completionKind)
+                backgroundMode.mode = .meadow
                 dismiss()
             }
         }

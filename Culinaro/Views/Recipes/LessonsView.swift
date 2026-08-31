@@ -14,41 +14,20 @@ struct LessonsView: View {
     @State private var isCategorizing = false
     @Binding var isSelecting: Bool
     @Binding var navigationPath: [UUID]
-    let searchText: String
 
     private let pinnedCategoryID = "__pinnedCategory__"
     private let pendingCategoryID = "__pendingCategory__"
     @State private var selectedLessonIDs: Set<UUID> = []
 
-<<<<<<< HEAD
-    private var sortedLessons: [Lesson] {
+    private var lessons: [Lesson] {
         store.lessons.sorted {
             if $0.isPinned != $1.isPinned { return $0.isPinned }
             return $0.createdAt > $1.createdAt
         }
-=======
-    init(isSelecting: Binding<Bool>, navigationPath: Binding<[UUID]>, searchText: String = "") {
-        self._isSelecting = isSelecting
-        self._navigationPath = navigationPath
-        self.searchText = searchText
-    }
-
-    private var lessons: [Lesson] {
-        store.lessons
-            .filter { searchText.isEmpty || $0.title.localizedCaseInsensitiveContains(searchText) }
-            .sorted {
-                if $0.isPinned != $1.isPinned { return $0.isPinned }
-                return $0.createdAt > $1.createdAt
-            }
->>>>>>> main
-    }
-
-    private var lessons: [Lesson] {
-        sortedLessons
     }
 
     private var selectedLessons: [Lesson] {
-        sortedLessons.filter { selectedLessonIDs.contains($0.id) }
+        lessons.filter { selectedLessonIDs.contains($0.id) }
     }
 
     private var selectedLessonExport: PDFExport? {
@@ -57,6 +36,10 @@ struct LessonsView: View {
 
     private var hasSelectedLessonsWithNutritionInput: Bool {
         selectedLessons.contains { $0.nutrition != nil || !$0.ingredients.isEmpty }
+    }
+
+    private var lessonExportForToolbar: PDFExport {
+        selectedLessonExport ?? PDFExport(data: Data(), filename: "Lektionen.pdf")
     }
 
     private var groupedLessons: [(category: String, lessons: [Lesson])] {
@@ -89,9 +72,8 @@ struct LessonsView: View {
         List {
             ForEach(groupedLessons, id: \.category) { group in
                 Section {
-                    ForEach(Array(group.lessons.enumerated()), id: \.element.id) { index, lesson in
+                    ForEach(group.lessons) { lesson in
                         row(for: lesson)
-                            .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: group.lessons.count)))
                     }
                 } header: {
                     categoryHeader(for: group.category)
@@ -99,30 +81,9 @@ struct LessonsView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter der Liste, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. Dadurch muss keine private UIKit-
-        // Navigations-Container-View mehr von außen transparent gemacht
-        // werden, was zuvor das Scrollen im Leerraum zwischen Zeilen
-        // dauerhaft gestört hat. `.ignoresSafeArea()` sorgt dafür, dass die
-        // Wiese trotzdem die komplette Bildschirmfläche als Bezugsgröße
-        // bekommt (sonst rechnet ihr GeometryReader nur mit dem Bereich
-        // zwischen Navigationsleiste und Tab-Bar, wodurch alle intern als
-        // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
-        // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
-        // selbst jemals Touches abbekommt.
-        .culinaroMeadowBackground()
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
-<<<<<<< HEAD
-        .overlay {
-            if lessons.isEmpty {
-                ContentUnavailableView("no_lessons", systemImage: "graduationcap")
-            }
-        }
-=======
-        .syncErrorBanner(store.syncError)
         .overlay { if lessons.isEmpty { ContentUnavailableView("no_lessons", systemImage: "graduationcap") } }
->>>>>>> main
         .navigationTitle("lessons")
         .navigationSubtitle(String.localizedStringWithFormat(String(localized: "created_count"), store.lessons.count))
         .refreshable { await store.syncFromCloud() }
@@ -131,20 +92,10 @@ struct LessonsView: View {
         .onChange(of: isSelecting) { _, isSelecting in
             if !isSelecting { selectedLessonIDs.removeAll() }
         }
-<<<<<<< HEAD
-        .onChange(of: sortedLessons) { _, lessons in
+        .onChange(of: lessons) { _, lessons in
             let availableIDs = Set(lessons.map(\.id))
-=======
-        .onChange(of: store.lessons) { _, storeLessons in
-            // Bewusst gegen die ungefilterte Store-Liste geprüft, nicht gegen
-            // `lessons` (das die aktuelle Sucheingabe berücksichtigt) — sonst
-            // würde Tippen in die Suche während der Auswahl alle gerade nicht
-            // sichtbaren, aber weiterhin ausgewählten Lektionen aus der
-            // Auswahl entfernen, ohne dass der Nutzer das bemerkt.
-            let availableIDs = Set(storeLessons.map(\.id))
->>>>>>> main
             selectedLessonIDs = selectedLessonIDs.intersection(availableIDs)
-            if storeLessons.isEmpty { isSelecting = false }
+            if lessons.isEmpty { isSelecting = false }
         }
         .task(id: categorizationSignature) {
             await categorize()
@@ -164,10 +115,9 @@ struct LessonsView: View {
                     rowContent(for: lesson)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
+                .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            .meadowRowBackground()
         } else {
             Button {
                 navigationPath.append(lesson.id)
@@ -175,7 +125,6 @@ struct LessonsView: View {
                 rowContent(for: lesson)
             }
             .buttonStyle(.plain)
-            .meadowRowBackground()
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) { store.delete(lesson) } label: { Label("delete", systemImage: "trash") }
                 Button { editingLesson = lesson } label: { Label("edit", systemImage: "pencil") }.tint(.blue)
@@ -216,16 +165,12 @@ struct LessonsView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
+        .contentShape(.rect)
     }
 
     @ToolbarContentBuilder
     private var selectionToolbar: some ToolbarContent {
         if isSelecting {
-            // Nur einmal berechnet statt einmal für `.disabled` und einmal
-            // fürs ShareLink-Item — sonst rendert jeder Auswahl-Tap das PDF
-            // zweimal synchron auf dem Main-Actor.
-            let export = selectedLessonExport
             ToolbarItemGroup(placement: .bottomBar) {
                 Button {
                     addSelectedIngredientsToShoppingList()
@@ -243,10 +188,10 @@ struct LessonsView: View {
                 .disabled(!hasSelectedLessonsWithNutritionInput)
                 .accessibilityLabel("add_to_nutrition")
 
-                ShareLink(item: export ?? PDFExport(data: Data(), filename: "Lektionen.pdf"), preview: SharePreview(String(localized: "lessons"), image: Image(systemName: "doc.richtext"))) {
+                ShareLink(item: lessonExportForToolbar, preview: SharePreview(String(localized: "lessons"), image: Image(systemName: "doc.richtext"))) {
                     Label("export", systemImage: "square.and.arrow.up")
                 }
-                .disabled(export == nil)
+                .disabled(selectedLessonExport == nil)
                 .accessibilityLabel("export_selected_lessons")
 
                 Spacer()
@@ -290,11 +235,7 @@ struct LessonsView: View {
     }
 
     private func addSelectedNutrition() {
-        // Muss zur `hasSelectedLessonsWithNutritionInput`-Bedingung passen,
-        // die den Toolbar-Button aktiviert — sonst war der Button für
-        // Lektionen mit manuell hinterlegter Nutrition aber ohne
-        // Zutatenliste zwar aktiv, tat aber nichts.
-        let lessonsToLog = selectedLessons.filter { $0.nutrition != nil || !$0.ingredients.isEmpty }
+        let lessonsToLog = selectedLessons.filter { !$0.ingredients.isEmpty }
         finishSelection()
         Task {
             for lesson in lessonsToLog {
@@ -354,7 +295,7 @@ struct LessonsView: View {
     }
 
     private func categorize() async {
-        guard !sortedLessons.isEmpty else {
+        guard !lessons.isEmpty else {
             categoriesByID = [:]
             categoryOrder = []
             isCategorizing = false
@@ -365,12 +306,12 @@ struct LessonsView: View {
         categoriesByID = [:]
         categoryOrder = []
 
-        let items = sortedLessons.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
+        let items = lessons.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
         do {
             let assignments = try await aiService.categorize(items, contextHint: "Diese Einträge sind Koch-Lektionen, die eine Technik Schritt für Schritt lehren")
             var byID: [UUID: String] = [:]
             var order: [String] = []
-            for lesson in sortedLessons {
+            for lesson in lessons {
                 if let category = assignments[lesson.id.uuidString] {
                     byID[lesson.id] = category
                     if !order.contains(category) { order.append(category) }

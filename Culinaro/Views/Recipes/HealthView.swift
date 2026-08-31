@@ -3,90 +3,33 @@ import PhotosUI
 
 struct HealthView: View {
     @EnvironmentObject private var nutrition: NutritionStore
-    @State private var isShowingHistory = false
 
     var body: some View {
         Form {
             Section("today") {
-                let fields = [
-                    (String(localized: "calories"), formattedWholeNumber(Double(nutrition.caloriesToday))),
-                    (String(localized: "protein"), formattedDecimal(nutrition.proteinToday)),
-                    (String(localized: "carbs"), formattedDecimal(nutrition.carbsToday)),
-                    (String(localized: "fat"), formattedDecimal(nutrition.fatToday))
-                ]
-
-                ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
-                    nutritionField(field.0, field.1)
-                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
-                }
+                nutritionField(String(localized: "calories"), formattedWholeNumber(Double(nutrition.caloriesToday)))
+                nutritionField(String(localized: "protein"), formattedDecimal(nutrition.proteinToday))
+                nutritionField(String(localized: "carbs"), formattedDecimal(nutrition.carbsToday))
+                nutritionField(String(localized: "fat"), formattedDecimal(nutrition.fatToday))
             }
-            .meadowRowBackground()
 
             Section("average_last_7_days") {
                 let average = nutrition.averageLastSevenDays
-                let fields = [
-                    (String(localized: "calories"), formattedWholeNumber(average.calories)),
-                    (String(localized: "protein"), formattedDecimal(average.proteinGrams)),
-                    (String(localized: "carbs"), formattedDecimal(average.carbsGrams)),
-                    (String(localized: "fat"), formattedDecimal(average.fatGrams))
-                ]
-
-                ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
-                    nutritionField(field.0, field.1)
-                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
-                }
+                nutritionField(String(localized: "calories"), formattedWholeNumber(average.calories))
+                nutritionField(String(localized: "protein"), formattedDecimal(average.proteinGrams))
+                nutritionField(String(localized: "carbs"), formattedDecimal(average.carbsGrams))
+                nutritionField(String(localized: "fat"), formattedDecimal(average.fatGrams))
             }
-            .meadowRowBackground()
 
             Section("average_last_30_days") {
                 let average = nutrition.averageLastThirtyDays
                 nutritionField(String(localized: "calories"), formattedWholeNumber(average.calories))
-                    .listRowBackground(CulinaroFieldBackground())
             }
-
-            Section("history") {
-                Button {
-                    isShowingHistory = true
-                } label: {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("health_history")
-                        Text(historyCountText(nutrition.recentLoggedMeals.count))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .listRowBackground(CulinaroFieldBackground())
-            }
-            .meadowRowBackground()
-
-            Section {
-                NavigationLink {
-                    HealthHistoryView()
-                } label: {
-                    Label("history", systemImage: "clock.arrow.circlepath")
-                }
-            }
-            .meadowRowBackground()
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
-        // dass die Wiese selbst jemals Touches abbekommt.
-        .culinaroMeadowBackground()
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
-        .syncErrorBanner(nutrition.syncError)
         .navigationTitle("nutrition")
-<<<<<<< HEAD
-        .navigationDestination(isPresented: $isShowingHistory) {
-            HealthHistoryView()
-        }
-=======
-        .refreshable { await nutrition.syncFromCloud() }
->>>>>>> main
     }
 
     private func nutritionField(_ title: String, _ value: String) -> some View {
@@ -99,14 +42,6 @@ struct HealthView: View {
         }
     }
 
-    private func historyCountText(_ count: Int) -> String {
-        if count == 1 {
-            String(localized: "one_history_entry")
-        } else {
-            String.localizedStringWithFormat(String(localized: "history_entries_count"), count)
-        }
-    }
-
     private func formattedWholeNumber(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(0)))
     }
@@ -116,134 +51,11 @@ struct HealthView: View {
     }
 }
 
-private struct HealthHistoryView: View {
-    @EnvironmentObject private var nutrition: NutritionStore
-    @State private var addMealDaysAgo: Int?
-
-    private var groups: [(daysAgo: Int, meals: [LoggedMeal])] {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let grouped = Dictionary(grouping: nutrition.recentLoggedMeals) { meal in
-            let mealDay = calendar.startOfDay(for: meal.loggedAt)
-            return calendar.dateComponents([.day], from: mealDay, to: today).day ?? 0
-        }
-
-        return grouped.keys.sorted().map { daysAgo in
-            (daysAgo, grouped[daysAgo, default: []].sorted { $0.loggedAt > $1.loggedAt })
-        }
-    }
-
-    var body: some View {
-        List {
-            ForEach(groups, id: \.daysAgo) { group in
-                Section {
-                    let rowCount = group.meals.count + 1
-                    ForEach(Array(group.meals.enumerated()), id: \.element.id) { index, meal in
-                        NavigationLink {
-                            MealNutritionDetailView(meal: meal)
-                        } label: {
-                            mealRow(for: meal)
-                        }
-                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: rowCount)))
-                    }
-
-                    Button {
-                        addMealDaysAgo = group.daysAgo
-                    } label: {
-                        Label("add_food", systemImage: "plus")
-                    }
-                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(rowCount - 1, count: rowCount)))
-                } header: {
-                    Text(dayHeader(for: group.daysAgo))
-                }
-            }
-        }
-        .overlay {
-            if groups.isEmpty {
-                ContentUnavailableView("no_recent_meals", systemImage: "clock.arrow.circlepath")
-            }
-        }
-        .scrollContentBackground(.hidden)
-        .culinaroMeadowBackground()
-        .containerBackground(.clear, for: .navigation)
-        .navigationTitle("health_history")
-        .sheet(isPresented: Binding(
-            get: { addMealDaysAgo != nil },
-            set: { isPresented in
-                if !isPresented { addMealDaysAgo = nil }
-            }
-        )) {
-            AddHealthRecipeSheet(loggedAt: logDate(for: addMealDaysAgo ?? 0))
-        }
-    }
-
-    private func logDate(for daysAgo: Int) -> Date {
-        Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
-    }
-
-    private func dayHeader(for daysAgo: Int) -> String {
-        if daysAgo == 1 {
-            String(localized: "one_day_ago")
-        } else {
-            String.localizedStringWithFormat(String(localized: "days_ago"), daysAgo)
-        }
-    }
-
-    private func mealRow(for meal: LoggedMeal) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(meal.recipeTitle)
-                    .fontWeight(.semibold)
-                Text(meal.loggedAt, style: .time)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Text(meal.calories, format: .number)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-        }
-    }
-}
-
-private struct MealNutritionDetailView: View {
-    let meal: LoggedMeal
-
-    var body: some View {
-        Form {
-            Section("nutrition_facts") {
-                let fields = [
-                    (String(localized: "calories"), meal.calories.formatted(.number)),
-                    (String(localized: "protein"), gramsText(meal.proteinGrams)),
-                    (String(localized: "carbs"), gramsText(meal.carbsGrams)),
-                    (String(localized: "fat"), gramsText(meal.fatGrams))
-                ]
-
-                ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
-                    LabeledContent(field.0, value: field.1)
-                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: fields.count)))
-                }
-            }
-        }
-        .scrollContentBackground(.hidden)
-        .culinaroMeadowBackground()
-        .containerBackground(.clear, for: .navigation)
-        .navigationTitle(meal.recipeTitle)
-    }
-
-    private func gramsText(_ value: Double) -> String {
-        "\(value.formatted(.number.precision(.fractionLength(0...1)))) g"
-    }
-}
-
 struct AddHealthRecipeSheet: View {
-    let loggedAt: Date
-
     @EnvironmentObject private var nutrition: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
     @Environment(\.dismiss) private var dismiss
 
-    @State private var selectedDate: Date
     @State private var ingredients = [TextRow(text: "")]
     @State private var generateNutritionWithAI = false
     @State private var calories = ""
@@ -258,15 +70,6 @@ struct AddHealthRecipeSheet: View {
     @State private var showGallery = false
     @State private var selectedPhoto: PhotosPickerItem?
     @FocusState private var focusedField: UUID?
-
-<<<<<<< HEAD
-    init(loggedAt: Date = Date()) {
-        self.loggedAt = loggedAt
-=======
-    init(initialDate: Date = Date()) {
-        _selectedDate = State(initialValue: initialDate)
->>>>>>> main
-    }
 
     private var recipeTitle: String {
         cleanedIngredients.first ?? String(localized: "food")
@@ -382,7 +185,6 @@ struct AddHealthRecipeSheet: View {
 
     private var nutritionSection: some View {
         Section("nutrition_facts") {
-            DatePicker("date", selection: $selectedDate, in: ...Date(), displayedComponents: .date)
             nutritionTextField(String(localized: "calories"), text: $calories, keyboardType: .numberPad)
             nutritionTextField(String(localized: "protein"), text: $proteinGrams, keyboardType: .decimalPad)
             nutritionTextField(String(localized: "carbs"), text: $carbsGrams, keyboardType: .decimalPad)
@@ -437,26 +239,15 @@ struct AddHealthRecipeSheet: View {
             array.append(TextRow(text: ""))
         }
 
-        // Die aktuell bearbeitete Zeile bleibt erhalten, auch wenn sie im Moment
-        // leer ist (sonst verschwindet sie mitten in der Eingabe und der Fokus
-        // geht verloren), ebenso die ursprünglich letzte Zeile (der Platzhalter
-        // bleibt bestehen, auch wenn gerade eine andere Zeile leer ist). Ein
-        // neuer Platzhalter wird nur angehängt, wenn danach keine leere Zeile
-        // mehr am Ende steht — verhindert doppelte leere Zeilen, falls die
-        // bearbeitete Zeile selbst zur letzten wird.
-        let lastIndex = array.indices.last
-        var compacted = array.enumerated()
-            .filter { index, row in !isEmpty(row) || row.id == id || index == lastIndex }
-            .map(\.element)
-        if compacted.last.map(isEmpty) != true {
-            compacted.append(TextRow(text: ""))
-        }
+        let trailingPlaceholder = array.last.flatMap { isEmpty($0) ? $0 : nil }
+        var compacted = array.filter { !isEmpty($0) }
+        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
 
         rows.wrappedValue = compacted
         if compacted.allSatisfy({ $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
             generateNutritionWithAI = false
         }
-        focusedField = id
+        focusedField = compacted.contains { $0.id == id } ? id : nil
     }
 
     private func process(_ image: UIImage) {
@@ -470,12 +261,7 @@ struct AddHealthRecipeSheet: View {
                 try Task.checkCancellation()
 
                 let newIngredients = appendGeneratedIngredients(parsed.ingredients)
-                guard !newIngredients.isEmpty else {
-                    isProcessing = false
-                    isScanningFood = false
-                    generationTask = nil
-                    return
-                }
+                guard !newIngredients.isEmpty else { return }
 
                 let estimate = try await aiService.estimateNutrition(
                     title: parsed.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? newIngredients[0] : parsed.title,
@@ -531,12 +317,7 @@ struct AddHealthRecipeSheet: View {
 
     private func fillNutritionFromIngredients() async throws {
         let estimate = try await aiService.estimateNutrition(title: recipeTitle, ingredients: cleanedIngredients)
-        // Cancellation must be checked BEFORE writing the estimate back —
-        // otherwise a stale result from an already-cancelled generation
-        // (e.g. the user edited the ingredients while the AI call was still
-        // in flight) still overwrites the fields after the fact.
-        try Task.checkCancellation()
-        setNutritionEstimate(estimate)
+        addNutritionEstimate(estimate)
     }
 
     private func appendGeneratedIngredients(_ generatedIngredients: [String]) -> [String] {
@@ -551,21 +332,6 @@ struct AddHealthRecipeSheet: View {
         return newValues
     }
 
-    /// Used by the "generate with AI" toggle: replaces the nutrition fields
-    /// outright, since the estimate already covers the full current
-    /// ingredient list. Adding onto whatever was there before would
-    /// double-count every time the toggle is switched off and back on for
-    /// the same ingredients.
-    private func setNutritionEstimate(_ estimate: NutritionEstimate) {
-        calories = String(estimate.calories)
-        proteinGrams = formattedDecimal(estimate.protein)
-        carbsGrams = formattedDecimal(estimate.carbs)
-        fatGrams = formattedDecimal(estimate.fat)
-    }
-
-    /// Used by the photo-scan flow: each scan represents additional food
-    /// items on top of whatever nutrition is already entered, so it
-    /// deliberately accumulates rather than replacing.
     private func addNutritionEstimate(_ estimate: NutritionEstimate) {
         let updatedCalories = (intValue(calories) ?? 0) + estimate.calories
         let updatedProtein = (doubleValue(proteinGrams) ?? 0) + estimate.protein
@@ -645,10 +411,6 @@ struct AddHealthRecipeSheet: View {
             steps: [],
             nutrition: nutritionInfo
         )
-<<<<<<< HEAD
-        nutrition.logMeal(recipe: recipe, servings: 1, loggedAt: loggedAt)
-=======
-        nutrition.logMeal(recipe: recipe, servings: 1, loggedAt: selectedDate)
->>>>>>> main
+        nutrition.logMeal(recipe: recipe, servings: 1)
     }
 }

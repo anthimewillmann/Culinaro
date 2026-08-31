@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// Controls which animated backgrounds are visible across the app.
+/// Coordinates the app-wide animated backgrounds and their restart state.
 @Observable
 final class BackgroundModeManager {
     enum BackgroundMode: Equatable {
@@ -10,20 +10,23 @@ final class BackgroundModeManager {
     }
 
     var mode: BackgroundMode = .meadow
-    var meadowAnimationsEnabled = true {
+
+    var isMeadowAnimationEnabled = true {
         didSet {
-            if meadowAnimationsEnabled && !oldValue {
-                meadowAnimationStartDate = Date()
+            if isMeadowAnimationEnabled {
+                meadowAnimationStartDate = .now
             }
         }
     }
-    var cookModeAnimationsEnabled = true {
+
+    var isCookModeAnimationEnabled = true {
         didSet {
-            if cookModeAnimationsEnabled && !oldValue {
+            if isCookModeAnimationEnabled {
                 cookModeAnimationRestartID = UUID()
             }
         }
     }
-    var meadowAnimationStartDate = Date()
-    var cookModeAnimationRestartID = UUID()
+
+    private(set) var meadowAnimationStartDate = Date.now
+    private(set) var cookModeAnimationRestartID = UUID()
 }

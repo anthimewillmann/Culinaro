@@ -7,7 +7,6 @@ struct ShoppingListView: View {
     @State private var categoriesByID: [UUID: String] = [:]
     @State private var categoryOrder: [String] = []
     @State private var isCategorizing = false
-    @State private var isShowingHistory = false
 
     private let pendingCategoryID = "__pendingCategory__"
 
@@ -37,9 +36,8 @@ struct ShoppingListView: View {
         List {
             ForEach(groupedItems, id: \.category) { group in
                 Section {
-                    ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
+                    ForEach(group.items) { item in
                         row(for: item)
-                            .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: group.items.count)))
                     }
                 } header: {
                     categoryHeader(for: group.category)
@@ -53,66 +51,15 @@ struct ShoppingListView: View {
                     } label: {
                         Text("delete_completed")
                     }
-                    .listRowBackground(CulinaroFieldBackground())
                 }
             }
-
-            Section("history") {
-                Button {
-                    isShowingHistory = true
-                } label: {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("shopping_history")
-                        Text(historyCountText(store.recentHistory.count))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                }
-<<<<<<< HEAD
-                .buttonStyle(.plain)
-                .listRowBackground(CulinaroFieldBackground())
-=======
-                .meadowRowBackground()
->>>>>>> main
-            }
-
-            Section {
-                NavigationLink {
-                    ShoppingHistoryView()
-                } label: {
-                    Label("history", systemImage: "clock.arrow.circlepath")
-                }
-            }
-            .meadowRowBackground()
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter der Liste, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. Dadurch muss keine private UIKit-
-        // Navigations-Container-View mehr von außen transparent gemacht
-        // werden, was zuvor das Scrollen im Leerraum zwischen Zeilen
-        // dauerhaft gestört hat. `.ignoresSafeArea()` sorgt dafür, dass die
-        // Wiese trotzdem die komplette Bildschirmfläche als Bezugsgröße
-        // bekommt (sonst rechnet ihr GeometryReader nur mit dem Bereich
-        // zwischen Navigationsleiste und Tab-Bar, wodurch alle intern als
-        // Bruchteile davon positionierten Elemente verschoben/abgeschnitten
-        // wirken). `.allowsHitTesting(false)` verhindert, dass die Wiese
-        // selbst jemals Touches abbekommt.
-        .culinaroMeadowBackground()
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
-<<<<<<< HEAD
-        .overlay { if items.isEmpty && store.recentHistory.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
-=======
-        .syncErrorBanner(store.syncError)
         .overlay { if items.isEmpty { ContentUnavailableView("no_items", systemImage: "cart") } }
->>>>>>> main
         .navigationTitle("shopping")
         .navigationSubtitle(subtitle)
-        .navigationDestination(isPresented: $isShowingHistory) {
-            ShoppingHistoryView()
-        }
         .refreshable { await store.syncFromCloud() }
         .task(id: categorizationSignature) {
             await categorize()
@@ -123,14 +70,6 @@ struct ShoppingListView: View {
         let countText = String.localizedStringWithFormat(String(localized: "items_count"), store.items.count)
         guard store.plannedCalories > 0 else { return countText }
         return String.localizedStringWithFormat(String(localized: "planned_calories_subtitle"), countText, store.plannedCalories)
-    }
-
-    private func historyCountText(_ count: Int) -> String {
-        if count == 1 {
-            String(localized: "one_history_entry")
-        } else {
-            String.localizedStringWithFormat(String(localized: "history_entries_count"), count)
-        }
     }
 
     @ViewBuilder
@@ -144,47 +83,35 @@ struct ShoppingListView: View {
     }
 
     private func row(for item: ShoppingListItem) -> some View {
-<<<<<<< HEAD
         HStack(alignment: .top, spacing: 12) {
             Button {
-                store.toggleChecked(item)
+                store.delete(item)
             } label: {
-                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
-=======
-        Button {
-            store.toggleChecked(item)
-        } label: {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(item.isChecked ? .blue : .secondary)
->>>>>>> main
+                Image(systemName: "circle")
                     .contentTransition(.symbolEffect(.replace))
+            }
+            .buttonStyle(.plain)
 
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(item.name)
-                            .strikethrough(item.isChecked)
-                            .foregroundStyle(item.isChecked ? .secondary : .primary)
-                        Spacer()
-                        if let quantity = item.quantity, !quantity.isEmpty {
-                            Text(quantity)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    if let sourceRecipeTitle = item.sourceRecipeTitle {
-                        Text(String.localizedStringWithFormat(String(localized: "from_source"), sourceRecipeTitle))
-                            .font(.caption)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(item.name)
+                        .strikethrough(item.isChecked)
+                        .foregroundStyle(item.isChecked ? .secondary : .primary)
+                    Spacer()
+                    if let quantity = item.quantity, !quantity.isEmpty {
+                        Text(quantity)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                Spacer(minLength: 0)
+                if let sourceRecipeTitle = item.sourceRecipeTitle {
+                    Text(String.localizedStringWithFormat(String(localized: "from_source"), sourceRecipeTitle))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
-        .buttonStyle(.plain)
-        .meadowRowBackground()
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) { store.delete(item) } label: { Label("delete", systemImage: "trash") }
         }
@@ -219,72 +146,6 @@ struct ShoppingListView: View {
             store.applyCategories(byID)
         } catch {
             // Bleibt im Ladezustand, damit kein unkategorisierter Text-Fallback erscheint.
-        }
-    }
-}
-
-private struct ShoppingHistoryView: View {
-    @EnvironmentObject private var store: ShoppingListStore
-
-    private var groups: [(minutesAgo: Int, entries: [ShoppingListHistoryEntry])] {
-        let now = Date()
-        let grouped = Dictionary(grouping: store.recentHistory) { entry in
-            max(0, min(59, Int(now.timeIntervalSince(entry.checkedAt) / 60)))
-        }
-        return grouped.keys.sorted().map { minutesAgo in
-            (minutesAgo, grouped[minutesAgo, default: []].sorted { $0.checkedAt > $1.checkedAt })
-        }
-    }
-
-    var body: some View {
-        List {
-            ForEach(groups, id: \.minutesAgo) { group in
-                Section {
-                    ForEach(Array(group.entries.enumerated()), id: \.element.id) { index, entry in
-                        historyRow(for: entry)
-                            .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: group.entries.count)))
-                    }
-                } header: {
-                    Text(minutesHeader(for: group.minutesAgo))
-                }
-            }
-        }
-        .overlay {
-            if groups.isEmpty {
-                ContentUnavailableView("no_recent_history", systemImage: "clock.arrow.circlepath")
-            }
-        }
-        .scrollContentBackground(.hidden)
-        .culinaroMeadowBackground()
-        .containerBackground(.clear, for: .navigation)
-        .navigationTitle("shopping_history")
-    }
-
-    private func minutesHeader(for minutesAgo: Int) -> String {
-        if minutesAgo == 1 {
-            String(localized: "one_minute_ago")
-        } else {
-            String.localizedStringWithFormat(String(localized: "minutes_ago"), minutesAgo)
-        }
-    }
-
-    private func historyRow(for entry: ShoppingListHistoryEntry) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(entry.name)
-                Spacer()
-                if let quantity = entry.quantity, !quantity.isEmpty {
-                    Text(quantity)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            if let sourceRecipeTitle = entry.sourceRecipeTitle {
-                Text(String.localizedStringWithFormat(String(localized: "from_source"), sourceRecipeTitle))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 }
@@ -426,23 +287,12 @@ struct AddShoppingListItemSheet: View {
             array.append(TextRow(text: ""))
         }
 
-        // Die aktuell bearbeitete Zeile bleibt erhalten, auch wenn sie im Moment
-        // leer ist (sonst verschwindet sie mitten in der Eingabe und der Fokus
-        // geht verloren), ebenso die ursprünglich letzte Zeile (der Platzhalter
-        // bleibt bestehen, auch wenn gerade eine andere Zeile leer ist). Ein
-        // neuer Platzhalter wird nur angehängt, wenn danach keine leere Zeile
-        // mehr am Ende steht — verhindert doppelte leere Zeilen, falls die
-        // bearbeitete Zeile selbst zur letzten wird.
-        let lastIndex = array.indices.last
-        var compacted = array.enumerated()
-            .filter { index, row in !isEmpty(row) || row.id == id || index == lastIndex }
-            .map(\.element)
-        if compacted.last.map(isEmpty) != true {
-            compacted.append(TextRow(text: ""))
-        }
+        let trailingPlaceholder = array.last.flatMap { isEmpty($0) ? $0 : nil }
+        var compacted = array.filter { !isEmpty($0) }
+        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
 
         rows.wrappedValue = compacted
-        focusedField = id
+        focusedField = compacted.contains { $0.id == id } ? id : nil
     }
 
     private func cancelGenerationIfNeeded() {
@@ -460,9 +310,10 @@ struct AddShoppingListItemSheet: View {
             do {
                 let parsed = try await aiService.scanShoppingList(image: image)
                 try Task.checkCancellation()
-                _ = appendGeneratedIngredients(parsed.items)
-                isProcessing = false
-                generationTask = nil
+                if appendGeneratedIngredients(parsed.items) {
+                    isProcessing = false
+                    generationTask = nil
+                }
             } catch is CancellationError {
                 isProcessing = false
                 generationTask = nil

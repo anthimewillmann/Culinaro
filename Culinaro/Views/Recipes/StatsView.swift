@@ -12,35 +12,35 @@ struct StatsView: View {
     @FocusState private var focusedNote: UUID?
 
     var body: some View {
+        @Bindable var backgroundMode = backgroundMode
+
         Form {
             streakSection
 
-            animationsSection
-
             Section("statistics") {
-                let statistics = [
-                    (String(localized: "created_recipes"), recipes.totalCreatedRecipes),
-                    (String(localized: "created_lessons"), lessons.totalCreatedLessons),
-                    (String(localized: "completed_cook_modes"), stats.completedCookModes),
-                    (String(localized: "completed_lessons"), stats.completedLessons)
-                ]
-
-                ForEach(Array(statistics.enumerated()), id: \.offset) { index, item in
-                    stat(item.0, item.1)
-                        .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: statistics.count)))
-                }
+                stat(String(localized: "created_recipes"), recipes.totalCreatedRecipes)
+                stat(String(localized: "created_lessons"), lessons.totalCreatedLessons)
+                stat(String(localized: "completed_cook_modes"), stats.completedCookModes)
+                stat(String(localized: "completed_lessons"), stats.completedLessons)
             }
 
             friendsSection
             notesSection
-            animationSettingsSection
+
+            Section {
+                Toggle(isOn: $backgroundMode.isMeadowAnimationEnabled) {
+                    Text("background_animation", comment: "Toggle that enables the animated scenic background throughout the app.")
+                }
+
+                Toggle(isOn: $backgroundMode.isCookModeAnimationEnabled) {
+                    Text("cooking_animation", comment: "Toggle that enables the animated background shown during cooking steps.")
+                }
+            } header: {
+                Text("animation_settings", comment: "Section header for app-wide animation controls.")
+            }
         }
         .scrollContentBackground(.hidden)
-        // Die animierte Wiese sitzt direkt hinter dem Formular, innerhalb
-        // derselben View-Hierarchie — nicht mehr als externes Fenster
-        // hinter der ganzen App. `.allowsHitTesting(false)` verhindert,
-        // dass die Wiese selbst jemals Touches abbekommt.
-        .culinaroMeadowBackground()
+        .background(ManagedAnimationBackgroundView())
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("overview")
         .onAppear(perform: loadNotes)
@@ -63,17 +63,7 @@ struct StatsView: View {
     private var streakSection: some View {
         Section("streak") {
             stat(String(localized: "days"), stats.currentStreak)
-                .listRowBackground(CulinaroFieldBackground())
         }
-        .meadowRowBackground()
-    }
-
-    private var animationsSection: some View {
-        Section("animations") {
-            Toggle("meadow_animation_enabled", isOn: $stats.meadowAnimationEnabled)
-            Toggle("cook_mode_animation_enabled", isOn: $stats.cookModeAnimationEnabled)
-        }
-        .meadowRowBackground()
     }
 
     private var friendsSection: some View {
@@ -82,27 +72,22 @@ struct StatsView: View {
                 Button("sign_in") {
                     gameCenter.authenticate()
                 }
-                .listRowBackground(CulinaroFieldBackground())
             } else if let friendsErrorMessage {
                 LabeledContent("error", value: friendsErrorMessage)
-                    .listRowBackground(CulinaroFieldBackground())
             } else if friendScores.isEmpty {
                 Text("no_entries")
                     .foregroundStyle(.secondary)
-                    .listRowBackground(CulinaroFieldBackground())
             } else {
-                ForEach(Array(friendScores.enumerated()), id: \.element.id) { index, score in
+                ForEach(friendScores) { score in
                     LabeledContent {
                         Text(score.score, format: .number)
                             .fontWeight(.semibold)
                     } label: {
                         Text(score.displayName)
                     }
-                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: friendScores.count)))
                 }
             }
         }
-        .meadowRowBackground()
     }
 
     private var notesSection: some View {
@@ -113,20 +98,7 @@ struct StatsView: View {
                     .onChange(of: notes[index].text) { _, value in
                         updateNotes(index: index, value: value, id: note.id)
                     }
-                    .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: notes.count)))
             }
-        }
-        .meadowRowBackground()
-    }
-
-    private var animationSettingsSection: some View {
-        @Bindable var backgroundMode = backgroundMode
-
-        return Section("animation_settings") {
-            Toggle("meadow_animation", isOn: $backgroundMode.meadowAnimationsEnabled)
-                .listRowBackground(CulinaroFieldBackground(position: .first))
-            Toggle("cook_mode_animation", isOn: $backgroundMode.cookModeAnimationsEnabled)
-                .listRowBackground(CulinaroFieldBackground(position: .last))
         }
     }
 
@@ -150,23 +122,12 @@ struct StatsView: View {
             notes.append(TextRow(text: ""))
         }
 
-        // Die aktuell bearbeitete Zeile bleibt erhalten, auch wenn sie im Moment
-        // leer ist (sonst verschwindet sie mitten in der Eingabe und der Fokus
-        // geht verloren), ebenso die ursprünglich letzte Zeile (der Platzhalter
-        // bleibt bestehen, auch wenn gerade eine andere Zeile leer ist). Ein
-        // neuer Platzhalter wird nur angehängt, wenn danach keine leere Zeile
-        // mehr am Ende steht — verhindert doppelte leere Zeilen, falls die
-        // bearbeitete Zeile selbst zur letzten wird.
-        let lastIndex = notes.indices.last
-        var compacted = notes.enumerated()
-            .filter { index, row in !isEmpty(row) || row.id == id || index == lastIndex }
-            .map(\.element)
-        if compacted.last.map(isEmpty) != true {
-            compacted.append(TextRow(text: ""))
-        }
+        let trailingPlaceholder = notes.last.flatMap { isEmpty($0) ? $0 : nil }
+        var compacted = notes.filter { !isEmpty($0) }
+        compacted.append(trailingPlaceholder ?? TextRow(text: ""))
 
         notes = compacted
-        focusedNote = id
+        focusedNote = compacted.contains { $0.id == id } ? id : nil
         saveNotes()
     }
 
