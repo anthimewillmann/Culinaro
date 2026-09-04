@@ -38,13 +38,13 @@ struct AddItemView: View {
     @State private var carbsGrams: String
     @State private var fatGrams: String
     @State private var isGenerating = false
-    @State private var isApplyingGeneratedTitle = false
+    @State private var isApplyingGeneratedContent = false
     @State private var generationTask: Task<Void, Never>?
     @State private var errorMessage: String?
     @State private var showCamera = false
     @State private var showGallery = false
     @State private var selectedPhoto: PhotosPickerItem?
-    @FocusState private var focusedField: UUID?
+    @FocusState private var isInputFocused: Bool
 
     init(editingRecipe: Recipe? = nil, editingLesson: Lesson? = nil, initialKind: ItemKind = .recipe) {
         self.editingRecipe = editingRecipe
@@ -78,21 +78,12 @@ struct AddItemView: View {
                 .listRowBackground(Color.clear)
 
                 Section("title") {
-                    TextField(kind == .recipe ? String(localized: "recipe_title_placeholder") : String(localized: "lesson_title_placeholder"), text: $title)
-                        .onChange(of: title) { _, _ in
-                            // `generateContent()` writes the model's own title
-                            // back into this same field once generation
-                            // finishes — without this guard, that write
-                            // triggered this very handler and self-cancelled
-                            // the just-completing generation before its
-                            // nutrition estimate could be applied.
-                            guard !isApplyingGeneratedTitle else { return }
-                            cancelGenerationIfNeeded()
-                        }
+                    TextField(kind == .recipe ? String(localized: "recipe_title_placeholder") : String(localized: "lesson_title_placeholder"), text: manualBinding($title))
+                        .focused($isInputFocused)
                 }
 
                 Section {
-                    Toggle("generate_with_ai", isOn: $generateEnabled)
+                    Toggle("generate_with_ai", isOn: focusDismissingBinding($generateEnabled))
                         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                         .onChange(of: generateEnabled) { _, enabled in
                             if enabled {
@@ -113,7 +104,7 @@ struct AddItemView: View {
                                 cancelGenerationIfNeeded()
                             }
                         }
-                    Toggle("generate_tips", isOn: $tipsEnabled)
+                    Toggle("generate_tips", isOn: focusDismissingBinding($tipsEnabled))
                         .onChange(of: tipsEnabled) { _, enabled in
                             guard kind == .lesson && generateEnabled else { return }
 
@@ -199,9 +190,6 @@ struct AddItemView: View {
                 cancelGenerationIfNeeded()
                 resetDraft()
             }
-            .onChange(of: focusedField) { _, _ in
-                cancelGenerationIfNeeded()
-            }
         }
     }
 
@@ -216,7 +204,8 @@ struct AddItemView: View {
 
     private func nutritionTextField(_ title: String, text: Binding<String>, keyboardType: UIKeyboardType) -> some View {
         HStack {
-            TextField(title, text: text)
+            TextField(title, text: manualBinding(text))
+                .focused($isInputFocused)
                 .keyboardType(keyboardType)
 
             if isGenerating {
@@ -232,12 +221,8 @@ struct AddItemView: View {
         Section(LocalizedStringKey(title)) {
             ForEach(Array(rows.wrappedValue.enumerated()), id: \.element.id) { index, row in
                 HStack {
-                    TextField(String.localizedStringWithFormat(String(localized: "indexed_field_placeholder"), index + 1, placeholderTitle), text: rowBinding(rows, index), axis: multiline ? .vertical : .horizontal)
-                        .focused($focusedField, equals: row.id)
-                        .onChange(of: rows.wrappedValue[index].text) { _, value in
-                            cancelGenerationIfNeeded()
-                            updateRows(rows, index: index, value: value, id: row.id)
-                        }
+                    TextField(String.localizedStringWithFormat(String(localized: "indexed_field_placeholder"), index + 1, placeholderTitle), text: rowBinding(rows, index, id: row.id), axis: multiline ? .vertical : .horizontal)
+                        .focused($isInputFocused)
 
                     if isGenerating && index == 0 {
                         Spacer(minLength: 8)
@@ -249,12 +234,41 @@ struct AddItemView: View {
         }
     }
 
-    private func rowBinding(_ rows: Binding<[TextRow]>, _ index: Int) -> Binding<String> {
-        Binding(get: { rows.wrappedValue[index].text }, set: { rows.wrappedValue[index].text = $0 })
+    private func manualBinding(_ binding: Binding<String>) -> Binding<String> {
+        Binding(
+            get: { binding.wrappedValue },
+            set: { value in
+                guard value != binding.wrappedValue else { return }
+                handleManualContentChange()
+                binding.wrappedValue = value
+            }
+        )
+    }
+
+    private func focusDismissingBinding(_ binding: Binding<Bool>) -> Binding<Bool> {
+        Binding(
+            get: { binding.wrappedValue },
+            set: { value in
+                isInputFocused = false
+                binding.wrappedValue = value
+            }
+        )
+    }
+
+    private func rowBinding(_ rows: Binding<[TextRow]>, _ index: Int, id: UUID) -> Binding<String> {
+        Binding(
+            get: { rows.wrappedValue[index].text },
+            set: { value in
+                guard value != rows.wrappedValue[index].text else { return }
+                handleManualContentChange()
+                updateRows(rows, index: index, value: value, id: id)
+            }
+        )
     }
 
     private func updateRows(_ rows: Binding<[TextRow]>, index: Int, value: String, id: UUID) {
         var array = rows.wrappedValue
+        array[index].text = value
         let isEmpty: (TextRow) -> Bool = { $0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
         if index == array.count - 1 && !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -277,7 +291,6 @@ struct AddItemView: View {
         }
 
         rows.wrappedValue = compacted
-        focusedField = id
     }
 
     private func resetDraft() {
@@ -295,9 +308,20 @@ struct AddItemView: View {
         carbsGrams = ""
         fatGrams = ""
         isGenerating = false
+        isApplyingGeneratedContent = false
         errorMessage = nil
         selectedPhoto = nil
-        focusedField = nil
+        isInputFocused = false
+    }
+
+    private func handleManualContentChange() {
+        guard !isApplyingGeneratedContent else { return }
+
+        if isGenerating {
+            cancelGenerationIfNeeded()
+        } else if generateEnabled {
+            generateEnabled = false
+        }
     }
 
     private func cancelGenerationIfNeeded() {
@@ -308,10 +332,21 @@ struct AddItemView: View {
         generateEnabled = false
     }
 
+    private func clearFieldsForGeneration() {
+        ingredients = [TextRow(text: "")]
+        steps = [TextRow(text: "")]
+        calories = ""
+        proteinGrams = ""
+        carbsGrams = ""
+        fatGrams = ""
+        isInputFocused = false
+    }
+
     private func generateContent() {
         let prompt = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty else { return }
         generationTask?.cancel()
+        clearFieldsForGeneration()
         isGenerating = true
         errorMessage = nil
         generationTask = Task {
@@ -319,21 +354,19 @@ struct AddItemView: View {
                 if kind == .recipe {
                     let parsed = try await aiService.generate(from: prompt, allergies: statsStore.allergies)
                     try Task.checkCancellation()
-                    isApplyingGeneratedTitle = true
-                    title = parsed.title
-                    isApplyingGeneratedTitle = false
+                    isApplyingGeneratedContent = true
+                    defer { isApplyingGeneratedContent = false }
                     ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                     steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
-                    try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
+                    try await fillNutrition(title: prompt, ingredients: parsed.ingredients, steps: parsed.steps)
                 } else {
                     let parsed = try await aiService.generateLesson(from: prompt)
                     try Task.checkCancellation()
-                    isApplyingGeneratedTitle = true
-                    title = parsed.title
-                    isApplyingGeneratedTitle = false
+                    isApplyingGeneratedContent = true
+                    defer { isApplyingGeneratedContent = false }
                     ingredients = parsed.ingredients.map { TextRow(text: $0) } + [TextRow(text: "")]
                     steps = parsed.steps.map { TextRow(text: $0) } + [TextRow(text: "")]
-                    try await fillNutrition(title: parsed.title, ingredients: parsed.ingredients, steps: parsed.steps)
+                    try await fillNutrition(title: prompt, ingredients: parsed.ingredients, steps: parsed.steps)
                 }
                 isGenerating = false
                 generationTask = nil

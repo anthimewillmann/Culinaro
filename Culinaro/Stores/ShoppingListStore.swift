@@ -5,20 +5,7 @@ import Combine
 final class ShoppingListStore: ObservableObject {
     @Published private(set) var items: [ShoppingListItem] = []
     @Published private(set) var syncError: String?
-    /// Eigenständiges, append-only Protokoll aller Abhak-Vorgänge — bewusst
-    /// unabhängig vom Lebenszyklus der Einträge in `items`, damit "Erledigte
-    /// löschen" (oder das spätere Löschen eines einzelnen Eintrags) den
-    /// Verlauf nicht mit-löscht. Nur lokal persistiert (kein CloudKit-Sync):
-    /// der Verlauf ist kurzlebig (History zeigt nur die letzte Stunde) und
-    /// geräteübergreifende Konsistenz hat hier keinen praktischen Nutzen.
-    @Published private(set) var checkedHistory: [ShoppingHistoryEntry] = []
-
     private let storageKey = "culinaro.shoppingList.items"
-    private let historyStorageKey = "culinaro.shoppingList.checkedHistory"
-    /// Deutlich großzügiger als das 1-Stunden-Fenster, das die History-Ansicht
-    /// anzeigt — verhindert unbegrenztes Wachstum, ohne dass das Aufräumen
-    /// selbst zeitkritisch wäre.
-    private let historyRetention: TimeInterval = 24 * 3600
     private let cloud: CloudKitManager
     private let recipeLookup: @MainActor (UUID) -> Recipe?
     private var pendingDeletionIDs: Set<UUID> = []
@@ -36,7 +23,6 @@ final class ShoppingListStore: ObservableObject {
         self.cloud = cloud ?? .shared
         self.recipeLookup = recipeLookup
         loadCache()
-        loadHistoryCache()
         Task { await syncFromCloud() }
     }
 
@@ -70,8 +56,7 @@ final class ShoppingListStore: ObservableObject {
     func toggleChecked(_ item: ShoppingListItem) {
         guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
         items[index].isChecked.toggle()
-        let checkedAt = items[index].isChecked ? Date() : nil
-        items[index].checkedAt = checkedAt
+        items[index].checkedAt = items[index].isChecked ? Date() : nil
         let updated = items[index]
         persistCache()
         pendingUploadIDs.insert(updated.id)
@@ -79,17 +64,6 @@ final class ShoppingListStore: ObservableObject {
             await upload(updated)
             pendingUploadIDs.remove(updated.id)
             pendingUploadTasks.removeValue(forKey: updated.id)
-        }
-
-        if let checkedAt {
-            checkedHistory.append(ShoppingHistoryEntry(
-                itemName: updated.name,
-                quantity: updated.quantity,
-                sourceRecipeTitle: updated.sourceRecipeTitle,
-                checkedAt: checkedAt
-            ))
-            pruneHistory()
-            persistHistoryCache()
         }
     }
 
@@ -201,38 +175,4 @@ final class ShoppingListStore: ObservableObject {
         items = decoded
     }
 
-    private func pruneHistory() {
-        let cutoff = Date().addingTimeInterval(-historyRetention)
-        checkedHistory.removeAll { $0.checkedAt < cutoff }
-    }
-
-    private func persistHistoryCache() {
-        guard let data = try? JSONEncoder().encode(checkedHistory) else { return }
-        UserDefaults.standard.set(data, forKey: historyStorageKey)
-    }
-
-    private func loadHistoryCache() {
-        guard let data = UserDefaults.standard.data(forKey: historyStorageKey),
-              let decoded = try? JSONDecoder().decode([ShoppingHistoryEntry].self, from: data) else { return }
-        checkedHistory = decoded
-        pruneHistory()
-    }
-}
-
-/// Ein einzelner Abhak-Vorgang, unabhängig vom zugehörigen `ShoppingListItem`
-/// (das nach dem Abhaken gelöscht worden sein kann).
-struct ShoppingHistoryEntry: Identifiable, Codable, Equatable {
-    let id: UUID
-    let itemName: String
-    let quantity: String?
-    let sourceRecipeTitle: String?
-    let checkedAt: Date
-
-    init(id: UUID = UUID(), itemName: String, quantity: String?, sourceRecipeTitle: String?, checkedAt: Date) {
-        self.id = id
-        self.itemName = itemName
-        self.quantity = quantity
-        self.sourceRecipeTitle = sourceRecipeTitle
-        self.checkedAt = checkedAt
-    }
 }

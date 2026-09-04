@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5D5661912FA8CDEE006385AE /* App Icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 5D5661902FA8CDEE006385AE /* App Icon.icon */; };
 		5D854B132FA7725D003D5815 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5D854B122FA77258003D5815 /* Localizable.xcstrings */; };
+		5DE911D93048D6A5006A84C1 /* Culinaro-InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5DE911D83048D6A5006A84C1 /* Culinaro-InfoPlist.xcstrings */; };
 		5DFA888A2F7EF27200C04F28 /* CulinaroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */; };
 		5DFA888C2F7EF27200C04F28 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFA887E2F7EF27200C04F28 /* ContentView.swift */; };
 		5DFA88902F7EF27200C04F28 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5DFA887D2F7EF27200C04F28 /* Assets.xcassets */; };
@@ -19,6 +20,7 @@
 		5D5661932FA8DF85006385AE /* Culinaro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Culinaro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D854B122FA77258003D5815 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5DD3DEBB2FFC1C4E000C4689 /* Culinaro.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Culinaro.entitlements; sourceTree = "<group>"; };
+		5DE911D83048D6A5006A84C1 /* Culinaro-InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = "Culinaro-InfoPlist.xcstrings"; sourceTree = "<group>"; };
 		5DFA887D2F7EF27200C04F28 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5DFA887E2F7EF27200C04F28 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CulinaroApp.swift; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				5DFA887F2F7EF27200C04F28 /* CulinaroApp.swift */,
 				5DFA887E2F7EF27200C04F28 /* ContentView.swift */,
 				5D854B122FA77258003D5815 /* Localizable.xcstrings */,
+				5DE911D83048D6A5006A84C1 /* Culinaro-InfoPlist.xcstrings */,
 			);
 			path = Culinaro;
 			sourceTree = "<group>";
@@ -148,6 +151,26 @@
 				en,
 				Base,
 				de,
+				ar,
+				da,
+				"en-AU",
+				"en-CA",
+				"en-GB",
+				es,
+				"es-MX",
+				fr,
+				"fr-CA",
+				it,
+				ja,
+				ko,
+				nb,
+				nl,
+				pl,
+				"pt-BR",
+				sv,
+				tr,
+				"zh-Hans",
+				"zh-Hant",
 			);
 			mainGroup = 5DFCE2D62EF2026C001D9552;
 			minimizedProjectReferenceProxies = 1;
@@ -167,6 +190,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5D854B132FA7725D003D5815 /* Localizable.xcstrings in Resources */,
+				5DE911D93048D6A5006A84C1 /* Culinaro-InfoPlist.xcstrings in Resources */,
 				5D5661912FA8CDEE006385AE /* App Icon.icon in Resources */,
 				5DFA88902F7EF27200C04F28 /* Assets.xcassets in Resources */,
 			);
@@ -328,8 +352,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -367,8 +392,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

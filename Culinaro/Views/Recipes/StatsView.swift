@@ -29,11 +29,11 @@ struct StatsView: View {
 
             Section {
                 Toggle(isOn: $backgroundMode.isMeadowAnimationEnabled) {
-                    Text("background_animation", comment: "Toggle that enables the animated scenic background throughout the app.")
+                    Text("background_animation", comment: "Toggle label for the app background animation.")
                 }
 
                 Toggle(isOn: $backgroundMode.isCookModeAnimationEnabled) {
-                    Text("cooking_animation", comment: "Toggle that enables the animated background shown during cooking steps.")
+                    Text("cooking_animation", comment: "Toggle label for the cooking animation.")
                 }
             } header: {
                 Text("animation_settings", comment: "Section header for app-wide animation controls.")

@@ -78,10 +78,6 @@ private enum AnimationConstants {
 
     static let umbrellaZoomWidthDivisor: CGFloat = 8
 
-    /// Strecke, um die der Schneemann am Ende der Winterszene nach unten sinkt.
-
-    static let snowmanSinkDistance: CGFloat = 260
-
     /// Hügelhöhe der Winterszene direkt nach dem weißen Wisch (vor dem Wachsen).
 
     static let initialWinterHillHeightFraction: CGFloat = 0.36
@@ -182,7 +178,9 @@ struct MeadowView: View {
 
     }
 
-    private static let sharedFlowers: [Flower] = (0..<20).map { _ in
+    /// A stable pool large enough for wide iPad and window layouts. Each layout
+    /// renders only the prefix needed for its current width.
+    private static let sharedFlowers: [Flower] = (0..<120).map { _ in
 
         Flower(
 
@@ -200,6 +198,12 @@ struct MeadowView: View {
 
         )
 
+    }
+
+    /// Keeps the flower density visually consistent as the available width grows.
+    /// A phone shows at least 24 flowers; wider windows add roughly one per 16 points.
+    private func flowerCount(for width: CGFloat) -> Int {
+        min(Self.sharedFlowers.count, max(24, Int(ceil(width / 16))))
     }
 
     /// Mischt Weiß und die Wiesenfarbe linear anhand von `t` (0 = weiß, 1 = grün).
@@ -232,95 +236,86 @@ struct MeadowView: View {
 
     private enum Timing {
 
-        static let introSkyStart = 0.4
+        static let introSkyStart = 0.0
 
         static let introSkyDuration = 2.5
 
-        static let introHillStart = 4.7
+        static let introHillStart = 4.0
 
-        static let introHillDuration = 2.2
+        static let introHillDuration = 2.5
 
-        static let introTotalDuration = 8.7
+        static let introTotalDuration = 7.0
 
-        static let flowersStart = 1.2
+        static let flowersStart = 2.0
 
-        static let flowersDuration = 1.8
+        static let flowersDuration = 1.5
 
-        static let mountainsRiseStart = 3.8
+        static let mountainsRiseStart = 5.0
 
-        static let mountainsRiseDuration = 2.2
+        static let mountainsRiseDuration = 3.0
 
-        static let mountainsFallStart = 9.0
+        static let mountainsFallStart = 11.0
 
-        static let mountainsFallDuration = 2.0
+        static let mountainsFallDuration = 3.0
 
-        static let waveStart = 12.8
+        static let waveStart = 15.0
 
-        static let waveDuration = 2.0
+        static let waveDuration = 3.0
 
-        static let deepBlueStart = 17.4
+        static let deepBlueStart = 21.0
 
         static let deepBlueDuration = 2.0
 
-        static let umbrellaStart = 20.8
+        static let umbrellaStart = 24.0
 
-        static let umbrellaDuration = 1.3
+        static let umbrellaDuration = 1.5
 
-        static let ballStart = 23.5
+        static let ballStart = 27.5
 
-        static let ballDuration = 1.3
+        static let ballDuration = 1.5
 
-        static let zoomStart = 26.2
+        static let zoomStart = 31.0
 
-        static let zoomDuration = 2.8
+        static let zoomDuration = 3.0
 
         static let zoomEnd = zoomStart + zoomDuration
 
-        static let autumnStart = 32.8
+        static let autumnStart = 35.0
 
-        static let autumnDuration = 3.2
+        static let autumnDuration = 3.0
 
-        static let snowIncreaseStart = 38.0
+        static let snowIncreaseStart = 39.5
 
-        static let snowIncreaseDuration = 15.0
+        static let snowIncreaseDuration = 7.5
 
-        static let whiteWipe1Start = 58.0
+        static let whiteWipe1Start = 47.0
 
-        static let whiteWipe1Duration = 2.8
+        static let whiteWipe1Duration = 3.0
 
         /// Harter Szenenwechsel Herbst → Winter, während der weiße Wisch
-
         /// den Bildschirm komplett verdeckt (entspricht dem ehemaligen
-
         /// `.instant { ... }`-Block).
+        static let sceneSwitchTime = 50.0
 
-        static let sceneSwitchTime = 63.6
+        static let whiteWipe2Start = 52.0
+        static let whiteWipe2Duration = 3.0
 
-        static let whiteWipe2Start = 65.4
+        static let snowDecreaseStart = 52.0
+        static let snowDecreaseDuration = 7.5
 
-        static let whiteWipe2Duration = 2.8
+        static let winterSnowOffTime = 64.0
 
-        static let snowDecreaseStart = 71.0
+        static let snowmanFallStart = 66.0
+        static let snowmanFallDuration = 2.5
 
-        static let snowDecreaseDuration = 7.0
+        static let hillGrowStart = 71.0
+        static let hillGrowDuration = 2.0
 
-        static let winterSnowOffTime = 84.5
-
-        static let snowmanFallStart = 91.0
-
-        static let snowmanFallDuration = 2.2
-
-        static let hillGrowStart = 95.4
-
-        static let hillGrowDuration = 2.4
-
-        static let hillColorStart = 100.2
-
-        static let hillColorDuration = 2.4
+        static let hillColorStart = 76.0
+        static let hillColorDuration = 2.5
 
         /// Gesamtlänge eines Loop-Durchlaufs (ohne Intro).
-
-        static let cycleDuration = 105.4
+        static let cycleDuration = 80.0
 
     }
 
@@ -436,7 +431,7 @@ struct MeadowView: View {
 
         var whiteWipeProgress: CGFloat = 0
 
-        var snowmanFallOffset: CGFloat = 0
+        var snowmanFallProgress: CGFloat = 0
 
         var winterHillHeightFraction: CGFloat = AnimationConstants.initialWinterHillHeightFraction
 
@@ -666,9 +661,7 @@ struct MeadowView: View {
 
         }
 
-        state.snowmanFallOffset = progress(tCycle, start: Timing.snowmanFallStart, duration: Timing.snowmanFallDuration, .easeIn)
-
-            * AnimationConstants.snowmanSinkDistance
+        state.snowmanFallProgress = progress(tCycle, start: Timing.snowmanFallStart, duration: Timing.snowmanFallDuration, .easeIn)
 
         let hillHeightProgress = progress(tCycle, start: Timing.hillGrowStart, duration: Timing.hillGrowDuration, .easeInOut)
 
@@ -812,6 +805,91 @@ struct MeadowView: View {
 
     }
 
+    /// Returns the y-coordinate of the curved, visible meadow edge.
+    private func meadowSurfaceY(at x: CGFloat, in size: CGSize) -> CGFloat {
+        let normalizedX = min(max(x / size.width, 0), 1)
+        let meadowHeight = size.height * 0.55
+        let curveY = 0.10 - 0.16 * normalizedX + 0.16 * normalizedX * normalizedX
+        return size.height * 0.45 + meadowHeight * curveY
+    }
+
+    /// Finds where an outer mountain slope emerges from behind the meadow.
+    private func visibleMountainEdgeX(
+        centerX: CGFloat,
+        width: CGFloat,
+        height: CGFloat,
+        meadowTopY: CGFloat,
+        isLeftEdge: Bool,
+        in size: CGSize
+    ) -> CGFloat {
+        let direction: CGFloat = isLeftEdge ? -1 : 1
+        let baseX = centerX + direction * width / 2
+        let bottomY = meadowTopY + height * 0.40
+        var hiddenProgress: CGFloat = 0
+        var visibleProgress: CGFloat = 1
+
+        for _ in 0..<20 {
+            let progress = (hiddenProgress + visibleProgress) / 2
+            let x = baseX + (centerX - baseX) * progress
+            let mountainY = bottomY - height * progress
+
+            if mountainY > meadowSurfaceY(at: x, in: size) {
+                hiddenProgress = progress
+            } else {
+                visibleProgress = progress
+            }
+        }
+
+        let intersectionProgress = (hiddenProgress + visibleProgress) / 2
+        return baseX + (centerX - baseX) * intersectionProgress
+    }
+
+    /// Centers the portion of the mountain group that remains visible above the meadow.
+    private func centeredMountainGroupX(
+        in size: CGSize,
+        meadowTopY: CGFloat,
+        largeWidth: CGFloat,
+        largeHeight: CGFloat,
+        smallWidth: CGFloat,
+        smallHeight: CGFloat,
+        centerDistance: CGFloat
+    ) -> CGFloat {
+        let screenCenterX = size.width / 2
+        var leftCandidate = screenCenterX - size.width / 2
+        var rightCandidate = screenCenterX + size.width / 2
+
+        for _ in 0..<20 {
+            let candidate = (leftCandidate + rightCandidate) / 2
+            let largeCenterX = candidate - centerDistance / 2
+            let smallCenterX = candidate + centerDistance / 2
+            let visibleLeftX = visibleMountainEdgeX(
+                centerX: largeCenterX,
+                width: largeWidth,
+                height: largeHeight,
+                meadowTopY: meadowTopY,
+                isLeftEdge: true,
+                in: size
+            )
+            let visibleRightX = visibleMountainEdgeX(
+                centerX: smallCenterX,
+                width: smallWidth,
+                height: smallHeight,
+                meadowTopY: meadowTopY,
+                isLeftEdge: false,
+                in: size
+            )
+            let visibleCenterX = (visibleLeftX + visibleRightX) / 2
+
+            if visibleCenterX < screenCenterX {
+                leftCandidate = candidate
+            } else {
+                rightCandidate = candidate
+            }
+        }
+
+        return (leftCandidate + rightCandidate) / 2
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -819,6 +897,24 @@ struct MeadowView: View {
         GeometryReader { geo in
 
             let meadowTopY = geo.size.height * 0.45
+            let mountainScale = min(
+                geo.size.width / 390,
+                geo.size.height / 844
+            ) * 0.85
+            let largeMountainWidth = 331.5 * mountainScale
+            let largeMountainHeight = 303.84 * mountainScale
+            let smallMountainWidth = 214.5 * mountainScale
+            let smallMountainHeight = 185.68 * mountainScale
+            let mountainCenterDistance = 117 * mountainScale
+            let mountainGroupCenterX = centeredMountainGroupX(
+                in: geo.size,
+                meadowTopY: meadowTopY,
+                largeWidth: largeMountainWidth,
+                largeHeight: largeMountainHeight,
+                smallWidth: smallMountainWidth,
+                smallHeight: smallMountainHeight,
+                centerDistance: mountainCenterDistance
+            )
 
             TimelineView(.animation) { timeline in
 
@@ -852,9 +948,9 @@ struct MeadowView: View {
 
                             MountainView(
 
-                                width: geo.size.width * 0.85,
+                                width: largeMountainWidth,
 
-                                height: geo.size.height * 0.36,
+                                height: largeMountainHeight,
 
                                 color: mountainColor
 
@@ -862,17 +958,17 @@ struct MeadowView: View {
 
                             .position(
 
-                                x: geo.size.width * 0.38,
+                                x: mountainGroupCenterX - mountainCenterDistance / 2,
 
-                                y: meadowTopY - geo.size.height * 0.36 * 0.10
+                                y: meadowTopY - largeMountainHeight * 0.10
 
                             )
 
                             MountainView(
 
-                                width: geo.size.width * 0.55,
+                                width: smallMountainWidth,
 
-                                height: geo.size.height * 0.22,
+                                height: smallMountainHeight,
 
                                 color: mountainColor
 
@@ -880,9 +976,9 @@ struct MeadowView: View {
 
                             .position(
 
-                                x: geo.size.width * 0.68,
+                                x: mountainGroupCenterX + mountainCenterDistance / 2,
 
-                                y: meadowTopY - geo.size.height * 0.22 * 0.10
+                                y: meadowTopY - smallMountainHeight * 0.10
 
                             )
 
@@ -896,7 +992,7 @@ struct MeadowView: View {
 
                                 .fill(grassColor)
 
-                            ForEach(Self.sharedFlowers) { flower in
+                            ForEach(Self.sharedFlowers.prefix(flowerCount(for: geo.size.width))) { flower in
 
                                 Circle()
 
@@ -1038,7 +1134,7 @@ struct MeadowView: View {
 
                         hillColor: mixedWinterHillColor(state.winterHillColorMix),
 
-                        snowmanFallOffset: state.snowmanFallOffset
+                        snowmanFallProgress: state.snowmanFallProgress
 
                     )
 
@@ -1170,11 +1266,23 @@ private struct WinterMeadowView: View {
 
     let hillColor: Color
 
-    let snowmanFallOffset: CGFloat
+    let snowmanFallProgress: CGFloat
 
     var body: some View {
 
         GeometryReader { geo in
+            // Keep the snowman at a stable size across regular and large layouts,
+            // shrinking it only when a narrow window requires it.
+            let baseDiameter = min(geo.size.width * 0.32, 130)
+            let hillHeight = geo.size.height * hillHeightFraction
+            // HillShape's center is 6% down from its own top edge.
+            let snowSurfaceY = geo.size.height - hillHeight * 0.94
+            // Embed the lower fifth of the base in the snow so the snowman
+            // looks firmly planted on every layout size.
+            let groundingOverlap = baseDiameter * 0.20
+            let standingCenterY = snowSurfaceY - baseDiameter * 1.25 + groundingOverlap
+            // Moving by the full visible height puts even the head below the surface.
+            let responsiveFallOffset = snowmanFallProgress * baseDiameter * 2.75
 
             ZStack {
 
@@ -1186,13 +1294,13 @@ private struct WinterMeadowView: View {
 
                 // verdecken kann.
 
-                SnowmanView(baseDiameter: min(geo.size.width * 0.32, 130))
+                SnowmanView(baseDiameter: baseDiameter)
 
                     .position(
 
                         x: geo.size.width * 0.50,
 
-                        y: geo.size.height * 0.52 + snowmanFallOffset
+                        y: standingCenterY + responsiveFallOffset
 
                     )
 
@@ -1200,7 +1308,7 @@ private struct WinterMeadowView: View {
 
                     .fill(hillColor)
 
-                    .frame(height: geo.size.height * hillHeightFraction)
+                    .frame(height: hillHeight)
 
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
@@ -1223,6 +1331,7 @@ private struct SnowmanView: View {
     private var middleDiameter: CGFloat { baseDiameter * 0.76 }
 
     private var headDiameter: CGFloat { baseDiameter * 0.58 }
+    private var detailScale: CGFloat { baseDiameter / 130 }
 
     var body: some View {
 
@@ -1234,7 +1343,7 @@ private struct SnowmanView: View {
 
                 .fill(Color(red: 0.34, green: 0.20, blue: 0.09))
 
-                .frame(width: baseDiameter * 0.78, height: 4)
+                .frame(width: baseDiameter * 0.78, height: 4 * detailScale)
 
                 .rotationEffect(.degrees(18))
 
@@ -1244,7 +1353,7 @@ private struct SnowmanView: View {
 
                 .fill(Color(red: 0.34, green: 0.20, blue: 0.09))
 
-                .frame(width: baseDiameter * 0.78, height: 4)
+                .frame(width: baseDiameter * 0.78, height: 4 * detailScale)
 
                 .rotationEffect(.degrees(-18))
 
@@ -1270,13 +1379,13 @@ private struct SnowmanView: View {
 
             Circle().fill(.black)
 
-                .frame(width: 7, height: 7)
+                .frame(width: 7 * detailScale, height: 7 * detailScale)
 
                 .position(x: baseDiameter * 0.90, y: baseDiameter * 0.715)
 
             Circle().fill(.black)
 
-                .frame(width: 7, height: 7)
+                .frame(width: 7 * detailScale, height: 7 * detailScale)
 
                 .position(x: baseDiameter * 1.10, y: baseDiameter * 0.715)
 
@@ -1284,7 +1393,7 @@ private struct SnowmanView: View {
 
             Circle().fill(.orange)
 
-                .frame(width: 9, height: 9)
+                .frame(width: 9 * detailScale, height: 9 * detailScale)
 
                 .position(x: baseDiameter, y: baseDiameter * 0.82)
 
@@ -1292,7 +1401,7 @@ private struct SnowmanView: View {
 
             SmileShape()
 
-                .stroke(Color.gray.opacity(0.8), style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .stroke(Color.gray.opacity(0.8), style: StrokeStyle(lineWidth: 4 * detailScale, lineCap: .round))
 
                 .frame(width: baseDiameter * 0.26, height: baseDiameter * 0.11)
 
@@ -1306,7 +1415,7 @@ private struct SnowmanView: View {
 
                     .fill(.black)
 
-                    .frame(width: 7, height: 7)
+                    .frame(width: 7 * detailScale, height: 7 * detailScale)
 
                     .position(x: baseDiameter, y: baseDiameter * (1.18 + index * 0.20))
 
@@ -1365,6 +1474,7 @@ private struct AutumnForestView: View {
     final class ForestState {
         var leaves: [Leaf] = []
         var trees: [Tree] = []
+        var layoutSize: CGSize = .zero
     }
 
     private static let sharedState = ForestState()
@@ -1378,6 +1488,11 @@ private struct AutumnForestView: View {
     private var trees: [Tree] {
         get { state.trees }
         nonmutating set { state.trees = newValue }
+    }
+
+    private var layoutSize: CGSize {
+        get { state.layoutSize }
+        nonmutating set { state.layoutSize = newValue }
     }
 
     private let treeCount = 7 // Mehr Stämme für einen dichteren Look
@@ -1432,9 +1547,12 @@ private struct AutumnForestView: View {
 
             .onAppear {
 
-                guard leaves.isEmpty, trees.isEmpty else { return }
+                updateForest(for: geo.size)
 
-                generateForest()
+            }
+            .onChange(of: geo.size) { _, newSize in
+
+                updateForest(for: newSize)
 
             }
 
@@ -1442,11 +1560,17 @@ private struct AutumnForestView: View {
 
     }
 
-    /// Erzeugt den Wald einmalig im appweit geteilten Szenenzustand.
+    /// Keeps leaf density stable as the available canvas size changes.
+    private func updateForest(for size: CGSize) {
+        let sizeChanged = abs(layoutSize.width - size.width) > 1
+            || abs(layoutSize.height - size.height) > 1
+        guard leaves.isEmpty || trees.isEmpty || sizeChanged else { return }
+        layoutSize = size
+        generateForest(for: size)
+    }
 
-    /// Neue Tab- oder Navigationsansichten verwenden dieselben Bäume und Blätter.
-
-    private func generateForest() {
+    /// Erzeugt den Wald im appweit geteilten Szenenzustand.
+    private func generateForest(for size: CGSize) {
 
         var generatedTrees: [Tree] = []
 
@@ -1486,9 +1610,11 @@ private struct AutumnForestView: View {
 
         trees = generatedTrees
 
-        let columns = 22
+        // Match the original 22 × 42 grid at phone size and add rows and
+        // columns as the canvas grows, keeping leaf density per area stable.
+        let columns = max(22, Int(ceil(size.width / 17.5)))
 
-        let rows = 42
+        let rows = max(42, Int(ceil(size.height / 20)))
 
         var generatedLeaves: [Leaf] = []
 
@@ -1739,28 +1865,6 @@ private struct SnowfallView: View {
     // Überdeckung am Szenenwechsel übernimmt danach bewusst der weiße Wisch.
 
     private let flakeDiameter: CGFloat = 22
-
-    /// Obergrenze für die Flockenzahl. Ohne Geräteunterscheidung würde die
-
-    /// Dichteformel in `targetFlakeCount` auf einem iPhone bereits nahe an
-
-    /// dieser Grenze gekappt (bei ~390×844 pt liegt sie schon bei ~2.720),
-
-    /// auf einem deutlich größeren iPad-Bildschirm aber genauso stark
-
-    /// gekappt werden – dieselbe Flockenzahl verteilt sich dann auf eine
-
-    /// viel größere Fläche, der Schnee wirkt dort spürbar dünner. Ein
-
-    /// höherer Cap für `.pad` hält die Flocken-Dichte pro Fläche
-
-    /// zwischen den Gerätetypen ungefähr konstant.
-
-    private var maximumFlakeCount: Int {
-
-        UIDevice.current.userInterfaceIdiom == .pad ? 8_000 : 2_800
-
-    }
 
     /// Anzahl der Deckkraft-Stufen, in die Flocken beim Zeichnen gruppiert
 
@@ -2089,12 +2193,8 @@ private struct SnowfallView: View {
 
         // dass sie die spätere weiße Wischfläche vorwegnehmen.
 
-        let fullCoverageCount = min(
-
-            maximumFlakeCount,
-
-            Int((size.width * size.height) / (flakeDiameter * flakeDiameter) * 4)
-
+        let fullCoverageCount = Int(
+            (size.width * size.height) / (flakeDiameter * flakeDiameter) * 4
         )
 
         return Int((CGFloat(fullCoverageCount) * density).rounded())
@@ -2203,9 +2303,12 @@ private struct MountainView: View {
 
     let color: Color
 
-    private var capWidth: CGFloat { width * 0.34 }
+    /// Matching width and height fractions keep the cap slopes aligned with the mountain.
+    private let capScale: CGFloat = 0.25
 
-    private var capHeight: CGFloat { height * 0.30 }
+    private var capWidth: CGFloat { width * capScale }
+
+    private var capHeight: CGFloat { height * capScale }
 
     var body: some View {
 
