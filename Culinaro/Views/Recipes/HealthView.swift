@@ -37,7 +37,6 @@ struct HealthView: View {
             Text(title)
             Spacer()
             Text(value)
-                .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
         }
     }
@@ -186,7 +185,7 @@ struct AddHealthRecipeSheet: View {
     }
 
     private var nutritionSection: some View {
-        Section("nutrition_facts") {
+        Section("nutrition") {
             nutritionTextField(String(localized: "calories"), text: $calories, keyboardType: .numberPad)
             nutritionTextField(String(localized: "protein"), text: $proteinGrams, keyboardType: .decimalPad)
             nutritionTextField(String(localized: "carbs"), text: $carbsGrams, keyboardType: .decimalPad)

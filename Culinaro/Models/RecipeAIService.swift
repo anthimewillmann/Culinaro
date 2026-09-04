@@ -16,10 +16,10 @@ import UIKit
 @Observable
 final class RecipeAIService {
 
-    /// Returns a language instruction based on the device's current locale.
+    /// Returns a strict language instruction based on the device's preferred language.
     private var languageInstruction: String {
-        let lang = Locale.current.language.languageCode?.identifier ?? "en"
-        return "Respond in the language with code '\(lang)'. "
+        let languageIdentifier = Locale.preferredLanguages.first ?? "en"
+        return "Respond only in the device's preferred language '\(languageIdentifier)'. All user-visible text, especially category names, must use this language regardless of the language used in the input or context. "
     }
 
     // MARK: - Recipes

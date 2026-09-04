@@ -20,8 +20,6 @@ struct CookModeView: View {
     @State private var phase: Phase = .start
     @State private var currentTip: String? = nil
     @State private var isGeneratingTip = false
-    @State private var servingsEaten = 1.0
-    @State private var didLogMeal = false
     @State private var estimatedNutrition: NutritionInfo?
     @State private var isEstimatingNutrition = false
     @State private var didAttemptNutritionEstimate = false
@@ -37,8 +35,6 @@ struct CookModeView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(RecipeAIService.self) private var aiService
     @EnvironmentObject private var statsStore: StatsStore
-    @EnvironmentObject private var nutritionStore: NutritionStore
-    @EnvironmentObject private var shoppingListStore: ShoppingListStore
     @EnvironmentObject private var recipeStore: RecipeStore
     @EnvironmentObject private var lessonStore: LessonStore
     @Environment(BackgroundModeManager.self) private var backgroundMode
@@ -62,15 +58,6 @@ struct CookModeView: View {
                         }
 
                         nutritionSummarySection
-
-                        Section("shopping") {
-                            Button {
-                                addIngredientsToShoppingList()
-                            } label: {
-                                Text("add_ingredients_to_shopping")
-                            }
-                            .listRowBackground(CulinaroFieldBackground())
-                        }
                     }
                 }
                 .scrollContentBackground(.hidden)
@@ -211,32 +198,15 @@ struct CookModeView: View {
         Section("food_section") {
             let fields = [
                 (String(localized: "calories"), nutritionValue?.calories.map { "\($0)" }),
-                (String(localized: "protein"), nutritionValue?.proteinGrams.map(gramsText)),
-                (String(localized: "carbs"), nutritionValue?.carbsGrams.map(gramsText)),
-                (String(localized: "fat"), nutritionValue?.fatGrams.map(gramsText))
+                (String(localized: "protein"), nutritionValue?.proteinGrams.map(decimalText)),
+                (String(localized: "carbs"), nutritionValue?.carbsGrams.map(decimalText)),
+                (String(localized: "fat"), nutritionValue?.fatGrams.map(decimalText))
             ]
-            let canLogRecipe = item is Recipe && nutritionValue != nil
-            let rowCount = fields.count + (canLogRecipe ? 2 : 0)
+            let rowCount = fields.count
 
             ForEach(Array(fields.enumerated()), id: \.offset) { index, field in
                 nutritionField(field.0, field.1)
                     .listRowBackground(CulinaroFieldBackground(position: .forIndex(index, count: rowCount)))
-            }
-
-            if let recipe = item as? Recipe, let nutrition = nutritionValue {
-                Stepper(value: $servingsEaten, in: 0.5...10, step: 0.5) {
-                    Text(String.localizedStringWithFormat(String(localized: "servings_count"), servingsEaten.formatted(.number.precision(.fractionLength(0...1)))))
-                }
-                .listRowBackground(CulinaroFieldBackground(position: .forIndex(fields.count, count: rowCount)))
-
-                Button {
-                    logMeal(recipe.withNutrition(nutrition))
-                } label: {
-                    Label(LocalizedStringKey(didLogMeal ? "logged" : "log_as_eaten"), systemImage: didLogMeal ? "checkmark.circle.fill" : "fork.knife")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .listRowBackground(CulinaroFieldBackground(position: .forIndex(fields.count + 1, count: rowCount)))
             }
         }
     }
@@ -268,8 +238,7 @@ struct CookModeView: View {
             Spacer()
             if let value {
                 Text(value)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.secondary)
             } else {
                 ProgressView()
                     .controlSize(.small)
@@ -277,20 +246,8 @@ struct CookModeView: View {
         }
     }
 
-    private func gramsText(_ value: Double) -> String {
-        "\(value.formatted(.number.precision(.fractionLength(0...1)))) g"
-    }
-
-    private func logMeal(_ recipe: Recipe) {
-        guard !didLogMeal else { return }
-        nutritionStore.logMeal(recipe: recipe, servings: servingsEaten)
-        withAnimation { didLogMeal = true }
-        Task {
-            try? await Task.sleep(for: .seconds(1.5))
-            await MainActor.run {
-                withAnimation { didLogMeal = false }
-            }
-        }
+    private func decimalText(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(0...1)))
     }
 
     private func estimateMissingNutritionIfNeeded() {
@@ -341,14 +298,6 @@ struct CookModeView: View {
                     isEstimatingNutrition = false
                 }
             }
-        }
-    }
-
-    private func addIngredientsToShoppingList() {
-        if let recipe = item as? Recipe {
-            shoppingListStore.addIngredients(from: recipe)
-        } else if let lesson = item as? Lesson {
-            shoppingListStore.addIngredients(from: lesson)
         }
     }
 

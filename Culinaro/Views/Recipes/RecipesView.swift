@@ -10,11 +10,12 @@ struct RecipesView: View {
     @EnvironmentObject private var nutritionStore: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var editingRecipe: Recipe?
-    @State private var categoriesByID: [UUID: String] = [:]
-    @State private var categoryOrder: [String] = []
-    @State private var isCategorizing = false
     @Binding var isSelecting: Bool
     @Binding var navigationPath: [UUID]
+    @Binding var categoriesByID: [UUID: String]
+    @Binding var categoryOrder: [String]
+    @Binding var isCategorizing: Bool
+    @Binding var lastCategorizedSignature: String?
 
     private let pinnedCategoryID = "__pinnedCategory__"
     private let pendingCategoryID = "__pendingCategory__"
@@ -227,9 +228,7 @@ struct RecipesView: View {
 
     private func recipeSubtitle(for recipe: Recipe) -> String {
         let displayedStepCount = recipe.steps.count + 1
-        let stepsText = String.localizedStringWithFormat(String(localized: "steps_count"), displayedStepCount)
-        guard let calories = recipe.nutrition?.calories else { return stepsText }
-        return "\(calories) kcal · \(stepsText)"
+        return String.localizedStringWithFormat(String(localized: "steps_count"), displayedStepCount)
     }
 
     private func toggleSelection(for recipe: Recipe) {
@@ -276,6 +275,9 @@ struct RecipesView: View {
     /// einteilen. Schlägt die Einteilung fehl (z. B. Modell nicht verfügbar),
     /// bleibt die Ladeanzeige sichtbar — kein harter Fehlerzustand in der UI.
     private func categorize() async {
+        guard lastCategorizedSignature != categorizationSignature else { return }
+        lastCategorizedSignature = categorizationSignature
+
         guard !recipes.isEmpty else {
             categoriesByID = [:]
             categoryOrder = []
@@ -289,7 +291,7 @@ struct RecipesView: View {
 
         let items = recipes.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
         do {
-            let assignments = try await aiService.categorize(items, contextHint: "Diese Einträge sind Kochrezepte")
+            let assignments = try await aiService.categorize(items, contextHint: "These items are cooking recipes")
             var byID: [UUID: String] = [:]
             var order: [String] = []
             for recipe in recipes {

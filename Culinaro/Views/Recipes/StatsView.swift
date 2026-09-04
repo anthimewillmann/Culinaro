@@ -81,7 +81,7 @@ struct StatsView: View {
                 ForEach(friendScores) { score in
                     LabeledContent {
                         Text(score.score, format: .number)
-                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
                     } label: {
                         Text(score.displayName)
                     }
@@ -105,7 +105,7 @@ struct StatsView: View {
     private func stat(_ title: String, _ value: Int) -> some View {
         LabeledContent {
             Text(value, format: .number)
-                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
         } label: {
             Text(title)
         }

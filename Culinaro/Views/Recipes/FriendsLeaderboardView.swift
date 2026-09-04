@@ -62,8 +62,7 @@ struct FriendsLeaderboardView: View {
     private func scoreRow(_ score: FriendScore) -> some View {
         LabeledContent {
             Text(score.score, format: .number)
-                .fontWeight(isLocalPlayer(score) ? .bold : .semibold)
-                .foregroundStyle(isLocalPlayer(score) ? Color.accentColor : Color.primary)
+                .foregroundStyle(.secondary)
         } label: {
             Text(score.displayName)
                 .fontWeight(isLocalPlayer(score) ? .bold : .regular)

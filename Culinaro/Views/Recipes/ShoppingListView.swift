@@ -4,9 +4,10 @@ import PhotosUI
 struct ShoppingListView: View {
     @EnvironmentObject private var store: ShoppingListStore
     @Environment(RecipeAIService.self) private var aiService
-    @State private var categoriesByID: [UUID: String] = [:]
-    @State private var categoryOrder: [String] = []
-    @State private var isCategorizing = false
+    @Binding var categoriesByID: [UUID: String]
+    @Binding var categoryOrder: [String]
+    @Binding var isCategorizing: Bool
+    @Binding var lastCategorizedSignature: String?
 
     private let pendingCategoryID = "__pendingCategory__"
 
@@ -15,7 +16,9 @@ struct ShoppingListView: View {
     }
 
     private var groupedItems: [(category: String, items: [ShoppingListItem])] {
-        let groups = Dictionary(grouping: items) { categoriesByID[$0.id] ?? $0.category ?? pendingCategoryID }
+        let groups = Dictionary(grouping: items) { item in
+            isCategorizing ? pendingCategoryID : categoriesByID[item.id] ?? item.category ?? pendingCategoryID
+        }
         let orderedKeys = categoryOrder
             + groups.keys.filter { !categoryOrder.contains($0) && $0 != pendingCategoryID }.sorted()
             + (groups[pendingCategoryID]?.isEmpty == false ? [pendingCategoryID] : [])
@@ -67,9 +70,7 @@ struct ShoppingListView: View {
     }
 
     private var subtitle: String {
-        let countText = String.localizedStringWithFormat(String(localized: "items_count"), store.items.count)
-        guard store.plannedCalories > 0 else { return countText }
-        return String.localizedStringWithFormat(String(localized: "planned_calories_subtitle"), countText, store.plannedCalories)
+        String.localizedStringWithFormat(String(localized: "items_count"), store.items.count)
     }
 
     @ViewBuilder
@@ -118,6 +119,9 @@ struct ShoppingListView: View {
     }
 
     private func categorize() async {
+        guard lastCategorizedSignature != categorizationSignature else { return }
+        lastCategorizedSignature = categorizationSignature
+
         guard !items.isEmpty else {
             categoriesByID = [:]
             categoryOrder = []
@@ -126,10 +130,12 @@ struct ShoppingListView: View {
         }
 
         isCategorizing = true
+        categoriesByID = [:]
+        categoryOrder = []
 
         let itemsToCategorize = items.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.name) }
         do {
-            let assignments = try await aiService.categorize(itemsToCategorize, contextHint: "Das sind Einkaufslisten-Einträge, gruppiere nach Supermarkt-Abteilung")
+            let assignments = try await aiService.categorize(itemsToCategorize, contextHint: "These are shopping-list items; group them by supermarket department")
             var byID: [UUID: String] = [:]
             var order: [String] = []
             for item in items {

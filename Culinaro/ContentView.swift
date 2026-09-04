@@ -18,11 +18,33 @@ struct ContentView: View {
     @State private var recipePath: [UUID] = []
     @State private var lessonPath: [UUID] = []
 
+    @State private var recipeCategoriesByID: [UUID: String] = [:]
+    @State private var recipeCategoryOrder: [String] = []
+    @State private var isCategorizingRecipes = false
+    @State private var lastRecipeCategorizationSignature: String?
+
+    @State private var lessonCategoriesByID: [UUID: String] = [:]
+    @State private var lessonCategoryOrder: [String] = []
+    @State private var isCategorizingLessons = false
+    @State private var lastLessonCategorizationSignature: String?
+
+    @State private var shoppingCategoriesByID: [UUID: String] = [:]
+    @State private var shoppingCategoryOrder: [String] = []
+    @State private var isCategorizingShopping = false
+    @State private var lastShoppingCategorizationSignature: String?
+
     var body: some View {
         TabView(selection: $selection) {
             Tab(String(localized: "tab_recipes"), systemImage: "fork.knife", value: .recipes) {
                 NavigationStack(path: $recipePath) {
-                    RecipesView(isSelecting: $isSelectingRecipes, navigationPath: $recipePath)
+                    RecipesView(
+                        isSelecting: $isSelectingRecipes,
+                        navigationPath: $recipePath,
+                        categoriesByID: $recipeCategoriesByID,
+                        categoryOrder: $recipeCategoryOrder,
+                        isCategorizing: $isCategorizingRecipes,
+                        lastCategorizedSignature: $lastRecipeCategorizationSignature
+                    )
                         .toolbar { addButtonToolbar }
                         .navigationDestination(for: UUID.self) { recipeID in
                             if let recipe = recipes.recipes.first(where: { $0.id == recipeID }) {
@@ -37,7 +59,14 @@ struct ContentView: View {
 
             Tab(String(localized: "tab_lessons"), systemImage: "graduationcap", value: .lessons) {
                 NavigationStack(path: $lessonPath) {
-                    LessonsView(isSelecting: $isSelectingLessons, navigationPath: $lessonPath)
+                    LessonsView(
+                        isSelecting: $isSelectingLessons,
+                        navigationPath: $lessonPath,
+                        categoriesByID: $lessonCategoriesByID,
+                        categoryOrder: $lessonCategoryOrder,
+                        isCategorizing: $isCategorizingLessons,
+                        lastCategorizedSignature: $lastLessonCategorizationSignature
+                    )
                         .toolbar { addButtonToolbar }
                         .navigationDestination(for: UUID.self) { lessonID in
                             if let lesson = lessons.lessons.first(where: { $0.id == lessonID }) {
@@ -52,7 +81,12 @@ struct ContentView: View {
 
             Tab(String(localized: "tab_shopping"), systemImage: "cart", value: .shoppingList) {
                 NavigationStack {
-                    ShoppingListView()
+                    ShoppingListView(
+                        categoriesByID: $shoppingCategoriesByID,
+                        categoryOrder: $shoppingCategoryOrder,
+                        isCategorizing: $isCategorizingShopping,
+                        lastCategorizedSignature: $lastShoppingCategorizationSignature
+                    )
                         .toolbar { addButtonToolbar }
                 }
             }

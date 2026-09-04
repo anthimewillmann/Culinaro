@@ -9,11 +9,12 @@ struct LessonsView: View {
     @EnvironmentObject private var nutritionStore: NutritionStore
     @Environment(RecipeAIService.self) private var aiService
     @State private var editingLesson: Lesson?
-    @State private var categoriesByID: [UUID: String] = [:]
-    @State private var categoryOrder: [String] = []
-    @State private var isCategorizing = false
     @Binding var isSelecting: Bool
     @Binding var navigationPath: [UUID]
+    @Binding var categoriesByID: [UUID: String]
+    @Binding var categoryOrder: [String]
+    @Binding var isCategorizing: Bool
+    @Binding var lastCategorizedSignature: String?
 
     private let pinnedCategoryID = "__pinnedCategory__"
     private let pendingCategoryID = "__pendingCategory__"
@@ -295,6 +296,9 @@ struct LessonsView: View {
     }
 
     private func categorize() async {
+        guard lastCategorizedSignature != categorizationSignature else { return }
+        lastCategorizedSignature = categorizationSignature
+
         guard !lessons.isEmpty else {
             categoriesByID = [:]
             categoryOrder = []
@@ -308,7 +312,7 @@ struct LessonsView: View {
 
         let items = lessons.map { RecipeAIService.CategorizableItem(id: $0.id.uuidString, title: $0.title) }
         do {
-            let assignments = try await aiService.categorize(items, contextHint: "Diese Einträge sind Koch-Lektionen, die eine Technik Schritt für Schritt lehren")
+            let assignments = try await aiService.categorize(items, contextHint: "These items are cooking lessons that teach a technique step by step")
             var byID: [UUID: String] = [:]
             var order: [String] = []
             for lesson in lessons {
