@@ -75,6 +75,7 @@ struct CookModeAnimationView: View {
 
     let finalBubbleSize: CGFloat = 160
     let grayColor = Color(red: 0.9, green: 0.9, blue: 0.9)
+    private let soupBackgroundColor = Color(red: 0.96, green: 0.91, blue: 0.80)
     private let smallTomatoRatio: CGFloat = 0.5
     private var smallLeafScale: CGFloat { smallTomatoRatio * 0.75 }
 
@@ -91,13 +92,14 @@ struct CookModeAnimationView: View {
 
     var body: some View {
         ZStack {
-            Color(UIColor.systemBackground).ignoresSafeArea()
+            (backgroundIsBeige ? soupBackgroundColor : Color(uiColor: .systemBackground))
+                .ignoresSafeArea()
             GeometryReader { geo in
                 ZStack {
 
                     // ── Layer 1: Beige full-screen background ──────────────
                     if backgroundIsBeige {
-                        Color(red: 0.96, green: 0.91, blue: 0.80).ignoresSafeArea()
+                        soupBackgroundColor.ignoresSafeArea()
                     }
 
                     // ── Layer 2: Main animation scene ──────────────────────
@@ -108,7 +110,7 @@ struct CookModeAnimationView: View {
 
                     // ── Layer 3: Beige transition overlay ──────────────────
                     if beigeTransitionOpacity > 0 {
-                        Color(red: 0.96, green: 0.91, blue: 0.80)
+                        soupBackgroundColor
                             .ignoresSafeArea()
                             .opacity(beigeTransitionOpacity)
                             .offset(y: beigeTransitionOffset)
@@ -345,7 +347,7 @@ struct CookModeAnimationView: View {
     private func beigeHoleMask(geo: GeometryProxy) -> some View {
         GeometryReader { inner in
             Rectangle()
-                .fill(Color(red: 0.96, green: 0.91, blue: 0.80))
+                .fill(soupBackgroundColor)
                 .ignoresSafeArea()
                 .mask(
                     ZStack {
