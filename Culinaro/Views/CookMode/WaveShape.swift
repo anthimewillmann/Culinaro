@@ -28,8 +28,17 @@ struct WaveShape: Shape {
             return a + (b - a) * factor
         }
 
-        let leftX        = 20 * (1 - expand)
-        let rightX       = 80 + 20 * expand
+        // Keep the collapsed wave visually proportional on wide layouts.
+        // During expansion the adjustment smoothly returns to full width.
+        let collapsedHorizontalScale = min(1, rect.height / max(rect.width, 1))
+        let horizontalScale = collapsedHorizontalScale
+            + (1 - collapsedHorizontalScale) * expand
+        func adjustedX(_ x: CGFloat) -> CGFloat {
+            pathWidth / 2 + (x - pathWidth / 2) * horizontalScale
+        }
+
+        let leftX        = adjustedX(20 * (1 - expand))
+        let rightX       = adjustedX(80 + 20 * expand)
         let scaleYFactor = baseYScale + expandYScaleBonus * expand
         let riseOffset   = (1 - waveRise) * rect.height * 0.55
 
@@ -37,14 +46,14 @@ struct WaveShape: Shape {
         path.move(to: CGPoint(x: leftX, y: 0 + riseOffset / (rect.height / pathHeight)))
         path.addCurve(
             to:       CGPoint(x: leftX, y: pathHeight),
-            control1: CGPoint(x: lerp(50, -10) * (1 - expand) - 10 * expand, y: 60),
-            control2: CGPoint(x: lerp(-10, 50) * (1 - expand) - 10 * expand, y: 120)
+            control1: CGPoint(x: adjustedX(lerp(50, -10) * (1 - expand) - 10 * expand), y: 60),
+            control2: CGPoint(x: adjustedX(lerp(-10, 50) * (1 - expand) - 10 * expand), y: 120)
         )
         path.addLine(to: CGPoint(x: rightX, y: pathHeight))
         path.addCurve(
             to:       CGPoint(x: rightX, y: 0 + riseOffset / (rect.height / pathHeight)),
-            control1: CGPoint(x: lerp(50, 110) * (1 - expand) + 110 * expand, y: 120),
-            control2: CGPoint(x: lerp(110, 50) * (1 - expand) + 110 * expand, y: 60)
+            control1: CGPoint(x: adjustedX(lerp(50, 110) * (1 - expand) + 110 * expand), y: 120),
+            control2: CGPoint(x: adjustedX(lerp(110, 50) * (1 - expand) + 110 * expand), y: 60)
         )
         path.closeSubpath()
 

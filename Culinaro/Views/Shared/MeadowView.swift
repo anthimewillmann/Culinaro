@@ -166,6 +166,17 @@ struct MeadowView: View {
 
     private let ballDiameter: CGFloat = 34
 
+    /// Keeps focal objects grouped on very wide, shallow layouts while allowing
+    /// full-width environmental layers to continue filling the screen.
+    private func focalContentWidth(in size: CGSize) -> CGFloat {
+        min(size.width, size.height * 1.25)
+    }
+
+    private func focalX(_ fraction: CGFloat, in size: CGSize) -> CGFloat {
+        let contentWidth = focalContentWidth(in: size)
+        return (size.width - contentWidth) / 2 + contentWidth * fraction
+    }
+
     /// Uses the grouped system background so fields retain their native contrast.
 
     /// It is only visible during the first frame before the animated sky
@@ -733,7 +744,7 @@ struct MeadowView: View {
 
         // identisch zur Positionierung weiter unten im Body.
 
-        let centerX = Double(geo.size.width) * Double(umbrellaXFraction)
+        let centerX = Double(focalX(umbrellaXFraction, in: geo.size))
 
         let centerY = Double(umbrellaLandingY(in: geo))
 
@@ -1082,7 +1093,7 @@ struct MeadowView: View {
 
                             .position(
 
-                                x: geo.size.width * umbrellaXFraction,
+                                x: focalX(umbrellaXFraction, in: geo.size),
 
                                 y: umbrellaLandingY(in: geo)
 
@@ -1100,7 +1111,7 @@ struct MeadowView: View {
 
                             .position(
 
-                                x: geo.size.width * ballXFraction,
+                                x: focalX(ballXFraction, in: geo.size),
 
                                 y: ballLandingY(in: geo) - (1 - state.ballFall) * geo.size.height
 
@@ -1273,7 +1284,11 @@ private struct WinterMeadowView: View {
         GeometryReader { geo in
             // Keep the snowman at a stable size across regular and large layouts,
             // shrinking it only when a narrow window requires it.
-            let baseDiameter = min(geo.size.width * 0.32, 130)
+            let baseDiameter = min(
+                geo.size.width * 0.32,
+                geo.size.height * 0.24,
+                130
+            )
             let hillHeight = geo.size.height * hillHeightFraction
             // HillShape's center is 6% down from its own top edge.
             let snowSurfaceY = geo.size.height - hillHeight * 0.94
@@ -1495,8 +1510,6 @@ private struct AutumnForestView: View {
         nonmutating set { state.layoutSize = newValue }
     }
 
-    private let treeCount = 7 // Mehr Stämme für einen dichteren Look
-
     var body: some View {
 
         GeometryReader { geo in
@@ -1573,6 +1586,7 @@ private struct AutumnForestView: View {
     private func generateForest(for size: CGSize) {
 
         var generatedTrees: [Tree] = []
+        let treeCount = max(7, Int(ceil(size.width / 120)))
 
         for i in 0..<treeCount {
 
@@ -1610,11 +1624,12 @@ private struct AutumnForestView: View {
 
         trees = generatedTrees
 
-        // Match the original 22 × 42 grid at phone size and add rows and
-        // columns as the canvas grows, keeping leaf density per area stable.
+        // Preserve the original 22 × 42 grid in portrait. In landscape,
+        // derive the row count from the shorter height so the wide layout does
+        // not inherit the portrait minimum and become overcrowded.
         let columns = max(22, Int(ceil(size.width / 17.5)))
-
-        let rows = max(42, Int(ceil(size.height / 20)))
+        let minimumRows = size.width > size.height ? 12 : 42
+        let rows = max(minimumRows, Int(ceil(size.height / 20)))
 
         var generatedLeaves: [Leaf] = []
 

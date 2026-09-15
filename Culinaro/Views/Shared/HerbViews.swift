@@ -21,7 +21,7 @@ struct HerbZone {
 /// A single placed herb instance with position, rotation, and size.
 struct PlacedHerb: Identifiable {
     let id = UUID()
-    let position: CGPoint
+    var position: CGPoint
     let rotation: Double
     let size: CGFloat
 }
@@ -156,6 +156,18 @@ struct SoupLayoutPreview: View {
             .onAppear {
                 placed = zones.flatMap { item in
                     placeHerbs(zone: item.zone, in: geo.size).map { (herb: $0, type: item.type) }
+                }
+            }
+            .onChange(of: geo.size) { oldSize, newSize in
+                guard oldSize.width > 0, oldSize.height > 0 else { return }
+                let widthRatio = newSize.width / oldSize.width
+                let heightRatio = newSize.height / oldSize.height
+
+                placed = placed.map { entry in
+                    var herb = entry.herb
+                    herb.position.x *= widthRatio
+                    herb.position.y *= heightRatio
+                    return (herb: herb, type: entry.type)
                 }
             }
         }

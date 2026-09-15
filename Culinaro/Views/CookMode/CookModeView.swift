@@ -81,42 +81,40 @@ struct CookModeView: View {
                         .ignoresSafeArea()
 
                     // Step content
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 24) {
-                            if index < item.steps.count {
-                                Text(item.steps[index])
-                                    .font(.largeTitle)
-                                    .fontWeight(.semibold)
-                                    .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: 24) {
+                        if index < item.steps.count {
+                            Text(item.steps[index])
+                                .font(.largeTitle)
+                                .fontWeight(.semibold)
+                                .fixedSize(horizontal: false, vertical: true)
 
-                                // Tip and loading indicator animate independently
-                                // of the phase transition to prevent flying/disappearing.
-                                Group {
-                                    if let tip = currentTip {
-                                        Text(tip)
-                                            .font(.body)
-                                            .foregroundStyle(.secondary)
-                                            .padding(.top, 8)
-                                            .transition(.opacity)
-                                    } else if isGeneratingTip {
-                                        ProgressView()
-                                            .controlSize(.small)
-                                            .padding(.top, 8)
-                                            .transition(.opacity)
-                                    }
+                            // Tip and loading indicator animate independently
+                            // of the phase transition to prevent flying/disappearing.
+                            Group {
+                                if let tip = currentTip {
+                                    Text(tip)
+                                        .font(.body)
+                                        .foregroundStyle(.secondary)
+                                        .padding(.top, 8)
+                                        .transition(.opacity)
+                                } else if isGeneratingTip {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                        .padding(.top, 8)
+                                        .transition(.opacity)
                                 }
-                                .animation(.easeInOut(duration: 0.3), value: currentTip)
-                                .animation(.easeInOut(duration: 0.3), value: isGeneratingTip)
-
-                            } else {
-                                Text(finalStepText)
-                                    .font(.largeTitle)
-                                    .fontWeight(.bold)
                             }
-                            Spacer(minLength: 40)
+                            .animation(.easeInOut(duration: 0.3), value: currentTip)
+                            .animation(.easeInOut(duration: 0.3), value: isGeneratingTip)
+                        } else {
+                            Text(finalStepText)
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
                         }
-                        .padding()
+                        Spacer(minLength: 40)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding()
                 }
             }
         }

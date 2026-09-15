@@ -69,6 +69,7 @@ struct CookModeAnimationView: View {
     @State private var grayRise2: CGFloat = 0
     @State private var herbsDropOpacity2: CGFloat = 1
     @State private var animationTask: Task<Void, Never>?
+    @State private var layoutSize: CGSize = .zero
 
     // MARK: - Constants
 
@@ -78,7 +79,7 @@ struct CookModeAnimationView: View {
     private var smallLeafScale: CGFloat { smallTomatoRatio * 0.75 }
 
     /// Nine randomly positioned bubbles with staggered delays.
-    let bubbles: [Bubble] = (0..<9).map { i in
+    private static let bubbles: [Bubble] = (0..<9).map { i in
         Bubble(
             x:     CGFloat.random(in: 0.15...0.85),
             y:     CGFloat.random(in: 0.15...0.85),
@@ -135,6 +136,17 @@ struct CookModeAnimationView: View {
                     }
                     .ignoresSafeArea(edges: .bottom)
                 }
+                .onAppear {
+                    updateLayoutSize(to: geo.size)
+                    startAnimationSequence()
+                }
+                .onChange(of: geo.size) { _, newSize in
+                    updateLayoutSize(to: newSize)
+                }
+                .onDisappear {
+                    animationTask?.cancel()
+                    animationTask = nil
+                }
             }
         }
     }
@@ -155,11 +167,6 @@ struct CookModeAnimationView: View {
                             .frame(width: geo.size.width, height: geo.size.height)
                             .ignoresSafeArea()
                             .opacity(waveRise > 0 ? 1 : 0)
-                            .onAppear { startAnimationSequence(geo: geo) }
-                            .onDisappear {
-                                animationTask?.cancel()
-                                animationTask = nil
-                            }
 
                         // Grey base panel
                         let restY        = geo.size.height * 0.52
@@ -177,7 +184,7 @@ struct CookModeAnimationView: View {
 
                 // Small floating bubbles
                 if showBubbles {
-                    ForEach(bubbles) { bubble in
+                    ForEach(Self.bubbles) { bubble in
                         BubbleView(
                             x:     bubble.x,
                             y:     bubble.y,
@@ -359,7 +366,7 @@ struct CookModeAnimationView: View {
 
     /// Starts the full animation loop. Called once via `.onAppear` on the wave shape.
     /// The sequence runs in an infinite `while true` Task, resetting all state at the end of each loop.
-    private func startAnimationSequence(geo: GeometryProxy) {
+    private func startAnimationSequence() {
 
         // Step 1: Grey panel rises immediately on appear
         withAnimation(.easeOut(duration: 2.5)) { grayRise = 1 }
@@ -394,13 +401,13 @@ struct CookModeAnimationView: View {
                 withAnimation(.easeIn(duration: 3.7)) { finalBubbleOpacity = 1 }
                 withAnimation(.easeInOut(duration: 1.5)) { finalBubbleScale = finalBubbleSize }
                 withAnimation(.easeInOut(duration: 6.0)) {
-                    finalBubbleWhiteFill = max(geo.size.width, geo.size.height) * 2.5
+                    finalBubbleWhiteFill = max(layoutSize.width, layoutSize.height) * 2.5
                 }
 
                 // Step 7: Black-hole mask contracts to tomato size
                 try? await Task.sleep(for: .seconds(3.5))
                 guard !Task.isCancelled else { return }
-                blackHoleScale = max(geo.size.width, geo.size.height) * 2.5
+                blackHoleScale = max(layoutSize.width, layoutSize.height) * 2.5
                 withAnimation(.easeIn(duration: 0.2)) { blackOverlayOpacity = 1 }
                 withAnimation(.easeInOut(duration: 3.5)) { blackHoleScale = finalBubbleSize - 10 }
 
@@ -415,7 +422,7 @@ struct CookModeAnimationView: View {
                 backgroundIsBeige = true
                 hideWaveAndGray   = true
                 withAnimation(.easeIn(duration: 0.3).delay(3.5)) { finalBubbleWhiteOpacity = 0 }
-                beigeHoleScale = max(geo.size.width, geo.size.height) * 2.5
+                beigeHoleScale = max(layoutSize.width, layoutSize.height) * 2.5
                 withAnimation(.easeIn(duration: 0.3)) { beigeOverlayOpacity = 1 }
                 withAnimation(.easeInOut(duration: 3.5)) { beigeHoleScale = finalBubbleSize * 1.5 - 20 }
                 withAnimation(.easeOut(duration: 1.8).delay(1.5)) { leafOpacity = 1; leafScale = 1 }
@@ -425,8 +432,8 @@ struct CookModeAnimationView: View {
                 blackOverlayOpacity = 0
                 withAnimation(.easeInOut(duration: 2.0)) {
                     tomatoZoomScale     = 0.38
-                    tomatoOffset        = CGSize(width: -geo.size.width * 0.15,
-                                                height:  geo.size.height * 0.17)
+                    tomatoOffset        = CGSize(width: -layoutSize.width * 0.15,
+                                                height:  layoutSize.height * 0.17)
                     beigeOverlayOpacity = 0
                 }
                 withAnimation(.easeOut(duration: 1.5).delay(0.4)) {
@@ -447,10 +454,10 @@ struct CookModeAnimationView: View {
 
                 // Step 11: Zoom into carrot 1
                 try? await Task.sleep(for: .seconds(4.0))
-                let targetX     = geo.size.width * 0.32
-                let targetY     = geo.size.height * 0.22
-                let centerX     = geo.size.width / 2
-                let centerY     = geo.size.height / 2
+                let targetX     = layoutSize.width * 0.32
+                let targetY     = layoutSize.height * 0.22
+                let centerX     = layoutSize.width / 2
+                let centerY     = layoutSize.height / 2
                 let zoomFactor: CGFloat = 50.0
                 withAnimation(.easeIn(duration: 5.0)) {
                     sceneZoom   = zoomFactor
@@ -466,13 +473,13 @@ struct CookModeAnimationView: View {
 
                 // Step 13: Zoom into cucumber slice
                 try? await Task.sleep(for: .seconds(8.0))
-                let gurkeX    = geo.size.width * 0.80
-                let gurkeY    = geo.size.height * 0.60
+                let gurkeX    = layoutSize.width * 0.80
+                let gurkeY    = layoutSize.height * 0.60
                 let gurkeZoom: CGFloat = 50.0
                 withAnimation(.easeInOut(duration: 5.0)) {
                     soupSceneZoom   = gurkeZoom
-                    soupSceneOffset = CGSize(width:  (geo.size.width  / 2 - gurkeX) * gurkeZoom,
-                                            height: (geo.size.height / 2 - gurkeY) * gurkeZoom)
+                    soupSceneOffset = CGSize(width:  (layoutSize.width / 2 - gurkeX) * gurkeZoom,
+                                            height: (layoutSize.height / 2 - gurkeY) * gurkeZoom)
                 }
 
                 // Step 14: Beige overlay + herb scene fade in
@@ -486,14 +493,14 @@ struct CookModeAnimationView: View {
                 // Step 15: Clean up behind the overlay; show only herbs
                 try? await Task.sleep(for: .seconds(3.7))
                 guard !Task.isCancelled else { return }
-                slideUpOffset     = -geo.size.height
+                slideUpOffset     = -layoutSize.height
                 showOnlyHerbs     = true
                 backgroundIsBeige = false
 
                 // Step 16: Slide beige overlay upward and off screen
                 try? await Task.sleep(for: .seconds(1.5))
                 guard !Task.isCancelled else { return }
-                withAnimation(.easeInOut(duration: 2.5)) { beigeTransitionOffset = -geo.size.height }
+                withAnimation(.easeInOut(duration: 2.5)) { beigeTransitionOffset = -layoutSize.height }
                 try? await Task.sleep(for: .seconds(2.5))
                 beigeTransitionOpacity = 0
                 beigeTransitionOffset  = 0
@@ -502,12 +509,17 @@ struct CookModeAnimationView: View {
                 try? await Task.sleep(for: .seconds(1.5))
                 withAnimation(.easeOut(duration: 2.5)) { grayRise2 = 1 }
 
-                // Step 18: Herb scene drops off screen
+                // Step 18: Move the entire herb scene below the viewport.
+                // The extra margin also clears the tallest herb illustrations.
                 try? await Task.sleep(for: .seconds(4.0))
-                withAnimation(.easeIn(duration: 1.8)) { herbsDropOffset = geo.size.height * 0.6 }
+                let herbsFallDuration = 2.5
+                let herbsFallDistance = layoutSize.height + 100
+                withAnimation(.easeIn(duration: herbsFallDuration)) {
+                    herbsDropOffset = herbsFallDistance
+                }
 
                 // ── Loop reset ─────────────────────────────────────────────
-                try? await Task.sleep(for: .seconds(1.8))
+                try? await Task.sleep(for: .seconds(herbsFallDuration))
                 guard !Task.isCancelled else { return }
                 resetState()
 
@@ -516,6 +528,60 @@ struct CookModeAnimationView: View {
                 // → Loop restarts from Step 2
             }
         }
+    }
+
+    // MARK: - Responsive geometry
+
+    /// Preserves the current animation phase while mapping geometry-dependent
+    /// values to the new orientation.
+    private func updateLayoutSize(to newSize: CGSize) {
+        guard newSize.width > 0, newSize.height > 0 else { return }
+
+        let oldSize = layoutSize
+        guard oldSize.width > 0, oldSize.height > 0 else {
+            layoutSize = newSize
+            return
+        }
+        guard oldSize != newSize else { return }
+
+        let widthRatio = newSize.width / oldSize.width
+        let heightRatio = newSize.height / oldSize.height
+        let maximumDimensionRatio = max(newSize.width, newSize.height)
+            / max(oldSize.width, oldSize.height)
+
+        func resized(_ offset: CGSize) -> CGSize {
+            CGSize(
+                width: offset.width * widthRatio,
+                height: offset.height * heightRatio
+            )
+        }
+
+        tomatoOffset = resized(tomatoOffset)
+        sceneOffset = resized(sceneOffset)
+        soupSceneOffset = resized(soupSceneOffset)
+        carrotOffset = resized(carrotOffset)
+        carrot2Offset = resized(carrot2Offset)
+        cucumberOffset = resized(cucumberOffset)
+        tomato2Offset = resized(tomato2Offset)
+        tomato3Offset = resized(tomato3Offset)
+
+        slideUpOffset *= heightRatio
+        beigeTransitionOffset *= heightRatio
+
+        if herbsDropOffset != 0 {
+            let fallProgress = herbsDropOffset / (oldSize.height + 100)
+            herbsDropOffset = fallProgress * (newSize.height + 100)
+        }
+
+        finalBubbleWhiteFill *= maximumDimensionRatio
+        if blackHoleScale > finalBubbleSize * 1.5 {
+            blackHoleScale *= maximumDimensionRatio
+        }
+        if beigeHoleScale > finalBubbleSize * 1.5 {
+            beigeHoleScale *= maximumDimensionRatio
+        }
+
+        layoutSize = newSize
     }
 
     // MARK: - Reset
