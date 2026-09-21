@@ -11846,14 +11846,14 @@
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "العنوان"
+            "state" : "machine_translated",
+            "value" : "عنوان الوصفة"
           }
         },
         "da" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel"
+            "state" : "machine_translated",
+            "value" : "Opskriftstitel"
           }
         },
         "de" : {
@@ -11864,116 +11864,116 @@
         },
         "en" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Title"
+            "state" : "machine_translated",
+            "value" : "Recipe Title"
           }
         },
         "en-AU" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Title"
+            "state" : "machine_translated",
+            "value" : "Recipe Title"
           }
         },
         "en-CA" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Title"
+            "state" : "machine_translated",
+            "value" : "Recipe Title"
           }
         },
         "en-GB" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Title"
+            "state" : "machine_translated",
+            "value" : "Recipe Title"
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Título"
+            "state" : "machine_translated",
+            "value" : "Título de la receta"
           }
         },
         "es-MX" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Título"
+            "state" : "machine_translated",
+            "value" : "Título de la receta"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titre"
+            "state" : "machine_translated",
+            "value" : "Titre de la recette"
           }
         },
         "fr-CA" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titre"
+            "state" : "machine_translated",
+            "value" : "Titre de la recette"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titolo"
+            "state" : "machine_translated",
+            "value" : "Titolo della ricetta"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "タイトル"
+            "state" : "machine_translated",
+            "value" : "レシピ名"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "제목"
+            "state" : "machine_translated",
+            "value" : "레시피 제목"
           }
         },
         "nb" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tittel"
+            "state" : "machine_translated",
+            "value" : "Oppskriftstittel"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel"
+            "state" : "machine_translated",
+            "value" : "Recepttitel"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tytuł"
+            "state" : "machine_translated",
+            "value" : "Tytuł przepisu"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Título"
+            "state" : "machine_translated",
+            "value" : "Título da receita"
           }
         },
         "sv" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Titel"
+            "state" : "machine_translated",
+            "value" : "Recepttitel"
           }
         },
         "tr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Başlık"
+            "state" : "machine_translated",
+            "value" : "Tarif başlığı"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "标题"
+            "state" : "machine_translated",
+            "value" : "食谱标题"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "標題"
+            "state" : "machine_translated",
+            "value" : "食譜標題"
           }
         }
       }
