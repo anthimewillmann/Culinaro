@@ -1,6 +1,6 @@
 # Culinaro
 
-**A native SwiftUI recipe app with on-device AI, photo scanning, and a guided cooking mode.**
+**A native SwiftUI cooking app with on-device AI, recipes and lessons, shopping lists, nutrition tracking, and iCloud sync.**
 
 <p align="left">
   <a href="https://apps.apple.com/us/app/culinaro/id6764299394">
@@ -10,194 +10,144 @@
   </a>
 </p>
 
-Culinaro helps you collect, create, scan, and cook recipes on iPhone and iPad. Recipes are stored locally, can be generated from a simple dish idea, extracted from photos using OCR, and followed step by step in a focused cooking interface.
+Culinaro helps you collect recipes, learn cooking techniques, prepare shopping lists, and follow instructions step by step on iPhone and iPad. Create content manually, generate it from an idea with Apple Foundation Models, or scan it from a photo. Track nutrition and cooking progress, and compare your score with Game Center friends.
 
-> Built as a personal iOS portfolio project exploring SwiftUI, Apple Foundation Models, Vision OCR, local-first app architecture, and polished mobile interaction design.
+> A personal iOS portfolio project exploring SwiftUI, on-device AI, Vision OCR, CloudKit, GameKit, and custom animated interfaces.
 
 ## Highlights
 
-- Local recipe collection
-- Manual recipe creation and editing
-- AI-generated recipes from a dish name
-- Recipe scanning from camera or photo library
-- Vision OCR plus structured Foundation Models output
-- Search by recipe title
-- Pinning for frequently used recipes
-- Guided step-by-step cooking mode
-- Optional AI cooking tips per step
-- Animated SwiftUI cooking background
-- iPhone and iPad support
-- Localized UI via Xcode String Catalog
+- Five tabs: Recipes, Lessons, Shopping, Nutrition, and Overview
+- Manual creation and editing of recipes and cooking lessons
+- AI generation, photo scanning, and automatic categorization
+- Pinning and bulk actions for recipes and lessons
+- Guided cooking and learning mode with optional AI tips
+- Shopping lists populated manually, from photos, or from recipe and lesson ingredients
+- Editable nutrition values, AI estimates, and meal logging
+- Daily nutrition totals, seven-day averages, and a thirty-day calorie average
+- Cooking streaks, activity statistics, and a Game Center friends leaderboard
+- PDF sharing for individual recipes and lessons or selected collections
+- Local persistence with private iCloud synchronization
+- Animated meadow and cooking backgrounds with separate animation controls
+- Localized interface with 22 locale entries in the main String Catalog
 
 ## Screenshots
 
+The repository includes these screenshots; they may not show every feature in the current source.
+
 <p align="center">
-  <img src="Screenshots/Bild 4.jpg" width="30%"/>
-  <img src="Screenshots/Bild 5.jpg" width="30%"/>
-  <img src="Screenshots/Bild 6.jpg" width="30%"/>
+  <img src="Screenshots/Bild 4.jpg" width="30%" alt="Culinaro app screenshot 1"/>
+  <img src="Screenshots/Bild 5.jpg" width="30%" alt="Culinaro app screenshot 2"/>
+  <img src="Screenshots/Bild 6.jpg" width="30%" alt="Culinaro app screenshot 3"/>
 </p>
 
 <p align="center">
-  <img src="Screenshots/Bild 7.jpg" width="30%"/>
-  <img src="Screenshots/Bild 8.jpg" width="30%"/>
-  <img src="Screenshots/Bild 9.jpg" width="30%"/>
+  <img src="Screenshots/Bild 7.jpg" width="30%" alt="Culinaro app screenshot 4"/>
+  <img src="Screenshots/Bild 8.jpg" width="30%" alt="Culinaro app screenshot 5"/>
+  <img src="Screenshots/Bild 9.jpg" width="30%" alt="Culinaro app screenshot 6"/>
 </p>
 
-## How It Works
+## Features
 
-```text
-Recipe idea
-   |
-   v
-Foundation Models
-   |
-   v
-Structured recipe
-   |
-   v
-Editable form
-   |
-   v
-Local storage
-```
+### Recipes and Cooking Lessons
 
-Photo import flow:
+Recipes and lessons share an editor for titles, ingredients or tools, preparation or teaching steps, nutrition values, and the AI-tip preference. Both can be created manually, generated from a prompt, or extracted from camera and photo-library images.
 
-```text
-Camera / Photo Library
-   |
-   v
-Vision OCR
-   |
-   v
-Raw recipe text
-   |
-   v
-Foundation Models
-   |
-   v
-Title + ingredients + steps
-```
+Pinned items appear above AI-generated categories. Select multiple items to add their ingredients to the shopping list, log nutrition, export a PDF collection, or delete them. Individual items can also be edited, pinned, shared, and opened in the guided cooking interface.
 
-Cooking flow:
+### On-Device AI and Scanning
 
-```text
-Saved recipe
-   |
-   v
-Ingredients overview
-   |
-   v
-Step 1 -> Step 2 -> Step 3
-   |
-   v
-Optional AI tip per step
-   |
-   v
-Enjoy!
-```
+`RecipeAIService` uses Apple Foundation Models for structured recipe and lesson generation, shopping-list extraction, nutrition estimates, short cooking tips, and category assignments. Vision recognizes text in photos before Foundation Models converts it into structured content. Generated and scanned content can be reviewed and edited before saving.
+
+`AILanguageResolver` detects the language of typed generation prompts when confidence is sufficient. Other requests use the app language, with system-language and English fallbacks. Model locale support is checked, and OCR prioritizes the resolved language alongside German and English.
+
+Notes entered in Overview are passed to recipe generation as allergy or intolerance constraints. They do not provide a verified allergen check.
+
+### Guided Cooking and Learning
+
+The shared cooking mode starts with an ingredient and nutrition overview, then presents one instruction at a time. Optional AI tips are cached in memory during the session. Missing nutrition values can be estimated and saved back to the recipe or lesson. Completing the final step records progress and contributes to the cooking streak.
+
+The interface switches between custom meadow and cooking animations. Each animation can be enabled or disabled in Overview, and those preferences persist locally.
+
+### Shopping Lists
+
+Add ingredients manually with optional quantities, import them from recipes or lessons, or scan a printed or handwritten list. Imported ingredients retain their source title. AI groups items into categories, and items can be removed as shopping progresses.
+
+### Nutrition
+
+Recipes and lessons can store calories, protein, carbohydrates, fat, and a serving count. Nutrition values can be entered manually or estimated by AI. Log meals from saved content or create a nutrition entry through the Nutrition tab, including from a photo or generated recipe.
+
+The dashboard shows today's calories and macronutrients, daily averages over the last seven days, and average daily calories over the last thirty days. AI-generated nutrition values are approximate.
+
+### Progress and Sharing
+
+Overview shows created recipes and lessons, completed cooking sessions and lessons, and the current daily streak. The Game Center score is the sum of created recipes, created lessons, completed cooking sessions, and completed lessons. Authenticated players can view a friends leaderboard.
+
+Recipes and lessons can be shared as PDFs through the system share sheet, individually or as a selected collection.
+
+## Storage and Synchronization
+
+Recipes, lessons, shopping-list items, and logged meals are cached locally as Codable JSON in UserDefaults. Their stores load the cache immediately, fetch remote records on initialization, and upload changes to the user's private CloudKit database. Recipe, lesson, and shopping-list screens also support pull-to-refresh.
+
+Statistics, creation counters, notes, and animation preferences remain local. Game Center receives the aggregate score separately.
+
+Cloud synchronization currently uses direct record fetches, saves, and deletes with in-memory tracking of pending changes. It does not include a durable offline retry queue or a full cross-device conflict-resolution system.
 
 ## Tech Stack
 
 | Area | Technology |
 |---|---|
-| Language | Swift |
-| UI | SwiftUI |
-| AI | Apple Foundation Models |
-| OCR | Vision |
-| Photos | PhotosUI |
-| Camera | UIKit `UIImagePickerController` |
-| State | ObservableObject, `@Published`, SwiftUI state |
-| Persistence | UserDefaults + Codable JSON |
-| Localization | Xcode String Catalog |
-| Build | Xcode project |
+| Language and UI | Swift, SwiftUI |
+| AI and structured output | Apple Foundation Models, `@Generable` |
+| Language detection | NaturalLanguage |
+| Text recognition | Vision |
+| Photo import and camera | PhotosUI, UIKit `UIImagePickerController` |
+| State | Combine `ObservableObject` / `@Published`, Observation `@Observable`, SwiftUI state |
+| Local persistence | UserDefaults, Codable JSON |
+| Cloud synchronization | CloudKit private database |
+| Friends leaderboard | GameKit / Game Center |
+| PDF sharing | SwiftUI `ImageRenderer`, Core Graphics, `Transferable`, `ShareLink` |
+| Localization | Xcode String Catalogs |
+| Build | Xcode project and shared `Culinaro` scheme |
 
-Culinaro has no third-party dependencies and no backend in this repository.
+The project has no third-party package dependencies or custom backend. CloudKit and Game Center provide its online services.
 
-## Architecture
-
-Culinaro is a local-first SwiftUI app with a small Store/Service architecture.
-
-```text
-+--------------------------------------------------+
-|                    SwiftUI App                    |
-|                                                  |
-|  CulinaroApp -> ContentView -> RecipesView        |
-|                              |                   |
-|                 +------------+------------+      |
-|                 |                         |      |
-|          AddRecipeView              CookModeView |
-|                 |                         |      |
-|          RecipeAIService              Tip Cache  |
-|                 |                                |
-|       +---------+----------+                     |
-|       |                    |                     |
-|  Foundation Models      Vision OCR               |
-|                                                  |
-|              RecipeStore                         |
-|                  |                               |
-|          UserDefaults / JSON                     |
-+--------------------------------------------------+
-```
-
-Core components:
+## Project Structure
 
 ```text
-CulinaroApp.swift              App entry point
-ContentView.swift              Root navigation
-Models/Recipe.swift            Persistent recipe model
-Stores/RecipeStore.swift       Local recipe state and persistence
-Models/RecipeAIService.swift   AI generation, OCR parsing, cooking tips
-Views/Recipes                  Recipe list and recipe editor
-Views/CookMode                 Guided cooking UI and animation
-Localizable.xcstrings          Localized interface strings
+Culinaro/
+├── CulinaroApp.swift             App entry point and dependency injection
+├── ContentView.swift             Five-tab navigation and shared state
+├── Models/
+│   ├── Recipe.swift, Lesson.swift, Cookable.swift
+│   ├── ShoppingListItem.swift, NutritionInfo.swift, LoggedMeal.swift
+│   ├── RecipeAIService.swift     Generation, OCR parsing, tips, nutrition, categories
+│   ├── AIModels.swift            Structured Foundation Models output types
+│   ├── AILanguageResolver.swift  AI and OCR language selection
+│   ├── CloudKitManager.swift     Private CloudKit database operations
+│   ├── CloudKitConversions.swift Model-to-record mapping
+│   └── GameCenterManager.swift   Authentication, scores, friends leaderboard
+├── Stores/                      Recipes, lessons, shopping, nutrition, statistics
+├── Views/
+│   ├── Recipes/                 Tab screens and shared content editor
+│   ├── CookMode/                Guided cooking and learning interface
+│   └── Shared/                  PDF export, camera, backgrounds, reusable views
+├── Localizable.xcstrings         Interface translations
+├── Culinaro-InfoPlist.xcstrings   Localized app metadata
+└── Culinaro.entitlements         iCloud, Game Center, and push entitlements
 ```
-
-## Features
-
-### Local Recipe Management
-
-Recipes are stored locally as Codable JSON in UserDefaults. Each recipe contains:
-
-- title
-- ingredients
-- preparation steps
-- pinned state
-- AI-tip preference
-- generated/manual marker
-- creation date
-
-### AI Recipe Generation
-
-Enter a dish name, enable generation, and Culinaro uses Apple Foundation Models to produce a structured recipe with title, ingredients, and steps.
-
-The generated result is inserted into an editable form before saving.
-
-### Recipe Scanning
-
-Culinaro can import recipes from the camera or photo library.
-
-The image is processed with Vision OCR, then the recognized text is transformed into a structured recipe using Foundation Models.
-
-### Guided Cooking Mode
-
-The cooking mode starts with an ingredients overview and then walks through each step one at a time. Optional AI tips can provide short, practical guidance for the current step.
-
-### Animated Cooking Interface
-
-The cooking mode includes a custom SwiftUI background animation built from shapes, masks, transitions, and procedural layout rather than video assets.
 
 ## Requirements
 
-- macOS with a compatible full Xcode installation
-- iOS 26.1 deployment target
-- iPhone or iPad target
-- Apple Foundation Models support
-- Camera and photo library permissions for scanning/import
+- macOS with Xcode and an iOS 26 SDK capable of building the project
+- iPhone or iPad running iOS/iPadOS 26.0 or later, as configured on the app target
+- A device and configuration supporting Apple Foundation Models for AI features
+- Camera access for taking recipe or shopping-list photos
+- An iCloud account and configured CloudKit container for synchronization
+- Game Center authentication and a configured leaderboard for friends scores
 
-The exact minimum Xcode patch version and Foundation Models device availability are not documented in this repository.
+The app target overrides the project-level iOS 26.1 setting with iOS 26.0. The repository does not specify an exact minimum Xcode patch version. AI availability is separate from the deployment target; a successful build does not establish that AI features are available on the selected device or simulator.
 
-## Installation
+## Getting Started
 
 ```bash
 git clone https://github.com/anthimewillmann/Culinaro.git
@@ -205,92 +155,48 @@ cd Culinaro
 open Culinaro.xcodeproj
 ```
 
-Then in Xcode:
+1. Select the shared `Culinaro` scheme and an iPhone or iPad destination.
+2. Set your development team and signing configuration. For your own app, use a bundle identifier registered to your team.
+3. Configure the target's iCloud/CloudKit and Game Center capabilities for your Apple developer account. Keep the entitlements and provisioning configuration consistent.
+4. Configure a CloudKit container and the record types used in `CloudKitConversions.swift`: `Recipe`, `Lesson`, `ShoppingListItem`, and `LoggedMeal`.
+5. Configure the Game Center leaderboard in App Store Connect. The source currently uses the identifier `culinaro_total_score`.
+6. Build and run in Xcode. Use a compatible device to exercise AI, camera, iCloud, and Game Center features.
 
-1. Select the `Culinaro` scheme.
-2. Choose a compatible iPhone or iPad simulator/device.
-3. Configure your own signing team if needed.
-4. Build and run.
+The checked-in app uses bundle identifier `com.anthimewillmann.culinaro.app` and CloudKit container `iCloud.com.anthimewillmann.culinaro.app`. A fork needs access to these resources or its own configuration. No API keys or third-party dependency installation are required.
 
-## Build
-
-From Xcode:
-
-```text
-Product -> Build
-Product -> Run
-```
-
-Possible CLI build:
+For a simulator compilation without device signing:
 
 ```bash
 xcodebuild \
   -project Culinaro.xcodeproj \
   -scheme Culinaro \
   -configuration Debug \
+  -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO \
   build
 ```
 
-## Current Status
+## Current Status and Limitations
 
-The repository currently contains:
+The Xcode project currently declares version **3.0.2**, build **12**. This describes the repository configuration, not necessarily the current App Store release.
 
-- SwiftUI app source
-- Xcode project
-- shared scheme
-- localized String Catalog
-- app icon assets
-- screenshots
-- README documentation
-
-Not currently included:
-
-- unit tests
-- UI tests
-- CI/CD pipeline
-- SwiftLint or SwiftFormat config
-- backend code
-- cloud sync
-- third-party dependencies
-- license file, despite the README mentioning MIT
-
-## Known Limitations
-
-- Local-only storage
-- No user accounts
-- No cloud synchronization
-- No shopping list generation
-- No meal planning
-- No recipe sharing
-- Search only covers recipe titles
-- OCR is configured for German and English
-- No persisted scanned images
-- No persisted AI cooking tips
-- No automated tests
-- No CI/CD pipeline
-- No explicit Foundation Models availability fallback
-- UserDefaults storage has no schema migration layer
-
-## Roadmap Ideas
-
-- Cloud synchronization
-- User authentication
-- Meal planning
-- Shopping list generation
-- Recipe sharing
-- Full-text recipe search
-- Tests and CI
-- Foundation Models availability fallback
-- More robust local persistence
-- Reduce Motion support for the cooking animation
-- Privacy manifest and clearer privacy documentation
+- No automated unit/UI tests or CI/CD workflow are included.
+- There is no dedicated Foundation Models availability screen or complete non-AI fallback. Some failed generation, scanning, or categorization requests can leave a loading indicator visible.
+- Cloud sync has no durable retry queue, persistent deletion markers, or comprehensive conflict resolution. Local statistics and preferences are not synchronized.
+- The current recipe and lesson lists use categories and pinning; they do not include a search field.
+- Scanned images and raw OCR text are not retained by the app; cooking tips are not persisted between sessions.
+- UserDefaults persistence has no explicit schema migration layer.
+- Meal planning and editable recipe-file import are not implemented; sharing is through PDF export.
 
 ## Privacy
 
-Culinaro is designed as a local-first app. The repository does not contain a backend, analytics integration, tracking SDK, or third-party service integration.
+AI generation and image text recognition use Apple's on-device frameworks. The app does not include a custom backend, analytics SDK, or third-party tracking integration.
 
-Recipes are stored locally on device. Imported images and OCR text are not persisted by the app according to the current code.
+Saved recipes, lessons, shopping-list items, and meal logs are stored locally and sent to the user's private CloudKit database when synchronization succeeds. Game Center handles player authentication, score submission, and friends leaderboard data. Notes and animation preferences are stored locally; recipe generation uses the notes on device.
+
+Imported images and raw OCR text are processed without being saved by the app. PDF sharing sends the selected content to the destination the user chooses in the share sheet.
 
 ## License
 
-The existing README references MIT, but this repository does not currently include a `LICENSE` file. Add one before displaying a license badge or relying on MIT licensing.
+No `LICENSE` file is currently included in this repository.
