@@ -32,6 +32,8 @@ Culinaro helps you collect recipes, learn cooking techniques, prepare shopping l
 
 ## Screenshots
 
+### iPhone
+
 <p align="center">
   <img src="Screenshots/culinaro-recipes.png" width="30%" alt="Recipes with pinned favorites and AI categories"/>
   <img src="Screenshots/culinaro-new-recipe.png" width="30%" alt="Recipe editor with AI generation and photo scanning"/>
@@ -53,6 +55,33 @@ Culinaro helps you collect recipes, learn cooking techniques, prepare shopping l
 <p align="center">
   <img src="Screenshots/culinaro-step-5.jpeg" width="30%" alt="Cooking step 5 with a serving instruction"/>
   <img src="Screenshots/culinaro-enjoy.jpeg" width="30%" alt="Enjoy screen at the end of cooking"/>
+</p>
+
+### iPad
+
+<p align="center">
+  <img src="Screenshots/culinaro-ipad-recipes.jpeg" width="46%" alt="iPad recipes with pinned favorites and categories"/>
+  <img src="Screenshots/culinaro-ipad-edit-recipe.jpeg" width="46%" alt="iPad recipe editor with AI generation and photo scanning"/>
+</p>
+
+<p align="center">
+  <img src="Screenshots/culinaro-ipad-ingredients.jpeg" width="46%" alt="iPad ingredient and nutrition overview before cooking"/>
+  <img src="Screenshots/culinaro-ipad-lessons.jpeg" width="46%" alt="iPad cooking lessons grouped by technique"/>
+</p>
+
+<p align="center">
+  <img src="Screenshots/culinaro-ipad-shopping.jpeg" width="46%" alt="iPad shopping list with ingredients grouped by category"/>
+  <img src="Screenshots/culinaro-ipad-nutrition.jpeg" width="46%" alt="iPad nutrition totals and daily averages"/>
+</p>
+
+<p align="center">
+  <img src="Screenshots/culinaro-ipad-overview.jpeg" width="46%" alt="iPad overview with streak, statistics, friends, and animation settings"/>
+  <img src="Screenshots/culinaro-ipad-step-1.jpeg" width="46%" alt="iPad cooking step 1 with a practical AI tip"/>
+</p>
+
+<p align="center">
+  <img src="Screenshots/culinaro-ipad-step-3.jpeg" width="46%" alt="iPad cooking step 3 with an animated background"/>
+  <img src="Screenshots/culinaro-ipad-step-5.jpeg" width="46%" alt="iPad cooking step 5 with a serving instruction"/>
 </p>
 
 ## Features
