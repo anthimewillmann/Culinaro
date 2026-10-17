@@ -32,24 +32,20 @@ Culinaro helps you collect recipes, learn cooking techniques, prepare shopping l
 
 ## Screenshots
 
-### App Overview
-
 <p align="center">
   <img src="Screenshots/culinaro-recipes.png" width="30%" alt="Recipes with pinned favorites and AI categories"/>
+  <img src="Screenshots/culinaro-new-recipe.png" width="30%" alt="Recipe editor with AI generation and photo scanning"/>
+  <img src="Screenshots/culinaro-ingredients.png" width="30%" alt="Ingredient overview before cooking"/>
+</p>
+
+<p align="center">
   <img src="Screenshots/culinaro-lessons.png" width="30%" alt="Cooking lessons grouped by technique"/>
   <img src="Screenshots/culinaro-shopping.png" width="30%" alt="Shopping list with ingredients grouped by category"/>
-</p>
-
-<p align="center">
   <img src="Screenshots/culinaro-nutrition.png" width="30%" alt="Nutrition totals and daily averages"/>
-  <img src="Screenshots/culinaro-overview.png" width="30%" alt="Overview with streak, statistics, friends, and animation settings"/>
-  <img src="Screenshots/culinaro-new-recipe.png" width="30%" alt="Recipe editor with AI generation and photo scanning"/>
 </p>
 
-### Guided Cooking
-
 <p align="center">
-  <img src="Screenshots/culinaro-ingredients.png" width="30%" alt="Ingredient overview before cooking"/>
+  <img src="Screenshots/culinaro-overview.png" width="30%" alt="Overview with streak, statistics, friends, and animation settings"/>
   <img src="Screenshots/culinaro-step-1.jpeg" width="30%" alt="Cooking step 1 with a practical AI tip"/>
   <img src="Screenshots/culinaro-step-3.jpeg" width="30%" alt="Cooking step 3 with an animated background"/>
 </p>
