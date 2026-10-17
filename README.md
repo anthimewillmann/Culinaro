@@ -32,8 +32,6 @@ Culinaro helps you collect recipes, learn cooking techniques, prepare shopping l
 
 ## Screenshots
 
-### iPhone
-
 <p align="center">
   <img src="Screenshots/culinaro-recipes.png" width="30%" alt="Recipes with pinned favorites and AI categories"/>
   <img src="Screenshots/culinaro-new-recipe.png" width="30%" alt="Recipe editor with AI generation and photo scanning"/>
@@ -56,8 +54,6 @@ Culinaro helps you collect recipes, learn cooking techniques, prepare shopping l
   <img src="Screenshots/culinaro-step-5.jpeg" width="30%" alt="Cooking step 5 with a serving instruction"/>
   <img src="Screenshots/culinaro-enjoy.jpeg" width="30%" alt="Enjoy screen at the end of cooking"/>
 </p>
-
-### iPad
 
 <p align="center">
   <img src="Screenshots/culinaro-ipad-recipes.jpeg" width="46%" alt="iPad recipes with pinned favorites and categories"/>
