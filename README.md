@@ -83,8 +83,8 @@ Culinaro helps you collect recipes, learn cooking techniques, prepare shopping l
 ### Figma Designs
 
 <p align="center">
-  <img src="Screenshots/culinaro-figma-add-recipe.png" width="49%" alt="Culinaro add-recipe flow prototype in Figma"/>
-  <img src="Screenshots/culinaro-figma-recipe-flow.png" width="49%" alt="Culinaro recipe cooking flow prototype in Figma"/>
+  <img src="Screenshots/culinaro-figma-add-recipe.jpeg" width="49%" alt="Culinaro add-recipe flow prototype in Figma"/>
+  <img src="Screenshots/culinaro-figma-recipe-flow.jpeg" width="49%" alt="Culinaro recipe cooking flow prototype in Figma"/>
 </p>
 
 ## Features
