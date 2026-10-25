@@ -80,7 +80,7 @@ Culinaro helps you collect recipes, learn cooking techniques, prepare shopping l
   <img src="Screenshots/culinaro-ipad-step-5.jpeg" width="46%" alt="iPad cooking step 5 with a serving instruction"/>
 </p>
 
-### Figma Designs
+## Figma
 
 <p align="center">
   <img src="Screenshots/culinaro-figma-add-recipe.jpeg" width="100%" alt="Culinaro add-recipe flow prototype in Figma"/>
